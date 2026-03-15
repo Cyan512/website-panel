@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { authClient } from "@/config/authClient";
 import { InputField } from "@/app/shared/components/input";
+import { sileo } from "sileo";
 
 export function LoginForm() {
   const navigate = useNavigate();
@@ -30,6 +31,14 @@ export function LoginForm() {
         },
         onSuccess: () => {
           setLoading(false);
+          sileo.success({
+            title: "Payment received",
+            description: (
+              <span className="text-green-500/50! font-medium! bg-red-500">
+                We received your payment of $49.00.
+              </span>
+            ),
+          });
           navigate("/dashboard");
         },
         onError: (ctx) => {

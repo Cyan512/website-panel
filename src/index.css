@@ -1,7 +1,21 @@
 @import "tailwindcss";
 
 :root {
-    --theme-color: #e5d3b3
+    --theme-color: #e5d3b3;
+    /* State colors (oklch) */
+    --sileo-state-success: oklch(0.723 0.219 142.136);
+    --sileo-state-loading: oklch(0.556 0 0);
+    --sileo-state-error: oklch(0.637 0.237 25.331);
+    --sileo-state-warning: oklch(0.795 0.184 86.047);
+    --sileo-state-info: oklch(0.685 0.169 237.323);
+    --sileo-state-action: oklch(0.623 0.214 259.815);
+
+    /* Dimensions */
+    --sileo-width: 350px;
+    --sileo-height: 40px;
+
+    /* Animation */
+    --sileo-duration: 600ms;
 }
 
 @theme {

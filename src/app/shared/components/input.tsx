@@ -1,36 +1,39 @@
 import React from "react";
+import { cn } from "@/utils/cn";
 
-type InputFieldProps = {
+type InputFieldProps = React.InputHTMLAttributes<HTMLInputElement> & {
     label: string;
-    type?: string;
-    placeholder?: string;
-    value: string;
-    disabled?: boolean;
-    onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+    error?: string;
+    helperText?: string;
 };
 
 export function InputField({
     label,
-    type = "text",
-    placeholder,
-    value,
-    disabled,
-    onChange,
+    error,
+    helperText,
+    className,
+    id,
+    ...props
 }: InputFieldProps) {
+    const inputId = id || label.toLowerCase().replace(/\s+/g, "-");
+
     return (
         <div className="mb-5">
-            <label className="field-label block mb-2">{label}</label>
+            <label htmlFor={inputId} className="field-label block mb-2">{label}</label>
 
             <div className="relative">
                 <input
-                    type={type}
-                    placeholder={placeholder}
-                    value={value}
-                    onChange={onChange}
-                    disabled={disabled}
-                    className="field-input w-full rounded-sm py-3 text-sm pl-10 pr-3.5"
+                    id={inputId}
+                    className={cn(
+                        "field-input w-full rounded-sm py-3 text-sm pl-10 pr-3.5",
+                        error && "border-red-500 focus:border-red-500",
+                        className
+                    )}
+                    {...props}
                 />
             </div>
+            {error && <p className="text-red-500 text-sm mt-1">{error}</p>}
+            {helperText && !error && <p className="text-gray-500 text-sm mt-1">{helperText}</p>}
         </div>
     );
 }
