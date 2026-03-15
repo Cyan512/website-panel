@@ -1,0 +1,19 @@
+@import "tailwindcss";
+
+:root {
+    --theme-color: #e5d3b3
+}
+
+@theme {
+    --color-theme: var(--theme-color);
+}
+
+@layer components {
+    .field-label {
+        @apply text-xs tracking-widest uppercase;
+    }
+
+    .field-input {
+        @apply bg-[#ffffff0a] border border-[#c9a96e33] text-[#F9F5EE];
+    }
+}
