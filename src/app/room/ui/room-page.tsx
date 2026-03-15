@@ -1,31 +1,29 @@
-"use client";
-
 import { useEffect, useState } from "react";
 import { authClient } from "@/config/authClient";
 import { roomService } from "../room.service";
 import type { Habitacion } from "@/models/Habitacion";
 import { RoomCard } from "@/app/room/ui/room-card";
+import { RoomModal } from "./room-modal";
 
 export default function RoomPage() {
   const { data: session } = authClient.useSession();
   const [habitaciones, setHabitaciones] = useState<Habitacion[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const fetchHabitaciones = async () => {
+    try {
+      const data: any = await roomService.getAll();
+      const rooms = Array.isArray(data) ? data : Array.isArray(data?.data) ? data.data : [];
+      setHabitaciones(rooms);
+    } catch (error) {
+      console.error("Error fetching habitaciones:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchHabitaciones = async () => {
-      try {
-        const data: any = await roomService.getAll();
-        console.log("Response:", data);
-        const rooms = Array.isArray(data) ? data : Array.isArray(data?.data) ? data.data : [];
-        console.log("Habitaciones:", rooms);
-        setHabitaciones(rooms);
-      } catch (error) {
-        console.error("Error fetching habitaciones:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     if (session) {
       fetchHabitaciones();
     }
@@ -43,7 +41,13 @@ export default function RoomPage() {
     return (
       <div>
         <h1>Habitaciones</h1>
+        <button onClick={() => setIsModalOpen(true)}>Nueva Habitación</button>
         <p>No hay habitaciones disponibles</p>
+        <RoomModal
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          onSuccess={fetchHabitaciones}
+        />
       </div>
     );
   }
@@ -63,16 +67,21 @@ export default function RoomPage() {
             <option>Reservado</option>
             <option>Limpieza</option>
           </select>
-          <button>
-
+          <button onClick={() => setIsModalOpen(true)}>
+            agregar room
           </button>
         </div>
       </div>
       <div>
         {habitaciones.map((habitacion) => (
-          <RoomCard room={habitacion} />
+          <RoomCard key={habitacion.id} room={habitacion} />
         ))}
       </div>
+      <RoomModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onSuccess={fetchHabitaciones}
+      />
     </div>
   );
 }
