@@ -6,7 +6,7 @@ export interface Habitacion {
   numero: string;
   piso: number;
   tipo: HabitationType;
-  precio: number | null;
+  precio: number;
   estado: HabitationStatus;
   createdAt: Date;
   updatedAt: Date;

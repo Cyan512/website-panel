@@ -4,5 +4,5 @@ export interface CreateHabitacionDto {
   numero: string;
   piso: number;
   tipo: HabitationType;
-  precio: number | null;
+  precio: number;
 }

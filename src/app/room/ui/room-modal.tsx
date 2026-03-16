@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { roomService, type CreateHabitacionDto } from "../room.service";
+import type { HabitationType } from "@/app/room/dom/HabitacionType";
 
 interface RoomModalProps {
     isOpen: boolean;
@@ -74,7 +75,7 @@ export function RoomModal({ isOpen, onClose, onSuccess }: RoomModalProps) {
                         <label>Tipo</label>
                         <select
                             value={formData.tipo}
-                            onChange={(e) => setFormData({ ...formData, tipo: e.target.value })}
+                            onChange={(e) => setFormData({ ...formData, tipo: e.target.value as HabitationType })}
                             style={{ width: "100%", padding: "0.5rem" }}
                         >
                             <option value="ESTÁNDAR SIMPLE">ESTÁNDAR SIMPLE</option>
