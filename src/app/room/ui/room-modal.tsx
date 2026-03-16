@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { createHabitacionUseCase } from "@/app/room/app/use-cases/create-habitacion.use-case";
+import { createHabitacionUseCase } from "@/app/room/app/ports/use-cases/create-habitacion.use-case";
 import type { CreateHabitacionDto } from "@/app/room/dom/CreateHabitacionDto";
 import type { HabitationType } from "@/app/room/dom/HabitacionType";
 

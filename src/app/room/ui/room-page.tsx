@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { authClient } from "@/config/authClient";
-import { getHabitacionesUseCase } from "@/app/room/app/use-cases/get-habitaciones.use-case";
-import { getHabitacionUseCase } from "@/app/room/app/use-cases/get-habitacion.use-case";
+import { getHabitacionesUseCase } from "@/app/room/app/ports/use-cases/get-habitaciones.use-case";
+import { getHabitacionUseCase } from "@/app/room/app/ports/use-cases/get-habitacion.use-case";
 import type { Habitacion } from "@/app/room/dom/Habitacion";
 import { RoomCard } from "@/app/room/ui/room-card";
 import { RoomModal } from "./room-modal";
