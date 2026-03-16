@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { authClient } from "@/config/authClient";
-import { roomService } from "../room.service";
+import { getHabitacionesUseCase } from "@/app/room/app/use-cases/get-habitaciones.use-case";
+import { getHabitacionUseCase } from "@/app/room/app/use-cases/get-habitacion.use-case";
 import type { Habitacion } from "@/app/room/dom/Habitacion";
 import { RoomCard } from "@/app/room/ui/room-card";
 import { RoomModal } from "./room-modal";
@@ -15,7 +16,7 @@ export default function RoomPage() {
 
   const fetchHabitaciones = async () => {
     try {
-      const data: any = await roomService.getAll();
+      const data: any = await getHabitacionesUseCase.execute();
       const rooms = Array.isArray(data) ? data : Array.isArray(data?.data) ? data.data : [];
       setHabitaciones(rooms);
     } catch (error) {
@@ -28,7 +29,7 @@ export default function RoomPage() {
   const fetchHabitacionById = async (id: string) => {
     setLoadingDetail(true);
     try {
-      const response: any = await roomService.getById(id);
+      const response: any = await getHabitacionUseCase.execute(id);
       const habitacion = response?.data ? response.data : response;
       console.log("Habitación obtenida:", habitacion);
       setSelectedHabitacion(habitacion);
