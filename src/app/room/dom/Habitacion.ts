@@ -1,5 +1,5 @@
-import type { HabitationStatus } from "@/models/HabitacionStatus";
-import type { HabitationType } from "@/models/HabitacionType";
+import type { HabitationStatus } from "@/app/room/dom/HabitacionStatus";
+import type { HabitationType } from "@/app/room/dom/HabitacionType";
 
 export interface Habitacion {
   id: string;

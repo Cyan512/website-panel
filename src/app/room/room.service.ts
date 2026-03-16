@@ -1,21 +1,10 @@
-import axiosInstance from "@/config/axios/axios.instance";
-import type { Habitacion } from "@/models/Habitacion";
-
-export interface CreateHabitacionDto {
-  numero: string;
-  piso: number;
-  tipo: string;
-  precio: number;
-}
+import { roomRepository } from "@/app/room/infra/room.repository";
+export type { CreateHabitacionDto } from "@/app/room/dom/CreateHabitacionDto";
 
 export const roomService = {
-  getAll: async (): Promise<Habitacion[]> => {
-    const response = await axiosInstance.get<Habitacion[]>("/api/habitaciones");
-    return response.data;
-  },
+  getAll: roomRepository.getAll,
 
-  createRoom: async (data: CreateHabitacionDto): Promise<Habitacion> => {
-    const response = await axiosInstance.post<Habitacion>("/api/habitaciones", data);
-    return response.data;
-  },
+  getById: roomRepository.getById,
+
+  createRoom: roomRepository.create,
 };

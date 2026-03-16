@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { authClient } from "@/config/authClient";
 import { roomService } from "../room.service";
-import type { Habitacion } from "@/models/Habitacion";
+import type { Habitacion } from "@/app/room/dom/Habitacion";
 import { RoomCard } from "@/app/room/ui/room-card";
 import { RoomModal } from "./room-modal";
 
@@ -10,6 +10,8 @@ export default function RoomPage() {
   const [habitaciones, setHabitaciones] = useState<Habitacion[]>([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedHabitacion, setSelectedHabitacion] = useState<Habitacion | null>(null);
+  const [loadingDetail, setLoadingDetail] = useState(false);
 
   const fetchHabitaciones = async () => {
     try {
@@ -20,6 +22,18 @@ export default function RoomPage() {
       console.error("Error fetching habitaciones:", error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchHabitacionById = async (id: string) => {
+    setLoadingDetail(true);
+    try {
+      const habitacion = await roomService.getById(id);
+      setSelectedHabitacion(habitacion);
+    } catch (error) {
+      console.error("Error fetching habitacion:", error);
+    } finally {
+      setLoadingDetail(false);
     }
   };
 
@@ -74,7 +88,11 @@ export default function RoomPage() {
       </div>
       <div>
         {habitaciones.map((habitacion) => (
-          <RoomCard key={habitacion.id} room={habitacion} />
+          <RoomCard 
+            key={habitacion.id} 
+            room={habitacion} 
+            onClick={() => fetchHabitacionById(habitacion.id)}
+          />
         ))}
       </div>
       <RoomModal
@@ -82,6 +100,27 @@ export default function RoomPage() {
         onClose={() => setIsModalOpen(false)}
         onSuccess={fetchHabitaciones}
       />
+      {selectedHabitacion && (
+        <div className="modal-overlay" onClick={() => setSelectedHabitacion(null)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <h2>Detalle de Habitación</h2>
+            {loadingDetail ? (
+              <p>Cargando...</p>
+            ) : (
+              <>
+                <p><strong>Número:</strong> {selectedHabitacion.numero}</p>
+                <p><strong>Piso:</strong> {selectedHabitacion.piso}</p>
+                <p><strong>Tipo:</strong> {selectedHabitacion.tipo}</p>
+                <p><strong>Precio:</strong> {selectedHabitacion.precio}</p>
+                <p><strong>Estado:</strong> {selectedHabitacion.estado}</p>
+                <p><strong>Creado:</strong> {new Date(selectedHabitacion.createdAt).toLocaleDateString()}</p>
+                <p><strong>Actualizado:</strong> {new Date(selectedHabitacion.updatedAt).toLocaleDateString()}</p>
+              </>
+            )}
+            <button onClick={() => setSelectedHabitacion(null)}>Cerrar</button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

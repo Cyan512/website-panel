@@ -1,4 +1,4 @@
-import type { HabitationType } from "@/models/HabitacionType";
+import type { HabitationType } from "@/app/room/dom/HabitacionType";
 
 export interface CreateHabitacionDto {
   numero: string;

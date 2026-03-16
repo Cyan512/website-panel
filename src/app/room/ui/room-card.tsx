@@ -1,12 +1,13 @@
-import type { Habitacion } from "@/models/Habitacion"
+import type { Habitacion } from "@/app/room/dom/Habitacion"
 
 type RoomCardProps = {
     room: Habitacion
+    onClick?: () => void
 }
 
-export function RoomCard({ room }: RoomCardProps) {
+export function RoomCard({ room, onClick }: RoomCardProps) {
     return (
-        <div key={room.id}>
+        <div key={room.id} onClick={onClick} style={{ cursor: "pointer" }}>
             <div>
                 <div>
                     <div>
