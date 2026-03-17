@@ -24,16 +24,27 @@ export default function Sidebar() {
     const [isOpen] = useState(true);
 
     return (
-        <div className="flex h-screen overflow-hidden">
+        <div className="min-h-screen">
             {/* Sidebar */}
-            <div className={cn("fixed lg:relative z-20 h-full w-72 lg:w-80 flex flex-col",
+            <aside className={cn("w-64 min-h-screen fixed inset-y-0 left-0 z-40 flex flex-col border-r-2 transition-transform duration-300",
                 isOpen
-                    ? "translate-x-0'"
-                    : "-translate-x-full lg:translate-x-0"
+                    ? "translate-x-0"
+                    : "-translate-x-full"
             )}>
                 {/* Header */}
-                <div>
-
+                <div className="py-7 px-5 border-b text-center shrink-0 relative">
+                    <div className="relative">
+                        <img src="" alt="" className="w-16 h-16 mx-auto mb-3" />
+                        <span className="block text-xs mb-1 italic">
+                            Hostal
+                        </span>
+                        <div className="text-xl">
+                            Koriqallpa
+                        </div>
+                        <div className="text-xs italic mt-1">
+                            Cusco · Corazón de los Andes
+                        </div>
+                    </div>
                 </div>
                 {/* Menu Items */}
                 <nav className="flex-1 overflow-y-auto p-2 space-y-1">
@@ -87,9 +98,9 @@ export default function Sidebar() {
                         <span>{session?.session ? formatTime(session.session.createdAt) : "Sin sesión"}</span>
                     </div>
                 </div>
-            </div>
-            <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
-                <div className="flex-1 p-4 lg:p-8 overflow-auto">
+            </aside>
+            <div className={cn("transition-all duration-300 ml-0", isOpen ? "ml-64" : "ml-0")}>
+                <div className="p-3 sm:p-4 lg:p-6 pb-12">
                     <Outlet />
                 </div>
             </div>
