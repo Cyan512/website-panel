@@ -3,9 +3,10 @@ import { authClient } from "@/config/authClient";
 import { getHabitacionesService } from "@/app/room/app/services/get-habitaciones.service";
 import { getHabitacionService } from "@/app/room/app/services/get-habitacion.service";
 import type { Habitacion } from "@/app/room/dom/Habitacion";
-import { RoomCard } from "@/app/room/ui/room-card";
+import { RoomCard, STATUS_COLORS } from "@/app/room/ui/room-card";
 import { RoomModal } from "./room-modal";
 import PanelHeader from "@/app/shared/components/panel-header";
+import { cn } from "@/utils/cn";
 
 export default function RoomPage() {
   const { data: session } = authClient.useSession();
@@ -89,17 +90,18 @@ export default function RoomPage() {
           />
         ))}
       </div>
-
+      <div className="px-4 py-2.5 border-t flex gap-3.5 flex-wrap relative z-10">
+        {Object.entries(STATUS_COLORS).map(([status, color]) => (
+          <div
+            key={status}
+            className="flex items-center gap-1.5 text-xs italic"
+          >
+            <div className={cn("w-2 h-2 rounded-full", color)} />
+            {status}
+          </div>
+        ))}
+      </div>
       <div>
-        <div className="grid grid-cols-[repeat(auto-fill,minmax(148px,1fr))] gap-3 p-4">
-          {habitaciones.map((habitacion) => (
-            <RoomCard
-              key={habitacion.id}
-              room={habitacion}
-              onClick={() => fetchHabitacionById(habitacion.id)}
-            />
-          ))}
-        </div>
         <RoomModal
           isOpen={isModalOpen}
           onClose={() => setIsModalOpen(false)}
