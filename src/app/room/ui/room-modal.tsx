@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { createHabitacionUseCase } from "@/app/room/app/ports/use-cases/create-habitacion.use-case";
+import { createHabitacionService } from "@/app/room/app/services/create-habitacion.service";
 import type { CreateHabitacionDto } from "@/app/room/dom/CreateHabitacionDto";
 import type { HabitationType } from "@/app/room/dom/HabitacionType";
 
@@ -24,7 +24,7 @@ export function RoomModal({ isOpen, onClose, onSuccess }: RoomModalProps) {
         e.preventDefault();
         setLoading(true);
         try {
-            await createHabitacionUseCase.execute(formData);
+            await createHabitacionService.execute(formData);
             onSuccess();
             onClose();
             setFormData({ numero: "", piso: 1, tipo: "ESTÁNDAR SIMPLE", precio: 0 });
