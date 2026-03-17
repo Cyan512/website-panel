@@ -34,7 +34,7 @@ export default function Sidebar() {
                 {/* Header */}
                 <div className="py-7 px-5 border-b text-center shrink-0 relative">
                     <div className="relative">
-                        <img src="" alt="" className="w-16 h-16 mx-auto mb-3" />
+                        <img src="/kori-logo.webp" alt="" className="w-16 h-16 mx-auto mb-3" />
                         <span className="block text-xs mb-1 italic">
                             Hostal
                         </span>
