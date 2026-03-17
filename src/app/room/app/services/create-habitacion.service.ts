@@ -1,6 +1,6 @@
 import type { Habitacion } from "@/app/room/dom/Habitacion";
 import type { CreateHabitacionDto } from "@/app/room/dom/CreateHabitacionDto";
-import type { CreateHabitacionUseCase } from "@/app/room/app/use-cases/create-habitacion.use-case";
+import type { CreateHabitacionUseCase } from "@/app/room/app/ports/use-cases/create-habitacion.use-case";
 import { createHabitacionRepository } from "@/app/room/infra/repositories/create-habitacion.repository";
 
 export class CreateHabitacionService implements CreateHabitacionUseCase {

@@ -3,7 +3,7 @@ const environmentDev = {
   version: 'DEV',
 
   app:{
-    apiEndpoint: 'http://localhost:3000/'
+    apiEndpoint: import.meta.env.VITE_API_URL
   },
 };
 

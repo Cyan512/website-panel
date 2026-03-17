@@ -1,5 +1,6 @@
 import { createAuthClient } from "better-auth/react";
+import environment from "@/environments/environment";
 
 export const authClient = createAuthClient({
-  baseURL: import.meta.env.VITE_API_URL,
+  baseURL: environment.app.apiEndpoint,
 });

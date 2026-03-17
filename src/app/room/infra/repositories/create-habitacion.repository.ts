@@ -1,10 +1,7 @@
 import axiosInstance from "@/config/axios/axios.instance";
 import type { Habitacion } from "@/app/room/dom/Habitacion";
 import type { CreateHabitacionDto } from "@/app/room/dom/CreateHabitacionDto";
-
-export interface CreateHabitacionRepositoryPort {
-  create(data: CreateHabitacionDto): Promise<Habitacion>;
-}
+import type { CreateHabitacionRepositoryPort } from "@/app/room/app/ports/output/create-habitacion-repository.port";
 
 export class CreateHabitacionRepository implements CreateHabitacionRepositoryPort {
   async create(data: CreateHabitacionDto): Promise<Habitacion> {

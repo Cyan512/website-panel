@@ -1,5 +1,5 @@
 import type { Habitacion } from "@/app/room/dom/Habitacion";
-import type { GetHabitacionUseCase } from "@/app/room/app/use-cases/get-habitacion.use-case";
+import type { GetHabitacionUseCase } from "@/app/room/app/ports/use-cases/get-habitacion.use-case";
 import { getHabitacionRepository } from "@/app/room/infra/repositories/get-habitacion.repository";
 
 export class GetHabitacionService implements GetHabitacionUseCase {
