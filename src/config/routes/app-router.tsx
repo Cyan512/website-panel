@@ -1,6 +1,7 @@
 import { Suspense } from 'react'
 import { Routes, Route } from 'react-router-dom'
 import { routes, type RouteConfig } from '@/config/routes/routes'
+import { Loading } from '@/components'
 
 function renderRoutes(routeConfigs: RouteConfig[]) {
     return routeConfigs.map((route, index) => (
@@ -8,7 +9,7 @@ function renderRoutes(routeConfigs: RouteConfig[]) {
             key={route.path + index}
             path={route.path}
             element={
-                <Suspense fallback={<div>loading...</div>}>
+                <Suspense fallback={<Loading fullScreen />}>
                     {route.element}
                 </Suspense>
             }

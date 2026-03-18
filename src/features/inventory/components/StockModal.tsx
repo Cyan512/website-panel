@@ -4,6 +4,7 @@ import type { UpdateMuebleDto, Mueble, MuebleCategoria, MuebleCondicion } from "
 import { MuebleCategoria as MuebleCategoriaEnum, MuebleCondicion as MuebleCondicionEnum } from "../types";
 import { Modal, Button } from "@/components";
 import { InputField } from "@/components";
+import { sileo } from "sileo";
 
 const defaultFormData = {
   codigo: "",
@@ -77,8 +78,8 @@ export function StockModal({ isOpen, onClose, onSuccess, mueble }: StockModalPro
       }
       onSuccess();
       onClose();
-    } catch (error) {
-      console.error("Error saving mueble:", error);
+    } catch {
+      sileo.error({ title: "Error", description: "No se pudo guardar el mueble" });
     } finally {
       setLoading(false);
     }

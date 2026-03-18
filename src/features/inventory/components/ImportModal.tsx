@@ -109,8 +109,7 @@ export function ImportModal({ isOpen, onClose, onSuccess }: ImportModalProps) {
         const parsed = jsonData.map((row, index) => validateRow(row, index));
         setParsedData(parsed);
         setStep("preview");
-      } catch (error) {
-        console.error("Error parsing Excel:", error);
+        } catch {
         sileo.error({ title: "Error", description: "No se pudo leer el archivo Excel" });
         setFile(null);
       }

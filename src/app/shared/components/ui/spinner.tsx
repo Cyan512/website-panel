@@ -17,7 +17,7 @@ export function Spinner({ size = "md", className }: SpinnerProps) {
   return (
     <div
       className={cn(
-        "border-accent-primary border-t-transparent rounded-full animate-spin",
+        "border-primary border-t-transparent rounded-full animate-spin",
         sizeStyles[size],
         className
       )}
@@ -28,22 +28,15 @@ export function Spinner({ size = "md", className }: SpinnerProps) {
 interface LoadingProps {
   text?: string;
   fullScreen?: boolean;
+  size?: SpinnerSize;
 }
 
-export function Loading({ text = "Cargando...", fullScreen = false }: LoadingProps) {
-  if (fullScreen) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Loading text={text} />
-      </div>
-    );
-  }
-
+export function Loading({ text = "Cargando...", fullScreen = false, size = "md" }: LoadingProps) {
   return (
-    <div className="min-h-[60vh] flex items-center justify-center">
+    <div className={cn("flex items-center justify-center", fullScreen ? "min-h-screen" : "min-h-[60vh]")}>
       <div className="text-center">
-        <Spinner size="md" className="mx-auto mb-3" />
-        <p className="text-text-muted text-sm">{text}</p>
+        <Spinner size={size} className="mx-auto mb-3" />
+        <p className="text-text-muted text-sm animate-pulse">{text}</p>
       </div>
     </div>
   );

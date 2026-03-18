@@ -4,6 +4,7 @@ import { TipoHabitacionCard } from "./TipoHabitacionCard";
 import { TipoHabitacionModal } from "./TipoHabitacionModal";
 import { PanelHeader, Button, Modal } from "@/components";
 import { cn } from "@/utils/cn";
+import { sileo } from "sileo";
 import type { TipoHabitacion } from "../types";
 
 export default function TipoHabitacionPage() {
@@ -24,9 +25,8 @@ export default function TipoHabitacionPage() {
     try {
       await deleteTipo(selectedTipo.id);
       setSelectedTipo(null);
-    } catch (error) {
-      console.error("Error deleting tipo:", error);
-      alert("No se pudo eliminar el tipo de habitación. Puede estar en uso.");
+    } catch {
+      sileo.error({ title: "Error", description: "No se pudo eliminar el tipo de habitación. Puede estar en uso." });
     } finally {
       setDeleting(false);
     }

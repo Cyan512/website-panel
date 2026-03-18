@@ -63,9 +63,8 @@ export default function InventoryPage() {
     try {
       await deleteMueble(selectedMueble.id);
       setSelectedMueble(null);
-    } catch (error) {
-      console.error("Error deleting mueble:", error);
-      alert("No se pudo eliminar el mueble. Puede estar en uso.");
+    } catch {
+      sileo.error({ title: "Error", description: "No se pudo eliminar el mueble. Puede estar en uso." });
     } finally {
       setDeleting(false);
     }

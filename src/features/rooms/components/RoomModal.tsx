@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useHabitaciones, useTiposHabitacion } from "../hooks/useRooms";
 import { Modal, Button } from "@/components";
 import { InputField } from "@/components";
+import { sileo } from "sileo";
 import type { CreateHabitacionDto, EstadoHabitacion, EstadoLimpieza } from "../types";
 
 const ESTADO_OPTIONS: { value: EstadoHabitacion; label: string }[] = [
@@ -70,7 +71,6 @@ export function RoomModal({ isOpen, onClose, onSuccess }: RoomModalProps) {
                 muebles: [],
             });
         } catch (error) {
-            console.error("Error creating room:", error);
             let errorMessage = "No se pudo crear la habitación.";
             if (error && typeof error === "object" && "response" in error) {
                 const axiosError = error as { response?: { data?: { message?: string } } };
@@ -78,7 +78,7 @@ export function RoomModal({ isOpen, onClose, onSuccess }: RoomModalProps) {
                     errorMessage = axiosError.response.data.message;
                 }
             }
-            alert(errorMessage);
+            sileo.error({ title: "Error", description: errorMessage });
         } finally {
             setLoading(false);
         }

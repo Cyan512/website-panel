@@ -30,7 +30,7 @@ const protectedRoutes: RouteConfig[] = [
 
 export const routes: RouteConfig[] = [
     { path: "/", element: <AuthPage /> },
-    { path: "/app", element: <Sidebar />, children: protectedRoutes },
+    { path: "/", element: <Sidebar />, children: protectedRoutes },
     { path: "*", element: <Navigate to="/" replace /> },
 ];
 /* eslint-enable react-refresh/only-export-components */

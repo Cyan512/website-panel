@@ -4,6 +4,7 @@ import type { CreateTipoHabitacionDto, UpdateTipoHabitacionDto, TipoHabitacion, 
 import { getMueblesService } from "@/features/inventory/hooks/useInventory";
 import { Modal, Button } from "@/components";
 import { InputField } from "@/components";
+import { sileo } from "sileo";
 
 interface TipoHabitacionModalProps {
     isOpen: boolean;
@@ -49,8 +50,8 @@ export function TipoHabitacionModal({ isOpen, onClose, onSuccess, tipo }: TipoHa
             const data = await getMueblesService.execute();
             const mueblesData = Array.isArray(data) ? data : (data as { data?: TipoMueble[] }).data || [];
             setMuebles(mueblesData);
-        } catch (error) {
-            console.error("Error fetching muebles:", error);
+        } catch {
+            sileo.error({ title: "Error", description: "No se pudieron cargar los muebles" });
         } finally {
             setLoadingMuebles(false);
         }
@@ -74,8 +75,8 @@ export function TipoHabitacionModal({ isOpen, onClose, onSuccess, tipo }: TipoHa
             }
             onSuccess();
             onClose();
-        } catch (error) {
-            console.error("Error saving tipo habitacion:", error);
+        } catch {
+            sileo.error({ title: "Error", description: "No se pudo guardar el tipo de habitación" });
         } finally {
             setLoading(false);
         }

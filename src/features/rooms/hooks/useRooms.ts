@@ -15,9 +15,8 @@ export function useHabitaciones() {
       setError(null);
       const data = await roomsApi.getAll();
       setHabitaciones(data);
-    } catch (err) {
+    } catch {
       setError("Error al cargar habitaciones");
-      console.error(err);
     } finally {
       setLoading(false);
     }
@@ -69,9 +68,8 @@ export function useHabitacion(id: string) {
       setError(null);
       const data = await roomsApi.getById(id);
       setHabitacion(data);
-    } catch (err) {
+    } catch {
       setError("Error al cargar habitación");
-      console.error(err);
     } finally {
       setLoading(false);
     }
@@ -96,9 +94,8 @@ export function useTiposHabitacion() {
       setError(null);
       const data = await tiposHabitacionApi.getAll();
       setTipos(data);
-    } catch (err) {
+    } catch {
       setError("Error al cargar tipos de habitación");
-      console.error(err);
     } finally {
       setLoading(false);
     }

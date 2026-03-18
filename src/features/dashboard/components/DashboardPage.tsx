@@ -1,16 +1,34 @@
 import { authClient } from "@/config/authClient";
-import { Card, CardBody } from "@/components";
+import { Card, CardBody, Loading } from "@/components";
 import { MdHotel, MdPeople, MdEventNote, MdInventory } from "react-icons/md";
+import { useDashboard } from "../hooks/useDashboard";
 
-const STATS = [
-  { label: "Habitaciones", value: "24", icon: MdHotel, color: "from-emerald-500 to-emerald-600" },
-  { label: "Reservas", value: "12", icon: MdEventNote, color: "from-blue-500 to-blue-600" },
-  { label: "Huéspedes", value: "48", icon: MdPeople, color: "from-violet-500 to-violet-600" },
-  { label: "Inventario", value: "156", icon: MdInventory, color: "from-amber-500 to-amber-600" },
-];
+function formatTimeAgo(date: Date): string {
+  const now = new Date();
+  const diffMs = now.getTime() - date.getTime();
+  const diffMins = Math.floor(diffMs / (1000 * 60));
+  const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+
+  if (diffMins < 1) return "Hace un momento";
+  if (diffMins < 60) return `Hace ${diffMins} min`;
+  if (diffHours < 24) return `Hace ${diffHours} hora${diffHours > 1 ? "s" : ""}`;
+  return date.toLocaleDateString();
+}
 
 export default function DashboardPage() {
   const { data: session } = authClient.useSession();
+  const { stats, loading, activities } = useDashboard();
+
+  if (loading) {
+    return <Loading fullScreen />;
+  }
+
+  const statsCards = [
+    { label: "Habitaciones", value: stats.totalHabitaciones, icon: MdHotel, color: "from-emerald-500 to-emerald-600" },
+    { label: "Reservas", value: stats.reservas, icon: MdEventNote, color: "from-blue-500 to-blue-600" },
+    { label: "Huéspedes", value: stats.ocupadas, icon: MdPeople, color: "from-violet-500 to-violet-600" },
+    { label: "Inventario", value: stats.totalInventario, icon: MdInventory, color: "from-amber-500 to-amber-600" },
+  ];
 
   return (
     <div className="space-y-6">
@@ -20,7 +38,7 @@ export default function DashboardPage() {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {STATS.map((stat) => {
+        {statsCards.map((stat) => {
           const Icon = stat.icon;
           return (
             <Card key={stat.label} hoverable>
@@ -43,20 +61,19 @@ export default function DashboardPage() {
           <CardBody>
             <h3 className="font-semibold text-text-primary mb-4">Actividad Reciente</h3>
             <div className="space-y-3">
-              {[
-                { time: "Hace 5 min", action: "Nueva reserva - Habitación 201", type: "success" },
-                { time: "Hace 15 min", action: "Check-out - Habitación 105", type: "info" },
-                { time: "Hace 30 min", action: "Check-in - Habitación 312", type: "success" },
-                { time: "Hace 1 hora", action: "Reporte de mantenimiento - Piso 3", type: "warning" },
-              ].map((item, i) => (
-                <div key={i} className="flex items-center gap-3 p-3 rounded-lg bg-bg-tertiary/50">
-                  <div className={`w-2 h-2 rounded-full ${item.type === "success" ? "bg-success" : item.type === "warning" ? "bg-warning" : "bg-info"}`} />
-                  <div className="flex-1">
-                    <p className="text-sm text-text-secondary">{item.action}</p>
-                    <p className="text-xs text-text-muted">{item.time}</p>
+              {activities.length === 0 ? (
+                <p className="text-text-muted text-sm text-center py-4">Sin actividad reciente</p>
+              ) : (
+                activities.map((item) => (
+                  <div key={item.id} className="flex items-center gap-3 p-3 rounded-lg bg-bg-tertiary/50">
+                    <div className={`w-2 h-2 rounded-full ${item.type === "success" ? "bg-emerald-500" : item.type === "warning" ? "bg-amber-500" : "bg-blue-500"}`} />
+                    <div className="flex-1">
+                      <p className="text-sm text-text-secondary">{item.action}</p>
+                      <p className="text-xs text-text-muted">{formatTimeAgo(item.time)}</p>
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))
+              )}
             </div>
           </CardBody>
         </Card>
@@ -66,10 +83,10 @@ export default function DashboardPage() {
             <h3 className="font-semibold text-text-primary mb-4">Estado de Habitaciones</h3>
             <div className="space-y-3">
               {[
-                { label: "Disponibles", value: 18, total: 24, color: "bg-success" },
-                { label: "Ocupadas", value: 4, total: 24, color: "bg-danger" },
-                { label: "En Mantenimiento", value: 1, total: 24, color: "bg-warning" },
-                { label: "Reservadas", value: 1, total: 24, color: "bg-accent" },
+                { label: "Disponibles", value: stats.disponibles, total: stats.totalHabitaciones, color: "bg-emerald-500" },
+                { label: "Ocupadas", value: stats.ocupadas, total: stats.totalHabitaciones, color: "bg-red-500" },
+                { label: "En Limpieza", value: stats.mantenimiento, total: stats.totalHabitaciones, color: "bg-amber-500" },
+                { label: "Reservadas", value: stats.reservas, total: stats.totalHabitaciones, color: "bg-blue-500" },
               ].map((item) => (
                 <div key={item.label}>
                   <div className="flex justify-between text-sm mb-1.5">
@@ -77,7 +94,10 @@ export default function DashboardPage() {
                     <span className="font-medium text-text-secondary">{item.value}</span>
                   </div>
                   <div className="h-1.5 bg-bg-tertiary rounded-full overflow-hidden">
-                    <div className={`h-full ${item.color} rounded-full transition-all`} style={{ width: `${(item.value / item.total) * 100}%` }} />
+                    <div
+                      className={`h-full ${item.color} rounded-full transition-all`}
+                      style={{ width: stats.totalHabitaciones > 0 ? `${(item.value / stats.totalHabitaciones) * 100}%` : "0%" }}
+                    />
                   </div>
                 </div>
               ))}

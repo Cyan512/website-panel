@@ -38,7 +38,7 @@ export function LoginForm() {
             title: "Bienvenido",
             description: "Sesión iniciada correctamente",
           });
-          navigate("/app/dashboard");
+          navigate("/dashboard");
         },
         onError: (ctx) => {
           setLoading(false);

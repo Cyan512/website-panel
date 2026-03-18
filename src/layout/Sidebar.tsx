@@ -22,12 +22,12 @@ const menuItems: MenuSection[] = [
   {
     section: "Principal",
     items: [
-      { id: "dashboard", icon: MdDashboard, label: "Dashboard", path: "/app/dashboard" },
-      { id: "booking", icon: MdEventNote, label: "Reservas", path: "/app/bookings" },
-      { id: "room", icon: MdHotel, label: "Habitaciones", path: "/app/rooms" },
-      { id: "room-types", icon: MdHotel, label: "Tipos de Habitación", path: "/app/room-types" },
-      { id: "client", icon: MdPeople, label: "Huéspedes", path: "/app/clients", roles: ["ADMIN"] },
-      { id: "stock", icon: MdInventory, label: "Inventario", path: "/app/stock", roles: ["ADMIN"] },
+      { id: "dashboard", icon: MdDashboard, label: "Dashboard", path: "/dashboard" },
+      { id: "booking", icon: MdEventNote, label: "Reservas", path: "/bookings" },
+      { id: "room", icon: MdHotel, label: "Habitaciones", path: "/rooms" },
+      { id: "room-types", icon: MdHotel, label: "Tipos de Habitación", path: "/room-types" },
+      { id: "client", icon: MdPeople, label: "Huéspedes", path: "/clients", roles: ["ADMIN"] },
+      { id: "stock", icon: MdInventory, label: "Inventario", path: "/stock", roles: ["ADMIN"] },
     ],
   },
 ];

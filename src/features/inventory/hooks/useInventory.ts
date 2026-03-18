@@ -15,9 +15,8 @@ export function useInventory() {
       setError(null);
       const data = await inventoryApi.getAll();
       setMuebles(data);
-    } catch (err) {
+    } catch {
       setError("Error al cargar inventario");
-      console.error(err);
     } finally {
       setLoading(false);
     }
@@ -69,9 +68,8 @@ export function useMueble(id: string) {
       setError(null);
       const data = await inventoryApi.getById(id);
       setMueble(data);
-    } catch (err) {
+    } catch {
       setError("Error al cargar mueble");
-      console.error(err);
     } finally {
       setLoading(false);
     }

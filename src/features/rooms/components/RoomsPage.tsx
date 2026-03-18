@@ -4,6 +4,7 @@ import { RoomCard, STATUS_LABELS } from "./RoomCard";
 import { RoomModal } from "./RoomModal";
 import { PanelHeader, Button, Modal } from "@/components";
 import { cn } from "@/utils/cn";
+import { sileo } from "sileo";
 import type { Habitacion } from "../types";
 
 export default function RoomsPage() {
@@ -22,9 +23,8 @@ export default function RoomsPage() {
     try {
       await deleteHabitacion(selectedHabitacion.id);
       setSelectedHabitacion(null);
-    } catch (error) {
-      console.error("Error deleting habitacion:", error);
-      alert("No se pudo eliminar la habitación. Puede estar en uso.");
+    } catch {
+      sileo.error({ title: "Error", description: "No se pudo eliminar la habitación. Puede estar en uso." });
     } finally {
       setDeleting(false);
     }
