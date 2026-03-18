@@ -5,9 +5,22 @@ import { formatTime } from "@/utils/format.utils";
 
 import { MdDashboard, MdEventNote, MdHotel, MdPeople } from "react-icons/md";
 import { cn } from "@/utils/cn";
-import { useState } from "react";
+import { useState, type ComponentType } from "react";
 
-const menuItems = [
+interface MenuItem {
+  id: string;
+  icon: ComponentType<{ className?: string }>;
+  label: string;
+  path: string;
+  roles?: string[];
+}
+
+interface MenuSection {
+  section: string;
+  items: MenuItem[];
+}
+
+const menuItems: MenuSection[] = [
   {
     section: "Principal",
     items: [
@@ -29,6 +42,7 @@ const menuItems = [
         icon: MdPeople,
         label: "Huéspedes",
         path: ROUTES.CLIENTS,
+        roles: ["ADMIN"],
       },
     ],
   },
@@ -37,6 +51,15 @@ const menuItems = [
 export default function Sidebar() {
   const { data: session } = authClient.useSession();
   const [isOpen] = useState(true);
+
+  const userRole = session?.user?.role || "USER";
+
+  const filteredItems = menuItems.map((section) => ({
+    ...section,
+    items: section.items.filter(
+      (item) => !item.roles || item.roles.includes(userRole)
+    ),
+  }));
 
   return (
     <div className="min-h-screen">
@@ -55,7 +78,7 @@ export default function Sidebar() {
         </div>
         {/* Menu Items */}
         <nav className="flex-1 py-2.5 overflow-y-auto relative z-10">
-          {menuItems.map((section) => (
+          {filteredItems.map((section) => (
             <>
               <div className="text-xs italic opacity-50 px-5 py-3">
                 {section.section}
