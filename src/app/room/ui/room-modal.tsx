@@ -2,12 +2,21 @@ import { useState } from "react";
 import { createHabitacionService } from "@/app/room/app/services/create-habitacion.service";
 import type { CreateHabitacionDto } from "@/app/room/dom/CreateHabitacionDto";
 import type { HabitationType } from "@/app/room/dom/HabitacionType";
+import { Modal, Button } from "@/app/shared/components/ui";
+import { InputField } from "@/app/shared/components/input";
 
 interface RoomModalProps {
     isOpen: boolean;
     onClose: () => void;
     onSuccess: () => void;
 }
+
+const ROOM_TYPES: { value: HabitationType; label: string }[] = [
+    { value: "ESTÁNDAR SIMPLE", label: "Estándar Simple" },
+    { value: "ESTÁNDAR DOBLE", label: "Estándar Doble" },
+    { value: "SUITE", label: "Suite" },
+    { value: "SUITE JUNIOR", label: "Suite Junior" },
+];
 
 export function RoomModal({ isOpen, onClose, onSuccess }: RoomModalProps) {
     const [loading, setLoading] = useState(false);
@@ -17,8 +26,6 @@ export function RoomModal({ isOpen, onClose, onSuccess }: RoomModalProps) {
         tipo: "ESTÁNDAR SIMPLE",
         precio: 0,
     });
-
-    if (!isOpen) return null;
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -36,75 +43,64 @@ export function RoomModal({ isOpen, onClose, onSuccess }: RoomModalProps) {
     };
 
     return (
-        <div style={{
-            position: "fixed",
-            inset: 0,
-            backgroundColor: "rgba(0,0,0,0.5)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-        }}>
-            <div style={{
-                backgroundColor: "white",
-                padding: "2rem",
-                borderRadius: "8px",
-                width: "400px",
-            }}>
-                <h2>Nueva Habitación</h2>
-                <form onSubmit={handleSubmit}>
-                    <div style={{ marginBottom: "1rem" }}>
-                        <label>Número</label>
-                        <input
-                            type="text"
-                            value={formData.numero}
-                            onChange={(e) => setFormData({ ...formData, numero: e.target.value })}
-                            required
-                            style={{ width: "100%", padding: "0.5rem" }}
-                        />
-                    </div>
-                    <div style={{ marginBottom: "1rem" }}>
-                        <label>Piso</label>
-                        <input
-                            type="number"
-                            value={formData.piso}
-                            onChange={(e) => setFormData({ ...formData, piso: Number(e.target.value) })}
-                            required
-                            style={{ width: "100%", padding: "0.5rem" }}
-                        />
-                    </div>
-                    <div style={{ marginBottom: "1rem" }}>
-                        <label>Tipo</label>
-                        <select
-                            value={formData.tipo}
-                            onChange={(e) => setFormData({ ...formData, tipo: e.target.value as HabitationType })}
-                            style={{ width: "100%", padding: "0.5rem" }}
-                        >
-                            <option value="ESTÁNDAR SIMPLE">ESTÁNDAR SIMPLE</option>
-                            <option value="ESTÁNDAR DOBLE">ESTÁNDAR DOBLE</option>
-                            <option value="SUITE">SUITE</option>
-                            <option value="SUITE JUNIOR">SUITE JUNIOR</option>
-                        </select>
-                    </div>
-                    <div style={{ marginBottom: "1rem" }}>
-                        <label>Precio</label>
-                        <input
-                            type="number"
-                            value={formData.precio}
-                            onChange={(e) => setFormData({ ...formData, precio: Number(e.target.value) })}
-                            required
-                            style={{ width: "100%", padding: "0.5rem" }}
-                        />
-                    </div>
-                    <div style={{ display: "flex", gap: "1rem" }}>
-                        <button type="button" onClick={onClose} style={{ flex: 1, padding: "0.5rem" }}>
-                            Cancelar
-                        </button>
-                        <button type="submit" disabled={loading} style={{ flex: 1, padding: "0.5rem" }}>
-                            {loading ? "Creando..." : "Crear"}
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
+        <Modal
+            isOpen={isOpen}
+            onClose={onClose}
+            title="Nueva Habitación"
+        >
+            <form onSubmit={handleSubmit} className="space-y-4">
+                <InputField
+                    label="Número"
+                    type="text"
+                    value={formData.numero}
+                    onChange={(e) => setFormData({ ...formData, numero: e.target.value })}
+                    placeholder="Ej: 101"
+                    required
+                />
+
+                <InputField
+                    label="Piso"
+                    type="number"
+                    value={formData.piso}
+                    onChange={(e) => setFormData({ ...formData, piso: Number(e.target.value) })}
+                    required
+                />
+
+                <div className="mb-5">
+                    <label className="field-label block mb-2 text-text-secondary font-medium">
+                        Tipo de Habitación
+                    </label>
+                    <select
+                        value={formData.tipo}
+                        onChange={(e) => setFormData({ ...formData, tipo: e.target.value as HabitationType })}
+                        className="field-input w-full rounded-xl py-3.5 text-sm px-3.5 focus:outline-none focus:ring-2 focus:ring-accent-primary/30 focus:border-accent-primary border border-border-light/50"
+                    >
+                        {ROOM_TYPES.map((type) => (
+                            <option key={type.value} value={type.value}>
+                                {type.label}
+                            </option>
+                        ))}
+                    </select>
+                </div>
+
+                <InputField
+                    label="Precio por Noche (S/)"
+                    type="number"
+                    value={formData.precio}
+                    onChange={(e) => setFormData({ ...formData, precio: Number(e.target.value) })}
+                    placeholder="0"
+                    required
+                />
+
+                <div className="flex gap-3 pt-4">
+                    <Button type="button" variant="secondary" onClick={onClose} className="flex-1">
+                        Cancelar
+                    </Button>
+                    <Button type="submit" isLoading={loading} className="flex-1">
+                        {loading ? "Creando..." : "Crear Habitación"}
+                    </Button>
+                </div>
+            </form>
+        </Modal>
     );
 }

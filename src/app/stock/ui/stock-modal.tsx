@@ -4,10 +4,10 @@ import { updateMuebleService } from "@/app/stock/app/services/update-mueble.serv
 import type { CreateMuebleDto } from "@/app/stock/dom/CreateMuebleDto";
 import type { UpdateMuebleDto } from "@/app/stock/dom/UpdateMuebleDto";
 import type { Mueble } from "@/app/stock/dom/Mueble";
-import type { MuebleCategoria } from "@/app/stock/dom/MuebleCategoria";
 import { MuebleCategoria as MuebleCategoriaEnum } from "@/app/stock/dom/MuebleCategoria";
-import type { MuebleCondicion } from "@/app/stock/dom/MuebleCondicion";
 import { MuebleCondicion as MuebleCondicionEnum } from "@/app/stock/dom/MuebleCondicion";
+import { Modal, Button } from "@/app/shared/components/ui";
+import { InputField } from "@/app/shared/components/input";
 
 interface StockModalProps {
   isOpen: boolean;
@@ -27,6 +27,23 @@ const defaultFormData: CreateMuebleDto = {
   ultima_revision: null,
   descripcion: null,
 };
+
+const CATEGORIES = [
+  { value: MuebleCategoriaEnum.CAMA, label: "Cama" },
+  { value: MuebleCategoriaEnum.ASIENTO, label: "Asiento" },
+  { value: MuebleCategoriaEnum.ALMACENAJE, label: "Almacenaje" },
+  { value: MuebleCategoriaEnum.TECNOLOGIA, label: "Tecnología" },
+  { value: MuebleCategoriaEnum.BANO, label: "Baño" },
+  { value: MuebleCategoriaEnum.DECORACION, label: "Decoración" },
+  { value: MuebleCategoriaEnum.OTRO, label: "Otro" },
+];
+
+const CONDITIONS = [
+  { value: MuebleCondicionEnum.BUENO, label: "Bueno" },
+  { value: MuebleCondicionEnum.REGULAR, label: "Regular" },
+  { value: MuebleCondicionEnum.DANADO, label: "Dañado" },
+  { value: MuebleCondicionEnum.FALTANTE, label: "Faltante" },
+];
 
 export function StockModal({ isOpen, onClose, onSuccess, mueble }: StockModalProps) {
   const [loading, setLoading] = useState(false);
@@ -50,8 +67,6 @@ export function StockModal({ isOpen, onClose, onSuccess, mueble }: StockModalPro
       setFormData(defaultFormData);
     }
   }, [mueble]);
-
-  if (!isOpen) return null;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -82,150 +97,122 @@ export function StockModal({ isOpen, onClose, onSuccess, mueble }: StockModalPro
     }
   };
 
+  const handleChange = (field: keyof CreateMuebleDto, value: string) => {
+    setFormData(prev => ({ ...prev, [field]: value || null }));
+  };
+
   return (
-    <div style={{
-      position: "fixed",
-      inset: 0,
-      backgroundColor: "rgba(0,0,0,0.5)",
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      zIndex: 50,
-    }}>
-      <div style={{
-        backgroundColor: "white",
-        padding: "2rem",
-        borderRadius: "8px",
-        width: "450px",
-        maxHeight: "90vh",
-        overflowY: "auto",
-      }}>
-        <h2 style={{ marginBottom: "1.5rem" }}>{isEditing ? "Editar Mueble" : "Nuevo Mueble"}</h2>
-        <form onSubmit={handleSubmit}>
-          <div style={{ marginBottom: "1rem" }}>
-            <label style={{ display: "block", marginBottom: "0.25rem" }}>Código *</label>
-            <input
-              type="text"
-              value={formData.codigo}
-              onChange={(e) => setFormData({ ...formData, codigo: e.target.value })}
-              required
-              maxLength={30}
-              style={{ width: "100%", padding: "0.5rem", border: "1px solid #ccc", borderRadius: "4px" }}
-            />
-          </div>
-          <div style={{ marginBottom: "1rem" }}>
-            <label style={{ display: "block", marginBottom: "0.25rem" }}>Nombre *</label>
-            <input
-              type="text"
-              value={formData.nombre}
-              onChange={(e) => setFormData({ ...formData, nombre: e.target.value })}
-              required
-              maxLength={100}
-              style={{ width: "100%", padding: "0.5rem", border: "1px solid #ccc", borderRadius: "4px" }}
-            />
-          </div>
-          <div style={{ marginBottom: "1rem" }}>
-            <label style={{ display: "block", marginBottom: "0.25rem" }}>Categoría *</label>
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title={isEditing ? "Editar Mueble" : "Nuevo Mueble"}
+      size="lg"
+    >
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <InputField
+            label="Código"
+            value={formData.codigo}
+            onChange={(e) => handleChange("codigo", e.target.value)}
+            placeholder="Ej: MBL-001"
+            required
+            maxLength={30}
+          />
+          <InputField
+            label="Nombre"
+            value={formData.nombre}
+            onChange={(e) => handleChange("nombre", e.target.value)}
+            placeholder="Ej: Cama King"
+            required
+            maxLength={100}
+          />
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="mb-2">
+            <label className="field-label block mb-2 text-text-secondary font-medium">
+              Categoría
+            </label>
             <select
               value={formData.categoria}
-              onChange={(e) => setFormData({ ...formData, categoria: e.target.value as MuebleCategoria })}
-              style={{ width: "100%", padding: "0.5rem", border: "1px solid #ccc", borderRadius: "4px" }}
+              onChange={(e) => handleChange("categoria", e.target.value)}
+              className="field-input w-full rounded-xl py-3.5 text-sm px-3.5 focus:outline-none focus:ring-2 focus:ring-accent-primary/30 focus:border-accent-primary border border-border-light/50"
             >
-              <option value={MuebleCategoriaEnum.CAMA}>CAMA</option>
-              <option value={MuebleCategoriaEnum.ASIENTO}>ASIENTO</option>
-              <option value={MuebleCategoriaEnum.ALMACENAJE}>ALMACENAJE</option>
-              <option value={MuebleCategoriaEnum.TECNOLOGIA}>TECNOLOGIA</option>
-              <option value={MuebleCategoriaEnum.BANO}>BANO</option>
-              <option value={MuebleCategoriaEnum.DECORACION}>DECORACION</option>
-              <option value={MuebleCategoriaEnum.OTRO}>OTRO</option>
+              {CATEGORIES.map((cat) => (
+                <option key={cat.value} value={cat.value}>{cat.label}</option>
+              ))}
             </select>
           </div>
-          <div style={{ marginBottom: "1rem" }}>
-            <label style={{ display: "block", marginBottom: "0.25rem" }}>Tipo</label>
-            <input
-              type="text"
-              value={formData.tipo || ""}
-              onChange={(e) => setFormData({ ...formData, tipo: e.target.value || null })}
-              maxLength={60}
-              placeholder="Ej: King Size"
-              style={{ width: "100%", padding: "0.5rem", border: "1px solid #ccc", borderRadius: "4px" }}
-            />
-          </div>
-          <div style={{ marginBottom: "1rem" }}>
-            <label style={{ display: "block", marginBottom: "0.25rem" }}>Condición</label>
-            <select
-              value={formData.condicion}
-              onChange={(e) => setFormData({ ...formData, condicion: e.target.value as MuebleCondicion })}
-              style={{ width: "100%", padding: "0.5rem", border: "1px solid #ccc", borderRadius: "4px" }}
-            >
-              <option value={MuebleCondicionEnum.BUENO}>BUENO</option>
-              <option value={MuebleCondicionEnum.REGULAR}>REGULAR</option>
-              <option value={MuebleCondicionEnum.DANADO}>DANADO</option>
-              <option value={MuebleCondicionEnum.FALTANTE}>FALTANTE</option>
-            </select>
-          </div>
-          <div style={{ marginBottom: "1rem" }}>
-            <label style={{ display: "block", marginBottom: "0.25rem" }}>URL Imagen</label>
-            <input
-              type="url"
-              value={formData.imagen_url || ""}
-              onChange={(e) => setFormData({ ...formData, imagen_url: e.target.value || null })}
-              placeholder="https://..."
-              style={{ width: "100%", padding: "0.5rem", border: "1px solid #ccc", borderRadius: "4px" }}
-            />
-          </div>
-          <div style={{ marginBottom: "1rem", display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.5rem" }}>
-            <div>
-              <label style={{ display: "block", marginBottom: "0.25rem" }}>Fecha Adquisición</label>
-              <input
-                type="date"
-                value={formData.fecha_adquisicion || ""}
-                onChange={(e) => setFormData({ ...formData, fecha_adquisicion: e.target.value || null })}
-                style={{ width: "100%", padding: "0.5rem", border: "1px solid #ccc", borderRadius: "4px" }}
-              />
-            </div>
-            <div>
-              <label style={{ display: "block", marginBottom: "0.25rem" }}>Última Revisión</label>
-              <input
-                type="date"
-                value={formData.ultima_revision || ""}
-                onChange={(e) => setFormData({ ...formData, ultima_revision: e.target.value || null })}
-                style={{ width: "100%", padding: "0.5rem", border: "1px solid #ccc", borderRadius: "4px" }}
-              />
-            </div>
-          </div>
-          <div style={{ marginBottom: "1rem" }}>
-            <label style={{ display: "block", marginBottom: "0.25rem" }}>Descripción</label>
-            <textarea
-              value={formData.descripcion || ""}
-              onChange={(e) => setFormData({ ...formData, descripcion: e.target.value || null })}
-              rows={3}
-              style={{ width: "100%", padding: "0.5rem", border: "1px solid #ccc", borderRadius: "4px" }}
-            />
-          </div>
-          <div style={{ display: "flex", gap: "1rem" }}>
-            <button
-              type="button"
-              onClick={onClose}
-              style={{ flex: 1, padding: "0.75rem", cursor: "pointer" }}
-            >
-              Cancelar
-            </button>
-            <button
-              type="submit"
-              disabled={loading}
-              style={{
-                flex: 1,
-                padding: "0.75rem",
-                cursor: loading ? "not-allowed" : "pointer",
-                opacity: loading ? 0.6 : 1,
-              }}
-            >
-              {loading ? (isEditing ? "Guardando..." : "Creando...") : (isEditing ? "Guardar" : "Crear")}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
+
+          <InputField
+            label="Tipo"
+            value={formData.tipo || ""}
+            onChange={(e) => handleChange("tipo", e.target.value)}
+            placeholder="Ej: King Size"
+            maxLength={60}
+          />
+        </div>
+
+        <div className="mb-2">
+          <label className="field-label block mb-2 text-text-secondary font-medium">
+            Condición
+          </label>
+          <select
+            value={formData.condicion}
+            onChange={(e) => handleChange("condicion", e.target.value)}
+            className="field-input w-full rounded-xl py-3.5 text-sm px-3.5 focus:outline-none focus:ring-2 focus:ring-accent-primary/30 focus:border-accent-primary border border-border-light/50"
+          >
+            {CONDITIONS.map((cond) => (
+              <option key={cond.value} value={cond.value}>{cond.label}</option>
+            ))}
+          </select>
+        </div>
+
+        <InputField
+          label="URL Imagen"
+          type="url"
+          value={formData.imagen_url || ""}
+          onChange={(e) => handleChange("imagen_url", e.target.value)}
+          placeholder="https://..."
+        />
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <InputField
+            label="Fecha de Adquisición"
+            type="date"
+            value={formData.fecha_adquisicion || ""}
+            onChange={(e) => handleChange("fecha_adquisicion", e.target.value)}
+          />
+          <InputField
+            label="Última Revisión"
+            type="date"
+            value={formData.ultima_revision || ""}
+            onChange={(e) => handleChange("ultima_revision", e.target.value)}
+          />
+        </div>
+
+        <div className="mb-2">
+          <label className="field-label block mb-2 text-text-secondary font-medium">
+            Descripción
+          </label>
+          <textarea
+            value={formData.descripcion || ""}
+            onChange={(e) => handleChange("descripcion", e.target.value)}
+            rows={3}
+            className="field-input w-full rounded-xl py-3 text-sm px-3.5 focus:outline-none focus:ring-2 focus:ring-accent-primary/30 focus:border-accent-primary border border-border-light/50 resize-none"
+            placeholder="Descripción opcional del mueble..."
+          />
+        </div>
+
+        <div className="flex gap-3 pt-4">
+          <Button type="button" variant="secondary" onClick={onClose} className="flex-1">
+            Cancelar
+          </Button>
+          <Button type="submit" isLoading={loading} className="flex-1">
+            {loading ? (isEditing ? "Guardando..." : "Creando...") : (isEditing ? "Guardar" : "Crear")}
+          </Button>
+        </div>
+      </form>
+    </Modal>
   );
 }
