@@ -15,6 +15,7 @@ const AuthPage = lazy(() => import("@/app/auth/ui/auth-page"));
 const DashboardPage = lazy(() => import("@/app/admin/ui/dashboard-page"));
 const ReservationsPage = lazy(() => import("@/app/reservations/ui/reservations-page"));
 const RoomPage = lazy(() => import("@/app/room/ui/room-page"));
+const TipoHabitacionPage = lazy(() => import("@/app/room/ui/tipo-habitacion-page"));
 const ClientsPage = lazy(() => import("@/app/clients/ui/clients-page"));
 const StockPage = lazy(() => import("@/app/stock/ui/stock-page"))
 
@@ -39,6 +40,10 @@ export const routes: RouteConfig[] = [
             {
                 path: ROUTES.ROOMS,
                 element: <RoomPage />,
+            },
+            {
+                path: "/room-types",
+                element: <TipoHabitacionPage />,
             },
             {
                 path: ROUTES.CLIENTS,

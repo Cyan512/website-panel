@@ -4,8 +4,8 @@ import type { HabitacionRepositoryPort } from "@/app/room/app/ports/output/habit
 
 export class GetHabitacionRepository implements HabitacionRepositoryPort {
   async getById(id: string): Promise<Habitacion> {
-    const response = await axiosInstance.get<Habitacion>(`/api/habitaciones/${id}`);
-    return response.data;
+    const response = await axiosInstance.get<{ data: Habitacion }>(`/api/habitaciones/${id}`);
+    return response.data.data;
   }
 }
 

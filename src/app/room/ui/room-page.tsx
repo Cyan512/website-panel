@@ -2,8 +2,9 @@ import { useEffect, useState } from "react";
 import { authClient } from "@/config/authClient";
 import { getHabitacionesService } from "@/app/room/app/services/get-habitaciones.service";
 import { getHabitacionService } from "@/app/room/app/services/get-habitacion.service";
+import { deleteHabitacionService } from "@/app/room/app/services/delete-habitacion.service";
 import type { Habitacion } from "@/app/room/dom/Habitacion";
-import { RoomCard, STATUS_COLORS } from "@/app/room/ui/room-card";
+import { RoomCard, STATUS_LABELS } from "@/app/room/ui/room-card";
 import { RoomModal } from "./room-modal";
 import PanelHeader from "@/app/shared/components/panel-header";
 import { Button, Modal, Loading, EmptyState, Badge, Card, CardBody, Spinner } from "@/app/shared/components/ui";
@@ -17,14 +18,15 @@ export default function RoomPage() {
   const [selectedHabitacion, setSelectedHabitacion] =
     useState<Habitacion | null>(null);
   const [loadingDetail, setLoadingDetail] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   const fetchHabitaciones = async () => {
     try {
-      const data: any = await getHabitacionesService.execute();
+      const data = await getHabitacionesService.execute();
       const rooms = Array.isArray(data)
         ? data
-        : Array.isArray(data?.data)
-          ? data.data
+        : Array.isArray((data as { data?: Habitacion[] }).data)
+          ? (data as { data: Habitacion[] }).data
           : [];
       setHabitaciones(rooms);
     } catch (error) {
@@ -37,14 +39,32 @@ export default function RoomPage() {
   const fetchHabitacionById = async (id: string) => {
     setLoadingDetail(true);
     try {
-      const response: any = await getHabitacionService.execute(id);
-      const habitacion = response?.data ? response.data : response;
-      console.log("Habitación obtenida:", habitacion);
+      const response = await getHabitacionService.execute(id);
+      const habitacion = 'data' in response ? (response as { data: Habitacion }).data : response;
       setSelectedHabitacion(habitacion);
     } catch (error) {
       console.error("Error fetching habitacion:", error);
     } finally {
       setLoadingDetail(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!selectedHabitacion) return;
+    
+    const confirmed = window.confirm(`¿Estás seguro de eliminar la habitación ${selectedHabitacion.nro_habitacion}?`);
+    if (!confirmed) return;
+
+    setDeleting(true);
+    try {
+      await deleteHabitacionService.execute(selectedHabitacion.id);
+      setSelectedHabitacion(null);
+      fetchHabitaciones();
+    } catch (error) {
+      console.error("Error deleting habitacion:", error);
+      alert("No se pudo eliminar la habitación. Puede estar en uso.");
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -124,13 +144,19 @@ export default function RoomPage() {
           ))}
         </div>
         <div className="px-6 py-4 border-t border-border-light/30 flex gap-4 sm:gap-6 flex-wrap">
-          {Object.entries(STATUS_COLORS).map(([status, color]) => (
+          {Object.entries(STATUS_LABELS).map(([status, label]) => (
             <div
               key={status}
               className="flex items-center gap-2 text-xs"
             >
-              <div className={cn("w-2.5 h-2.5 rounded-full shadow-sm", color)} />
-              <span className="text-text-muted font-medium">{status}</span>
+              <div className={cn("w-2.5 h-2.5 rounded-full shadow-sm", {
+                "bg-emerald-500": status === "DISPONIBLE",
+                "bg-red-500": status === "OCUPADA",
+                "bg-indigo-500": status === "RESERVADA",
+                "bg-orange-500": status === "LIMPIEZA",
+                "bg-amber-500": status === "MANTENIMIENTO",
+              })} />
+              <span className="text-text-muted font-medium">{label}</span>
             </div>
           ))}
         </div>
@@ -146,7 +172,7 @@ export default function RoomPage() {
         <Modal
           isOpen={!!selectedHabitacion}
           onClose={() => setSelectedHabitacion(null)}
-          title={`Habitación ${selectedHabitacion.numero}`}
+          title={`Habitación ${selectedHabitacion.nro_habitacion}`}
         >
           {loadingDetail ? (
             <div className="flex justify-center py-8">
@@ -159,17 +185,18 @@ export default function RoomPage() {
                   <div className="flex items-center gap-4 mb-4">
                     <div className={cn(
                       "w-14 h-14 rounded-xl flex items-center justify-center text-xl font-bold",
-                      selectedHabitacion.estado === "Disponible" ? "bg-emerald-100 text-emerald-700" :
-                      selectedHabitacion.estado === "Ocupado" ? "bg-red-100 text-red-700" :
-                      selectedHabitacion.estado === "Reservado" ? "bg-indigo-100 text-indigo-700" :
+                      selectedHabitacion.estado === "DISPONIBLE" ? "bg-emerald-100 text-emerald-700" :
+                      selectedHabitacion.estado === "OCUPADA" ? "bg-red-100 text-red-700" :
+                      selectedHabitacion.estado === "RESERVADA" ? "bg-indigo-100 text-indigo-700" :
+                      selectedHabitacion.estado === "LIMPIEZA" ? "bg-orange-100 text-orange-700" :
                       "bg-amber-100 text-amber-700"
                     )}>
-                      {selectedHabitacion.numero}
+                      {selectedHabitacion.nro_habitacion}
                     </div>
                     <div>
                       <p className="text-text-muted text-xs uppercase tracking-wider font-medium">Habitación</p>
                       <p className="text-2xl font-bold text-text-darkest font-playfair">
-                        {selectedHabitacion.numero}
+                        {selectedHabitacion.nro_habitacion}
                       </p>
                     </div>
                   </div>
@@ -181,7 +208,7 @@ export default function RoomPage() {
                     </div>
                     <div>
                       <p className="text-text-muted text-[10px] uppercase tracking-wider font-medium">Tipo</p>
-                      <p className="text-text-dark font-semibold">{selectedHabitacion.tipo}</p>
+                      <p className="text-text-dark font-semibold">{selectedHabitacion.tipo?.nombre || "-"}</p>
                     </div>
                   </div>
                 </CardBody>
@@ -190,49 +217,72 @@ export default function RoomPage() {
               <div className="grid grid-cols-2 gap-3">
                 <Card className="bg-paper-medium/20 border-0">
                   <CardBody>
-                    <p className="text-text-muted text-[10px] uppercase tracking-wider font-medium mb-1">Precio</p>
-                    <p className="text-2xl font-bold text-accent-primary">
-                      S/{selectedHabitacion.precio || 0}
-                      <span className="text-xs font-normal text-text-muted">/noche</span>
-                    </p>
+                    <p className="text-text-muted text-[10px] uppercase tracking-wider font-medium mb-1">Estado</p>
+                    <Badge
+                      variant={
+                        selectedHabitacion.estado === "DISPONIBLE" ? "success" :
+                        selectedHabitacion.estado === "OCUPADA" ? "danger" :
+                        selectedHabitacion.estado === "RESERVADA" ? "info" :
+                        selectedHabitacion.estado === "LIMPIEZA" ? "warning" : "warning"
+                      }
+                    >
+                      {STATUS_LABELS[selectedHabitacion.estado] || selectedHabitacion.estado}
+                    </Badge>
                   </CardBody>
                 </Card>
                 <Card className="bg-paper-medium/20 border-0">
                   <CardBody>
-                    <p className="text-text-muted text-[10px] uppercase tracking-wider font-medium mb-1">Estado</p>
-                    <Badge
-                      variant={
-                        selectedHabitacion.estado === "Disponible" ? "success" :
-                        selectedHabitacion.estado === "Ocupado" ? "danger" :
-                        selectedHabitacion.estado === "Reservado" ? "info" : "warning"
-                      }
-                    >
-                      {selectedHabitacion.estado}
-                    </Badge>
+                    <p className="text-text-muted text-[10px] uppercase tracking-wider font-medium mb-1">Limpieza</p>
+                    <span className={`inline-block px-3 py-1 text-xs font-semibold rounded-full ${
+                      selectedHabitacion.limpieza === "LIMPIA"
+                        ? "bg-emerald-100 text-emerald-700"
+                        : selectedHabitacion.limpieza === "SUCIA"
+                          ? "bg-red-100 text-red-700"
+                          : selectedHabitacion.limpieza === "EN_LIMPIEZA"
+                            ? "bg-orange-100 text-orange-700"
+                            : "bg-blue-100 text-blue-700"
+                    }`}>
+                      {selectedHabitacion.limpieza === "LIMPIA" ? "Limpia" :
+                       selectedHabitacion.limpieza === "SUCIA" ? "Sucia" :
+                       selectedHabitacion.limpieza === "EN_LIMPIEZA" ? "En Limpieza" :
+                       "Inspección"}
+                    </span>
                   </CardBody>
                 </Card>
               </div>
+
+              {selectedHabitacion.notas && (
+                <div className="bg-paper-medium/10 rounded-xl p-3 border border-border-light/20">
+                  <p className="text-text-muted text-[10px] uppercase tracking-wider font-medium mb-1">Notas</p>
+                  <p className="text-text-dark text-sm">{selectedHabitacion.notas}</p>
+                </div>
+              )}
 
               <div className="bg-paper-medium/10 rounded-xl p-3 border border-border-light/20">
                 <div className="flex justify-between text-xs">
                   <div>
                     <p className="text-text-muted">Creado</p>
                     <p className="text-text-secondary font-medium">
-                      {new Date(selectedHabitacion.createdAt).toLocaleDateString()}
+                      {new Date(selectedHabitacion.created_at).toLocaleDateString()}
                     </p>
                   </div>
                   <div className="text-right">
                     <p className="text-text-muted">Actualizado</p>
                     <p className="text-text-secondary font-medium">
-                      {new Date(selectedHabitacion.updatedAt).toLocaleDateString()}
+                      {new Date(selectedHabitacion.updated_at).toLocaleDateString()}
                     </p>
                   </div>
                 </div>
               </div>
 
-              <Button onClick={() => setSelectedHabitacion(null)} variant="secondary" className="w-full">
-                Cerrar
-              </Button>
+              <div className="flex gap-3 pt-2">
+                <Button onClick={handleDelete} variant="danger" className="flex-1" disabled={deleting}>
+                  {deleting ? "Eliminando..." : "Eliminar"}
+                </Button>
+                <Button onClick={() => setSelectedHabitacion(null)} variant="secondary" className="flex-1">
+                  Cerrar
+                </Button>
+              </div>
             </div>
           )}
         </Modal>

@@ -1,5 +1,4 @@
-import type { Habitacion } from "@/app/room/dom/Habitacion";
-import type { CreateHabitacionDto } from "@/app/room/dom/CreateHabitacionDto";
+import type { Habitacion, CreateHabitacionDto } from "@/app/room/dom/Habitacion";
 
 export interface CreateHabitacionUseCase {
   execute(data: CreateHabitacionDto): Promise<Habitacion>;

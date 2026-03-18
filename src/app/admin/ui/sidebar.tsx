@@ -37,6 +37,7 @@ const menuItems: MenuSection[] = [
         path: ROUTES.BOOKINGS,
       },
       { id: "room", icon: MdHotel, label: "Habitaciones", path: ROUTES.ROOMS },
+      { id: "room-types", icon: MdHotel, label: "Tipos de Habitación", path: "/room-types" },
       {
         id: "client",
         icon: MdPeople,
@@ -57,7 +58,6 @@ const menuItems: MenuSection[] = [
 
 export default function Sidebar() {
   const { data: session } = authClient.useSession();
-  const isOpen = true;
   const [isMobileOpen, setIsMobileOpen] = useState(false);
 
   const userRole = session?.user?.role || "USER";
@@ -69,11 +69,16 @@ export default function Sidebar() {
     ),
   }));
 
+  const handleNavClick = () => {
+    setIsMobileOpen(false);
+  };
+
   return (
     <div className="min-h-screen">
       <button
         onClick={() => setIsMobileOpen(!isMobileOpen)}
         className="lg:hidden fixed top-4 left-4 z-50 p-2 rounded-lg bg-bg-secondary border border-border shadow-lg"
+        aria-label={isMobileOpen ? "Cerrar menú" : "Abrir menú"}
       >
         {isMobileOpen ? (
           <MdClose className="w-5 h-5 text-text-primary" />
@@ -85,16 +90,20 @@ export default function Sidebar() {
       {isMobileOpen && (
         <div
           className="lg:hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-40"
-          onClick={() => setIsMobileOpen(false)}
+          onClick={handleNavClick}
+          onKeyDown={(e) => e.key === "Escape" && handleNavClick()}
+          role="button"
+          tabIndex={0}
         />
       )}
 
       <aside
         className={cn(
-          "fixed inset-y-0 left-0 z-40 flex flex-col transition-all duration-300",
+          "fixed inset-y-0 left-0 z-40 flex flex-col transition-all duration-300 ease-in-out",
           "bg-bg-secondary border-r border-border",
           "w-64",
-          isOpen ? "translate-x-0" : "-translate-x-full",
+          "transform",
+          isMobileOpen ? "translate-x-0" : "-translate-x-full",
           "lg:translate-x-0"
         )}
       >
@@ -122,23 +131,20 @@ export default function Sidebar() {
                   <NavLink
                     key={menuItem.id}
                     to={menuItem.path}
-                    onClick={() => setIsMobileOpen(false)}
+                    onClick={handleNavClick}
+                    className={({ isActive }) =>
+                      cn(
+                        "flex items-center gap-3 mx-2 px-3 py-2.5 rounded-lg my-0.5 cursor-pointer transition-all duration-200",
+                        isActive
+                          ? "bg-primary text-white"
+                          : "text-text-secondary hover:bg-bg-hover hover:text-text-primary"
+                      )
+                    }
                   >
-                    {({ isActive }) => (
-                      <div
-                        className={cn(
-                          "flex items-center gap-3 mx-2 px-3 py-2.5 rounded-lg mx-2 my-0.5 cursor-pointer transition-all duration-200",
-                          isActive
-                            ? "bg-primary text-white"
-                            : "text-text-secondary hover:bg-bg-hover hover:text-text-primary"
-                        )}
-                      >
-                        <Icon className="w-5 h-5" />
-                        <span className="text-sm font-medium">
-                          {menuItem.label}
-                        </span>
-                      </div>
-                    )}
+                    <Icon className="w-5 h-5" />
+                    <span className="text-sm font-medium">
+                      {menuItem.label}
+                    </span>
                   </NavLink>
                 );
               })}
