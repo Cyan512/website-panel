@@ -50,28 +50,28 @@ export function Modal({
 
   return (
     <div
-      className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-in fade-in duration-200"
+      className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4"
       onClick={onClose}
     >
       <div
         className={cn(
-          "bg-paper-lightest rounded-2xl w-full border border-border-light/50 shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200",
+          "bg-bg-card rounded-xl w-full border border-border shadow-2xl overflow-hidden",
           sizeStyles[size]
         )}
         onClick={(e) => e.stopPropagation()}
       >
         {(title || showCloseButton) && (
-          <div className="bg-gradient-to-r from-accent-primary to-accent-light px-6 py-4">
+          <div className="bg-gradient-to-r from-primary to-accent px-5 py-4">
             <div className="flex justify-between items-center">
               {title && (
-                <h2 className="text-xl font-bold text-paper-lightest font-playfair">
+                <h2 className="text-lg font-semibold text-white">
                   {title}
                 </h2>
               )}
               {showCloseButton && (
                 <button
                   onClick={onClose}
-                  className="p-1.5 rounded-lg bg-paper-lightest/20 hover:bg-paper-lightest/30 text-paper-lightest transition-colors"
+                  className="p-1.5 rounded-lg bg-white/20 hover:bg-white/30 text-white transition-colors"
                 >
                   <svg
                     className="w-5 h-5"
@@ -91,7 +91,7 @@ export function Modal({
             </div>
           </div>
         )}
-        <div className="p-6">{children}</div>
+        <div className="p-5">{children}</div>
       </div>
     </div>
   );
@@ -103,7 +103,7 @@ interface ModalFooterProps {
 
 export function ModalFooter({ children }: ModalFooterProps) {
   return (
-    <div className="flex gap-3 pt-4 border-t border-border-light/30 mt-4">
+    <div className="flex gap-3 pt-4 border-t border-border mt-4">
       {children}
     </div>
   );

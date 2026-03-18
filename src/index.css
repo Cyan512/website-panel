@@ -1,136 +1,89 @@
-@import url("https://fonts.googleapis.com/css2?family=IM+Fell+English:ital@0;1&display=swap");
-@import url("https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap");
-@import url("https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400..700;1,400..700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap");
+
 @import "tailwindcss";
 
 :root {
-  /* Primary */
-  --color-primary: #e5d3b3;
+  --color-bg-primary: #0f172a;
+  --color-bg-secondary: #1e293b;
+  --color-bg-tertiary: #334155;
+  --color-bg-card: #1e293b;
+  --color-bg-hover: #334155;
 
-  /* Background - Paper */
-  --color-paper-lightest: #fdf6e3;
-  --color-paper-light: #f5e8c0;
-  --color-paper-medium: #edd9a0;
-  --color-paper-dark: #e0c878;
+  --color-primary: #3b82f6;
+  --color-primary-hover: #2563eb;
+  --color-primary-light: #60a5fa;
+  --color-primary-muted: #3b82f620;
 
-  /* Text */
-  --color-text-primary: #7a3a18;
-  --color-text-dark: #5c2a0e;
-  --color-text-darkest: #3e1a06;
-  --color-text-light: #2a1506;
-  --color-text-secondary: #5c3818;
-  --color-text-muted: #8c7355;
-  --color-text-muted-light: #a89070;
-  --color-text-muted-lighter: #8c6a48;
+  --color-accent: #8b5cf6;
+  --color-accent-hover: #7c3aed;
+  --color-accent-light: #a78bfa;
 
-  /* Accent */
-  --color-accent-primary: #a35228;
-  --color-accent-light: #c8773a;
+  --color-text-primary: #f8fafc;
+  --color-text-secondary: #cbd5e1;
+  --color-text-muted: #64748b;
+  --color-text-dark: #1e293b;
 
-  /* Brand / Gold */
-  --color-brand-dark: #b8892a;
-  --color-brand: #d4a83c;
-  --color-brand-light: #ecc85a;
+  --color-border: #334155;
+  --color-border-light: #475569;
 
-  /* Danger / Red */
-  --color-danger-darkest: #7b1c1c;
-  --color-danger-dark: #9e2424;
-  --color-danger: #c23030;
+  --color-success: #10b981;
+  --color-success-bg: #10b98115;
+  --color-warning: #f59e0b;
+  --color-warning-bg: #f59e0b15;
+  --color-danger: #ef4444;
+  --color-danger-bg: #ef444415;
+  --color-info: #06b6d4;
+  --color-info-bg: #06b6d415;
 
-  /* Success / Green */
-  --color-success-darkest: #2e4e28;
-  --color-success: #4a7840;
-
-  /* Neutral / Brown */
-  --color-neutral-dark: #8c7355;
-  --color-neutral: #a89070;
-  --color-neutral-light: #c4ac90;
-  --color-neutral-lighter: #d8c8a8;
-
-  /* Border */
-  --color-border-light: #d8c8a8;
-  --color-border: #c4ac90;
-
-  /* State colors (oklch) */
-  --color-state-success: oklch(0.723 0.219 142.136);
-  --color-state-loading: oklch(0.556 0 0);
-  --color-state-error: oklch(0.637 0.237 25.331);
-  --color-state-warning: oklch(0.795 0.184 86.047);
-  --color-state-info: oklch(0.685 0.169 237.323);
-  --color-state-action: oklch(0.623 0.214 259.815);
-
-  /* Spacing */
   --spacing-button-width: 350px;
   --spacing-button-height: 40px;
-
-  /* Duration */
-  --duration-animation: 600ms;
-
-  --font-fell: "IM Fell English", serif;
-  --font-playfair: "Playfair Display", serif;
-  --font-lora: "Lora", serif;
+  --duration-animation: 300ms;
 }
 
 @theme {
-  /* Primary */
+  --color-bg-primary: var(--color-bg-primary);
+  --color-bg-secondary: var(--color-bg-secondary);
+  --color-bg-tertiary: var(--color-bg-tertiary);
+  --color-bg-card: var(--color-bg-card);
+  --color-bg-hover: var(--color-bg-hover);
   --color-primary: var(--color-primary);
-
-  /* Background - Paper */
-  --color-paper-lightest: var(--color-paper-lightest);
-  --color-paper-light: var(--color-paper-light);
-  --color-paper-medium: var(--color-paper-medium);
-  --color-paper-dark: var(--color-paper-dark);
-
-  /* Text */
+  --color-primary-hover: var(--color-primary-hover);
+  --color-primary-light: var(--color-primary-light);
+  --color-primary-muted: var(--color-primary-muted);
+  --color-accent: var(--color-accent);
+  --color-accent-hover: var(--color-accent-hover);
+  --color-accent-light: var(--color-accent-light);
   --color-text-primary: var(--color-text-primary);
-  --color-text-dark: var(--color-text-dark);
-  --color-text-darkest: var(--color-text-darkest);
-  --color-text-light: var(--color-text-light);
   --color-text-secondary: var(--color-text-secondary);
   --color-text-muted: var(--color-text-muted);
-  --color-text-muted-light: var(--color-text-muted-light);
-  --color-text-muted-lighter: var(--color-text-muted-lighter);
-
-  /* Accent */
-  --color-accent-primary: var(--color-accent-primary);
-  --color-accent-light: var(--color-accent-light);
-
-  /* Brand / Gold */
-  --color-brand-dark: var(--color-brand-dark);
-  --color-brand: var(--color-brand);
-  --color-brand-light: var(--color-brand-light);
-
-  /* Danger / Red */
-  --color-danger-darkest: var(--color-danger-darkest);
-  --color-danger-dark: var(--color-danger-dark);
-  --color-danger: var(--color-danger);
-
-  /* Success / Green */
-  --color-success-darkest: var(--color-success-darkest);
-  --color-success: var(--color-success);
-
-  /* Neutral / Brown */
-  --color-neutral-dark: var(--color-neutral-dark);
-  --color-neutral: var(--color-neutral);
-  --color-neutral-light: var(--color-neutral-light);
-  --color-neutral-lighter: var(--color-neutral-lighter);
-
-  /* Border */
-  --color-border-light: var(--color-border-light);
+  --color-text-dark: var(--color-text-dark);
   --color-border: var(--color-border);
+  --color-border-light: var(--color-border-light);
+  --color-success: var(--color-success);
+  --color-success-bg: var(--color-success-bg);
+  --color-warning: var(--color-warning);
+  --color-warning-bg: var(--color-warning-bg);
+  --color-danger: var(--color-danger);
+  --color-danger-bg: var(--color-danger-bg);
+  --color-info: var(--color-info);
+  --color-info-bg: var(--color-info-bg);
+}
 
-  /* Font */
-  --font-lora: var(--font-lora);
-  --font-fell: var(--font-fell);
-  --font-playfair: var(--font-playfair);
+* {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+body {
+  background-color: var(--color-bg-primary);
+  color: var(--color-text-primary);
 }
 
 @layer components {
   .field-label {
-    @apply text-xs tracking-widest uppercase;
+    @apply text-xs font-semibold tracking-wide uppercase text-text-secondary;
   }
 
   .field-input {
-    @apply bg-[#ffffff0a] border border-[#c9a96e33] text-[#F9F5EE];
+    @apply bg-bg-tertiary/50 border border-border text-text-primary placeholder:text-text-muted;
   }
 }

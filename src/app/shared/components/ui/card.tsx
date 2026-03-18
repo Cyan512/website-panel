@@ -13,8 +13,8 @@ export function Card({ children, className, onClick, hoverable = false }: CardPr
     <div
       onClick={onClick}
       className={cn(
-        "bg-paper-lightest rounded-2xl border border-border-light/50 overflow-hidden",
-        hoverable && "cursor-pointer transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:border-accent-primary/30",
+        "bg-bg-card rounded-xl border border-border overflow-hidden",
+        hoverable && "cursor-pointer transition-all duration-200 hover:border-primary/50 hover:shadow-lg hover:shadow-primary/5",
         className
       )}
     >
@@ -30,7 +30,7 @@ interface CardHeaderProps {
 
 export function CardHeader({ children, className }: CardHeaderProps) {
   return (
-    <div className={cn("px-6 py-4 border-b border-border-light/30", className)}>
+    <div className={cn("px-5 py-4 border-b border-border", className)}>
       {children}
     </div>
   );
@@ -42,7 +42,7 @@ interface CardBodyProps {
 }
 
 export function CardBody({ children, className }: CardBodyProps) {
-  return <div className={cn("p-6", className)}>{children}</div>;
+  return <div className={cn("p-5", className)}>{children}</div>;
 }
 
 interface CardFooterProps {
@@ -52,7 +52,7 @@ interface CardFooterProps {
 
 export function CardFooter({ children, className }: CardFooterProps) {
   return (
-    <div className={cn("px-6 py-4 border-t border-border-light/30", className)}>
+    <div className={cn("px-5 py-4 border-t border-border", className)}>
       {children}
     </div>
   );

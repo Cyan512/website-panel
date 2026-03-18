@@ -162,7 +162,7 @@ export default function StockPage() {
         onSuccess={fetchMuebles}
       />
 
-      <StockModal
+      <StockMquiodal
         isOpen={isEditModalOpen}
         onClose={() => {
           setIsEditModalOpen(false);

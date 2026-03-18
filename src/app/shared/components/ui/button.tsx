@@ -14,21 +14,21 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
 
 const variantStyles: Record<ButtonVariant, string> = {
   primary:
-    "bg-gradient-to-r from-accent-primary to-accent-light text-paper-lightest shadow-lg shadow-accent-primary/30 hover:shadow-xl hover:scale-105 active:scale-95",
+    "bg-primary text-white hover:bg-primary-hover shadow-lg shadow-primary/20",
   secondary:
-    "bg-paper-medium/30 text-text-dark border border-border-light/30 hover:bg-paper-medium/50",
+    "bg-bg-tertiary text-text-primary hover:bg-bg-hover border border-border",
   danger:
-    "bg-red-50 text-danger border border-red-200 hover:bg-red-100 active:scale-95",
+    "bg-danger text-white hover:bg-red-600 shadow-lg shadow-danger/20",
   ghost:
-    "bg-transparent text-text-secondary hover:bg-paper-medium/30 hover:text-text-dark",
+    "bg-transparent text-text-secondary hover:bg-bg-tertiary hover:text-text-primary",
   outline:
-    "bg-transparent border-2 border-accent-primary/30 text-accent-primary hover:bg-accent-primary/10 active:scale-95",
+    "bg-transparent border border-primary text-primary hover:bg-primary/10",
 };
 
 const sizeStyles: Record<ButtonSize, string> = {
-  sm: "px-3 py-1.5 text-xs rounded-lg gap-1.5",
-  md: "px-4 py-2.5 text-sm rounded-xl gap-2",
-  lg: "px-6 py-3 text-base rounded-xl gap-2.5",
+  sm: "px-3 py-1.5 text-xs rounded-md gap-1.5",
+  md: "px-4 py-2 text-sm rounded-lg gap-2",
+  lg: "px-5 py-2.5 text-sm rounded-lg gap-2",
 };
 
 export function Button({
@@ -45,7 +45,7 @@ export function Button({
   return (
     <button
       className={cn(
-        "inline-flex items-center justify-center font-medium transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100",
+        "inline-flex items-center justify-center font-medium transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed",
         variantStyles[variant],
         sizeStyles[size],
         className
