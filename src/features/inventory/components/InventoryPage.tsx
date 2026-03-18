@@ -2,17 +2,56 @@ import { useState } from "react";
 import { useInventory } from "../hooks/useInventory";
 import { StockCard, CONDICION_LABELS } from "./StockCard";
 import { StockModal } from "./StockModal";
+import { ImportModal } from "./ImportModal";
 import { PanelHeader, Button } from "@/components";
+import { FaFileImport, FaFileExport } from "react-icons/fa";
 import { cn } from "@/utils/cn";
+import { sileo } from "sileo";
+import { utils, writeFile } from "xlsx";
 import type { Mueble } from "../types";
 
 export default function InventoryPage() {
   const { muebles, loading, error, fetchMuebles, deleteMueble } = useInventory();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const [selectedMueble, setSelectedMueble] = useState<Mueble | null>(null);
   const [editingMueble, setEditingMueble] = useState<Mueble | null>(null);
   const [deleting, setDeleting] = useState(false);
+
+  const handleExport = () => {
+    if (muebles.length === 0) {
+      sileo.warning({ title: "Sin datos", description: "No hay muebles para exportar" });
+      return;
+    }
+
+    const exportData = muebles.map((m) => ({
+      codigo: m.codigo,
+      nombre: m.nombre,
+      categoria: m.categoria,
+      tipo: m.tipo || "",
+      condicion: m.condicion,
+      descripcion: m.descripcion || "",
+      fecha_adquisicion: m.fecha_adquisicion || "",
+      ultima_revision: m.ultima_revision || "",
+      imagen_url: m.imagen_url || "",
+    }));
+
+    const ws = utils.json_to_sheet(exportData);
+    const wb = utils.book_new();
+    utils.book_append_sheet(wb, ws, "Inventario");
+
+    const colWidths = [
+      { wch: 15 }, { wch: 30 }, { wch: 15 }, { wch: 20 }, { wch: 12 },
+      { wch: 40 }, { wch: 18 }, { wch: 18 }, { wch: 40 },
+    ];
+    ws["!cols"] = colWidths;
+
+    const date = new Date().toISOString().split("T")[0];
+    writeFile(wb, `inventario-kori-hotel-${date}.xlsx`);
+
+    sileo.success({ title: "Exportación exitosa", description: "El archivo se descargará en breve" });
+  };
 
   const handleDelete = async () => {
     if (!selectedMueble) return;
@@ -49,7 +88,23 @@ export default function InventoryPage() {
 
   return (
     <>
-      <PanelHeader title="Inventario" subtitle="Catálogo de mobiliario y equipos" action={<Button onClick={() => setIsModalOpen(true)}>+ Nuevo Mueble</Button>}>
+      <PanelHeader 
+        title="Inventario" 
+        subtitle="Catálogo de mobiliario y equipos" 
+        action={
+          <div className="flex gap-2">
+            <Button variant="secondary" onClick={() => setIsImportModalOpen(true)}>
+              <FaFileImport className="w-4 h-4 mr-2" />
+              Importar
+            </Button>
+            <Button variant="secondary" onClick={handleExport}>
+              <FaFileExport className="w-4 h-4 mr-2" />
+              Exportar
+            </Button>
+            <Button onClick={() => setIsModalOpen(true)}>+ Nuevo Mueble</Button>
+          </div>
+        }
+      >
         {muebles.length === 0 ? (
           <div className="text-center py-12">
             <p className="text-text-muted mb-4">Sin inventario</p>
@@ -81,6 +136,7 @@ export default function InventoryPage() {
 
       <StockModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} onSuccess={fetchMuebles} />
       <StockModal isOpen={isEditModalOpen} onClose={() => { setIsEditModalOpen(false); setEditingMueble(null); }} onSuccess={fetchMuebles} mueble={editingMueble} />
+      <ImportModal isOpen={isImportModalOpen} onClose={() => setIsImportModalOpen(false)} onSuccess={fetchMuebles} />
       
       {selectedMueble && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={() => setSelectedMueble(null)}>
