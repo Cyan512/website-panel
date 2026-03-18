@@ -122,7 +122,7 @@ export function TipoHabitacionModal({ isOpen, onClose, onSuccess, tipo }: TipoHa
                             onChange={(e) => setFormData({ ...formData, tiene_ducha: e.target.checked })}
                             className="w-4 h-4 text-accent-primary rounded border-border-light focus:ring-accent-primary"
                         />
-                        <span className="text-sm text-text-dark">Tiene ducha</span>
+                        <span className="text-sm text-text-muted">Tiene ducha</span>
                     </label>
                     <label className="flex items-center gap-2 cursor-pointer">
                         <input
@@ -131,7 +131,7 @@ export function TipoHabitacionModal({ isOpen, onClose, onSuccess, tipo }: TipoHa
                             onChange={(e) => setFormData({ ...formData, tiene_banio: e.target.checked })}
                             className="w-4 h-4 text-accent-primary rounded border-border-light focus:ring-accent-primary"
                         />
-                        <span className="text-sm text-text-dark">Tiene baño completo</span>
+                        <span className="text-sm text-text-muted">Tiene baño completo</span>
                     </label>
                 </div>
 
@@ -154,7 +154,7 @@ export function TipoHabitacionModal({ isOpen, onClose, onSuccess, tipo }: TipoHa
                                                 className="w-4 h-4 text-accent-primary rounded border-border-light focus:ring-accent-primary"
                                             />
                                             <div className="flex-1">
-                                                <span className="text-sm text-text-dark">{mueble.nombre}</span>
+                                                <span className="text-sm text-text-muted">{mueble.nombre}</span>
                                                 <span className="text-xs text-text-muted ml-2">({mueble.codigo})</span>
                                             </div>
                                         </label>
