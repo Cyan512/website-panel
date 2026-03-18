@@ -92,7 +92,7 @@ export default function StockPage() {
 
   return (
     <PanelHeader
-      title="Catálogo de Muebles"
+      title="Catálogo de Mueble"
       subtitle="Inventario y estado del mobiliario"
     >
       <div className="flex justify-end p-4">
