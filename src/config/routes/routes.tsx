@@ -16,6 +16,7 @@ const DashboardPage = lazy(() => import("@/app/admin/ui/dashboard-page"));
 const ReservationsPage = lazy(() => import("@/app/reservations/ui/reservations-page"));
 const RoomPage = lazy(() => import("@/app/room/ui/room-page"));
 const ClientsPage = lazy(() => import("@/app/clients/ui/clients-page"));
+const StockPage = lazy(() => import("@/app/stock/ui/stock-page"))
 
 export const routes: RouteConfig[] = [
     {
@@ -42,6 +43,10 @@ export const routes: RouteConfig[] = [
             {
                 path: ROUTES.CLIENTS,
                 element: <ClientsPage />,
+            },
+            {
+                path: ROUTES.STOCK,
+                element: <StockPage />,
             },
         ],
     },

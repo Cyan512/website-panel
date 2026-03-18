@@ -6,6 +6,7 @@ import { formatTime } from "@/utils/format.utils";
 import { MdDashboard, MdEventNote, MdHotel, MdPeople } from "react-icons/md";
 import { cn } from "@/utils/cn";
 import { useState, type ComponentType } from "react";
+import React from "react";
 
 interface MenuItem {
   id: string;
@@ -44,6 +45,13 @@ const menuItems: MenuSection[] = [
         path: ROUTES.CLIENTS,
         roles: ["ADMIN"],
       },
+      {
+        id: "stock",
+        icon: MdPeople,
+        label: "Inventariado",
+        path: ROUTES.STOCK,
+        roles: ["ADMIN"],
+      },
     ],
   },
 ];
@@ -79,7 +87,7 @@ export default function Sidebar() {
         {/* Menu Items */}
         <nav className="flex-1 py-2.5 overflow-y-auto relative z-10">
           {filteredItems.map((section) => (
-            <>
+            <React.Fragment key={section.section}>
               <div className="text-xs italic opacity-50 px-5 py-3">
                 {section.section}
               </div>
@@ -103,7 +111,7 @@ export default function Sidebar() {
                   </NavLink>
                 );
               })}
-            </>
+            </React.Fragment>
           ))}
         </nav>
         {/* Footer */}
