@@ -1,7 +1,7 @@
 import { NavLink, Outlet } from "react-router-dom";
 import { authClient } from "@/config/authClient";
 import { formatTime } from "@/utils/format.utils";
-import { MdDashboard, MdEventNote, MdHotel, MdPeople, MdInventory, MdMenu, MdClose, MdOutlineSpa } from "react-icons/md";
+import { MdDashboard, MdEventNote, MdHotel, MdPeople, MdInventory, MdMenu, MdClose, MdOutlineSpa, MdPayment } from "react-icons/md";
 import { cn } from "@/utils/cn";
 import { useState, type ComponentType } from "react";
 
@@ -28,6 +28,7 @@ const menuItems: MenuSection[] = [
       { id: "room-types", icon: MdHotel, label: "Tipos de Habitación", path: "/room-types" },
       { id: "client", icon: MdPeople, label: "Huéspedes", path: "/clients", roles: ["ADMIN"] },
       { id: "stock", icon: MdInventory, label: "Inventario", path: "/stock", roles: ["ADMIN"] },
+      { id: "payments", icon: MdPayment, label: "Pagos", path: "/payments", roles: ["ADMIN"] },
     ],
   },
 ];

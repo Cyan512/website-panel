@@ -18,6 +18,7 @@ const RoomsPage = lazy(() => import("@/features/rooms/components/RoomsPage")) as
 const TipoHabitacionPage = lazy(() => import("@/features/rooms/components/TipoHabitacionPage")) as ComponentType;
 const ClientsPage = lazy(() => import("@/features/clients/components/ClientsPage")) as ComponentType;
 const InventoryPage = lazy(() => import("@/features/inventory/components/InventoryPage")) as ComponentType;
+const PagosPage = lazy(() => import("@/features/payments/components/PagosPage")) as ComponentType;
 
 const protectedRoutes: RouteConfig[] = [
     { path: "dashboard", element: <DashboardPage /> },
@@ -26,6 +27,7 @@ const protectedRoutes: RouteConfig[] = [
     { path: "room-types", element: <TipoHabitacionPage /> },
     { path: "clients", element: <ClientsPage /> },
     { path: "stock", element: <InventoryPage /> },
+    { path: "payments", element: <PagosPage /> },
 ];
 
 export const routes: RouteConfig[] = [

@@ -30,6 +30,7 @@ export interface Mueble {
   fecha_adquisicion: string | null;
   ultima_revision: string | null;
   descripcion: string | null;
+  habitacion_id: string | null;
   created_at: Date;
   updated_at: Date;
 }
@@ -44,6 +45,7 @@ export interface CreateMuebleDto {
   fecha_adquisicion?: string | null;
   ultima_revision?: string | null;
   descripcion?: string | null;
+  habitacion_id?: string | null;
 }
 
 export interface UpdateMuebleDto {
@@ -56,4 +58,5 @@ export interface UpdateMuebleDto {
   fecha_adquisicion?: string | null;
   ultima_revision?: string | null;
   descripcion?: string | null;
+  habitacion_id?: string | null;
 }
