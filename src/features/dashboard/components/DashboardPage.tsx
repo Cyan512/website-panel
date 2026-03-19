@@ -2,6 +2,7 @@ import { authClient } from "@/config/authClient";
 import { Card, CardBody, Loading } from "@/components";
 import { MdHotel, MdPeople, MdEventNote, MdInventory } from "react-icons/md";
 import { useDashboard } from "../hooks/useDashboard";
+import Ingresos from "./Ingresos";
 
 function formatTimeAgo(date: Date): string {
   const now = new Date();
@@ -105,6 +106,11 @@ export default function DashboardPage() {
           </CardBody>
         </Card>
       </div>
+      <Card>
+        <CardBody>
+          <Ingresos />
+        </CardBody>
+      </Card>
     </div>
   );
 }
