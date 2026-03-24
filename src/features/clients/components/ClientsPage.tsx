@@ -5,10 +5,9 @@ import { useHuespedes } from "../hooks/useHuespedes";
 import { HuespedCard } from "./HuespedCard";
 import { HuespedModal } from "./HuespedModal";
 import { sileo } from "sileo";
-import { cn } from "@/utils/cn";
-import { nivelVipLabels } from "../types";
 import type { Huesped } from "../types";
 import { MdPeople, MdEmail, MdPhone, MdPerson, MdNotes } from "react-icons/md";
+import { HuespedTable } from "./HuespedTable";
 
 export default function ClientsPage() {
   const { data: session } = authClient.useSession();
@@ -70,10 +69,8 @@ export default function ClientsPage() {
             action={{ label: "Agregar Huésped", onClick: () => setIsModalOpen(true) }}
           />
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 p-4 sm:p-6">
-            {huespedes.map((huesped) => (
-              <HuespedCard key={huesped.id} huesped={huesped} onClick={() => setSelectedHuesped(huesped)} />
-            ))}
+          <div className="p-4 sm:p-6">
+            <HuespedTable huespedes={huespedes} onRowClick={(huesped) => setSelectedHuesped(huesped)} />
           </div>
         )}
       </PanelHeader>
@@ -94,27 +91,6 @@ export default function ClientsPage() {
             </div>
 
             <div className="p-6 space-y-5">
-              <div className="flex items-center gap-4">
-                <div className={cn(
-                  "w-14 h-14 rounded-full flex items-center justify-center text-lg font-bold",
-                  selectedHuesped.nivel_vip === 2 ? "bg-amber-100 text-amber-700" :
-                  selectedHuesped.nivel_vip === 1 ? "bg-indigo-100 text-indigo-700" :
-                  "bg-accent-primary/10 text-accent-primary"
-                )}>
-                  {selectedHuesped.nombres.charAt(0)}{selectedHuesped.apellidos.charAt(0)}
-                </div>
-                <div>
-                  <p className="text-xl font-bold font-playfair">{selectedHuesped.nombres} {selectedHuesped.apellidos}</p>
-                  {selectedHuesped.nivel_vip > 0 && (
-                    <span className={cn(
-                      "inline-block px-2 py-0.5 text-xs font-semibold rounded-full mt-1",
-                      selectedHuesped.nivel_vip === 2 ? "bg-amber-100 text-amber-700" : "bg-indigo-100 text-indigo-700"
-                    )}>
-                      {nivelVipLabels[selectedHuesped.nivel_vip]}
-                    </span>
-                  )}
-                </div>
-              </div>
 
               <div className="space-y-3">
                 <div className="flex items-center gap-3 bg-paper-medium/20 rounded-xl p-3">
@@ -138,12 +114,12 @@ export default function ClientsPage() {
                     <p className="text-sm font-medium">{selectedHuesped.nacionalidad}</p>
                   </div>
                 </div>
-                {selectedHuesped.notas && (
+                {selectedHuesped.observacion && (
                   <div className="flex items-start gap-3 bg-paper-medium/10 rounded-xl p-3">
                     <MdNotes className="w-5 h-5 text-text-muted flex-shrink-0 mt-0.5" />
                     <div>
-                      <p className="text-text-muted text-xs">Notas</p>
-                      <p className="text-sm">{selectedHuesped.notas}</p>
+                      <p className="text-text-muted text-xs">Observacion</p>
+                      <p className="text-sm">{selectedHuesped.observacion}</p>
                     </div>
                   </div>
                 )}

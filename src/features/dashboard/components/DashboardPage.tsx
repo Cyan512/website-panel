@@ -21,6 +21,7 @@ export default function DashboardPage() {
   const { stats, loading, activities } = useDashboard();
 
   if (loading) {
+    console.log("Cargando estadísticas del dashboard...");
     return <Loading fullScreen />;
   }
 

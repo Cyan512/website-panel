@@ -3,7 +3,6 @@ import { useTiposHabitacion } from "../hooks/useRooms";
 import { TipoHabitacionCard } from "./TipoHabitacionCard";
 import { TipoHabitacionModal } from "./TipoHabitacionModal";
 import { PanelHeader, Button, Modal } from "@/components";
-import { cn } from "@/utils/cn";
 import { sileo } from "sileo";
 import type { TipoHabitacion } from "../types";
 
@@ -90,34 +89,6 @@ export default function TipoHabitacionPage() {
                 <p className="text-2xl font-bold font-playfair">{selectedTipo.nombre}</p>
                 {selectedTipo.descripcion && <p className="text-text-muted text-sm">{selectedTipo.descripcion}</p>}
               </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-3">
-              <div className="bg-paper-medium/20 rounded-xl p-3">
-                <p className="text-text-muted text-xs">Ducha</p>
-                <span className={cn("inline-block px-3 py-1 text-xs font-semibold rounded-full mt-1", selectedTipo.tiene_ducha ? "bg-emerald-100 text-emerald-700" : "bg-stone-100 text-stone-500")}>
-                  {selectedTipo.tiene_ducha ? "Sí" : "No"}
-                </span>
-              </div>
-              <div className="bg-paper-medium/20 rounded-xl p-3">
-                <p className="text-text-muted text-xs">Baño</p>
-                <span className={cn("inline-block px-3 py-1 text-xs font-semibold rounded-full mt-1", selectedTipo.tiene_banio ? "bg-emerald-100 text-emerald-700" : "bg-stone-100 text-stone-500")}>
-                  {selectedTipo.tiene_banio ? "Sí" : "No"}
-                </span>
-              </div>
-            </div>
-
-            <div className="bg-paper-medium/10 rounded-xl p-3">
-              <p className="text-text-muted text-xs mb-2">Muebles asociados ({selectedTipo.muebles?.length || 0})</p>
-              {selectedTipo.muebles && selectedTipo.muebles.length > 0 ? (
-                <div className="flex flex-wrap gap-2">
-                  {selectedTipo.muebles.map((mueble) => (
-                    <span key={mueble.id} className="px-2 py-1 text-xs bg-paper-medium/30 rounded-lg">{mueble.nombre}</span>
-                  ))}
-                </div>
-              ) : (
-                <p className="text-text-muted text-sm">No hay muebles asociados</p>
-              )}
             </div>
 
             <div className="flex gap-3 pt-2">

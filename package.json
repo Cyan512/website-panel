@@ -16,6 +16,8 @@
     "axios": "^1.13.6",
     "better-auth": "^1.5.5",
     "clsx": "^2.1.1",
+    "datatables.net-dt": "^2.3.7",
+    "datatables.net-react": "^1.0.1",
     "lightweight-charts": "^5.1.0",
     "postcss": "^8",
     "react": "^19.2.4",

@@ -3,7 +3,7 @@ import { useHabitaciones, useTiposHabitacion } from "../hooks/useRooms";
 import { Modal, Button } from "@/components";
 import { InputField } from "@/components";
 import { sileo } from "sileo";
-import type { CreateHabitacionDto, EstadoHabitacion, EstadoLimpieza } from "../types";
+import type { CreateHabitacionDto, EstadoHabitacion } from "../types";
 
 const ESTADO_OPTIONS: { value: EstadoHabitacion; label: string }[] = [
     { value: "DISPONIBLE", label: "Disponible" },
@@ -11,13 +11,6 @@ const ESTADO_OPTIONS: { value: EstadoHabitacion; label: string }[] = [
     { value: "OCUPADA", label: "Ocupada" },
     { value: "LIMPIEZA", label: "Limpieza" },
     { value: "MANTENIMIENTO", label: "Mantenimiento" },
-];
-
-const LIMPIEZA_OPTIONS: { value: EstadoLimpieza; label: string }[] = [
-    { value: "LIMPIA", label: "Limpia" },
-    { value: "SUCIA", label: "Sucia" },
-    { value: "EN_LIMPIEZA", label: "En Limpieza" },
-    { value: "INSPECCION", label: "Inspección" },
 ];
 
 interface RoomModalProps {
@@ -32,13 +25,14 @@ export function RoomModal({ isOpen, onClose, onSuccess }: RoomModalProps) {
     const [loading, setLoading] = useState(false);
     const [formData, setFormData] = useState<CreateHabitacionDto>({
         nro_habitacion: "",
-        tipo_id: "",
+        tipo_habitacion_id: "",
         piso: 1,
+        tiene_banio: true,
+        tiene_ducha: true,
         url_imagen: null,
         estado: "DISPONIBLE",
-        limpieza: "LIMPIA",
         notas: null,
-        muebles: [],
+        ulti_limpieza: "",
     });
 
     useEffect(() => {
@@ -48,10 +42,10 @@ export function RoomModal({ isOpen, onClose, onSuccess }: RoomModalProps) {
     }, [isOpen, fetchTipos]);
 
     useEffect(() => {
-        if (tipos.length > 0 && !formData.tipo_id) {
-            setFormData(prev => ({ ...prev, tipo_id: tipos[0].id }));
+        if (tipos.length > 0 && !formData.tipo_habitacion_id) {
+            setFormData(prev => ({ ...prev, tipo_habitacion_id: tipos[0].id }));
         }
-    }, [tipos, formData.tipo_id]);
+    }, [tipos, formData.tipo_habitacion_id]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -62,13 +56,14 @@ export function RoomModal({ isOpen, onClose, onSuccess }: RoomModalProps) {
             onClose();
             setFormData({
                 nro_habitacion: "",
-                tipo_id: tipos[0]?.id || "",
+                tipo_habitacion_id: tipos[0]?.id || "",
                 piso: 1,
+                tiene_banio: true,
+                tiene_ducha: true,
                 url_imagen: null,
                 estado: "DISPONIBLE",
-                limpieza: "LIMPIA",
                 notas: null,
-                muebles: [],
+                ulti_limpieza: "",
             });
         } catch (error) {
             let errorMessage = "No se pudo crear la habitación.";
@@ -114,8 +109,8 @@ export function RoomModal({ isOpen, onClose, onSuccess }: RoomModalProps) {
                         </div>
                     ) : (
                         <select
-                            value={formData.tipo_id}
-                            onChange={(e) => setFormData({ ...formData, tipo_id: e.target.value })}
+                            value={formData.tipo_habitacion_id}
+                            onChange={(e) => setFormData({ ...formData, tipo_habitacion_id: e.target.value })}
                             className="field-input w-full rounded-xl py-3.5 text-sm px-3.5 focus:outline-none focus:ring-2 focus:ring-accent-primary/30 focus:border-accent-primary border border-border-light/50"
                             required
                         >
@@ -143,18 +138,27 @@ export function RoomModal({ isOpen, onClose, onSuccess }: RoomModalProps) {
                         </select>
                     </div>
 
-                    <div className="mb-5">
-                        <label className="field-label block mb-2 text-text-secondary font-medium">Limpieza</label>
-                        <select
-                            value={formData.limpieza}
-                            onChange={(e) => setFormData({ ...formData, limpieza: e.target.value as EstadoLimpieza })}
-                            className="field-input w-full rounded-xl py-3.5 text-sm px-3.5 focus:outline-none focus:ring-2 focus:ring-accent-primary/30 focus:border-accent-primary border border-border-light/50"
-                        >
-                            {LIMPIEZA_OPTIONS.map((opt) => (
-                                <option key={opt.value} value={opt.value}>{opt.label}</option>
-                            ))}
-                        </select>
-                    </div>
+                </div>
+
+                <div className="flex gap-4 mb-5">
+                    <label className="flex items-center gap-2 cursor-pointer">
+                        <input
+                            type="checkbox"
+                            checked={formData.tiene_ducha}
+                            onChange={(e) => setFormData({ ...formData, tiene_ducha: e.target.checked })}
+                            className="w-4 h-4 text-accent-primary rounded border-border-light focus:ring-accent-primary"
+                        />
+                        <span className="text-sm text-text-muted">Tiene ducha</span>
+                    </label>
+                    <label className="flex items-center gap-2 cursor-pointer">
+                        <input
+                            type="checkbox"
+                            checked={formData.tiene_banio}
+                            onChange={(e) => setFormData({ ...formData, tiene_banio: e.target.checked })}
+                            className="w-4 h-4 text-accent-primary rounded border-border-light focus:ring-accent-primary"
+                        />
+                        <span className="text-sm text-text-muted">Tiene baño completo</span>
+                    </label>
                 </div>
 
                 <InputField

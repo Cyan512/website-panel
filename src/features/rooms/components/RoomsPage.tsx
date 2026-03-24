@@ -12,6 +12,15 @@ export default function RoomsPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedHabitacion, setSelectedHabitacion] = useState<Habitacion | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const formatearFecha = (fecha: string) => {
+    if (!fecha) return "Sin fecha";
+
+    return new Date(fecha).toLocaleDateString("es-PE", {
+      weekday: "long",
+      day: "numeric",
+      month: "long",
+    });
+  };
 
   const handleDelete = async () => {
     if (!selectedHabitacion) return;
@@ -116,17 +125,9 @@ export default function RoomsPage() {
                 </span>
               </div>
               <div className="bg-paper-medium/20 rounded-xl p-3">
-                <p className="text-text-muted text-xs">Limpieza</p>
-                <span className={cn(
-                  "inline-block px-3 py-1 text-sm font-semibold rounded-full mt-1",
-                  selectedHabitacion.limpieza === "LIMPIA" ? "bg-emerald-100 text-emerald-700" :
-                  selectedHabitacion.limpieza === "SUCIA" ? "bg-red-100 text-red-700" :
-                  selectedHabitacion.limpieza === "EN_LIMPIEZA" ? "bg-orange-100 text-orange-700" :
-                  "bg-blue-100 text-blue-700"
-                )}>
-                  {selectedHabitacion.limpieza === "LIMPIA" ? "Limpia" :
-                   selectedHabitacion.limpieza === "SUCIA" ? "Sucia" :
-                   selectedHabitacion.limpieza === "EN_LIMPIEZA" ? "En Limpieza" : "Inspección"}
+                <p className="text-text-muted text-xs">Utima Limpieza</p>
+                <span className="px-2.5 py-1 text-xs">
+                  {formatearFecha(selectedHabitacion.ulti_limpieza)}
                 </span>
               </div>
             </div>
