@@ -34,6 +34,12 @@ export function useHabitaciones() {
     return habitacion;
   };
 
+  const updateHabitacion = async (id: string, data: Parameters<typeof roomsApi.update>[1]): Promise<Habitacion> => {
+    const habitacion = await roomsApi.update(id, data);
+    setHabitaciones(prev => prev.map(h => h.id === id ? habitacion : h));
+    return habitacion;
+  }
+
   const updateEstadoHabitacion = async (id: string, data: UpdateEstadoHabitacionDto): Promise<Habitacion> => {
     const habitacion = await roomsApi.updateEstado(id, data);
     setHabitaciones(prev => prev.map(h => h.id === id ? habitacion : h));
@@ -51,6 +57,7 @@ export function useHabitaciones() {
     error,
     fetchHabitaciones,
     createHabitacion,
+    updateHabitacion,
     updateEstadoHabitacion,
     deleteHabitacion,
   };

@@ -26,7 +26,6 @@ const formatearFecha = (fecha: string) => {
 };
 
 export function RoomCard({ room, onClick }: RoomCardProps) {
-  console.log("ultima fercha", room.ulti_limpieza);
   return (
     <div
       key={room.id}

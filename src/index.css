@@ -3,37 +3,43 @@
 @import "tailwindcss";
 
 :root {
-  --color-bg-primary: #0f172a;
-  --color-bg-secondary: #1e293b;
-  --color-bg-tertiary: #334155;
-  --color-bg-card: #1e293b;
-  --color-bg-hover: #334155;
+  /* Fondos — basados en #1C1C1C */
+  --color-bg-primary: #1c1c1c;
+  --color-bg-secondary: #272727;
+  --color-bg-tertiary: #333333;
+  --color-bg-card: #272727;
+  --color-bg-hover: #333333;
 
-  --color-primary: #3b82f6;
-  --color-primary-hover: #2563eb;
-  --color-primary-light: #60a5fa;
-  --color-primary-muted: #3b82f620;
+  /* Primario — azul #3A6BAF */
+  --color-primary: #3a6baf;
+  --color-primary-hover: #2f5a96;
+  --color-primary-light: #3f5f8a;
+  --color-primary-muted: #3a6baf20;
 
-  --color-accent: #8b5cf6;
-  --color-accent-hover: #7c3aed;
-  --color-accent-light: #a78bfa;
+  /* Acento — dorado #C9A227 */
+  --color-accent: #c9a227;
+  --color-accent-hover: #b08e20;
+  --color-accent-light: #d8b84a;
 
+  /* Textos — basados en #D8C7A1 */
   --color-text-primary: #f8fafc;
   --color-text-secondary: #cbd5e1;
-  --color-text-muted: #64748b;
+  --color-text-muted: #b9c7da;
   --color-text-dark: #1e293b;
 
-  --color-border: #334155;
-  --color-border-light: #475569;
+  /* Bordes */
+  --color-border: #3a3530;
+  --color-border-light: #4e4840;
 
-  --color-success: #10b981;
-  --color-success-bg: #10b98115;
-  --color-warning: #f59e0b;
-  --color-warning-bg: #f59e0b15;
-  --color-danger: #ef4444;
-  --color-danger-bg: #ef444415;
-  --color-info: #06b6d4;
-  --color-info-bg: #06b6d415;
+  /* Estados */
+  --color-success: #4a8c5c;
+  --color-success-bg: #4a8c5c15;
+  --color-warning: #c9a227;
+  --color-warning-bg: #c9a22715;
+  --color-danger: #8b1e2d;
+  --color-danger-bg: #8b1e2d15;
+  --color-info: #3f5f8a;
+  --color-info-bg: #3f5f8a15;
 
   --spacing-button-width: 350px;
   --spacing-button-height: 40px;

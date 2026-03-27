@@ -1,13 +1,12 @@
 import { useState } from "react";
 import { authClient } from "@/config/authClient";
-import { PanelHeader, Button, EmptyState, Loading } from "@/components";
-import { useHuespedes } from "../hooks/useHuespedes";
-import { HuespedCard } from "./HuespedCard";
+import { PanelHeader, Button, EmptyState, Loading, Modal } from "@/components";
 import { HuespedModal } from "./HuespedModal";
 import { sileo } from "sileo";
 import type { Huesped } from "../types";
 import { MdPeople, MdEmail, MdPhone, MdPerson, MdNotes } from "react-icons/md";
 import { HuespedTable } from "./HuespedTable";
+import { useHuespedes } from "../hooks/useHuespedes";
 
 export default function ClientsPage() {
   const { data: session } = authClient.useSession();
@@ -22,16 +21,17 @@ export default function ClientsPage() {
     return <Loading text="Verificando sesión..." />;
   }
 
-  const handleDelete = async () => {
-    if (!selectedHuesped) return;
-    
-    const confirmed = window.confirm(`¿Estás seguro de eliminar a ${selectedHuesped.nombres} ${selectedHuesped.apellidos}?`);
+  const handleDelete = async (huesped?: Huesped) => {
+    const target = huesped ?? selectedHuesped;
+    if (!target) return;
+
+    const confirmed = window.confirm(`¿Estás seguro de eliminar a ${target.nombres} ${target.apellidos}?`);
     if (!confirmed) return;
 
     setDeleting(true);
     try {
-      await deleteHuesped(selectedHuesped.id);
-      setSelectedHuesped(null);
+      await deleteHuesped(target.id);
+      if (target.id === selectedHuesped?.id) setSelectedHuesped(null);
     } catch {
       sileo.error({ title: "Error", description: "No se pudo eliminar el huésped. Puede tener reservas asociadas." });
     } finally {
@@ -39,8 +39,21 @@ export default function ClientsPage() {
     }
   };
 
-  const handleEdit = (huesped: Huesped, e: React.MouseEvent) => {
-    e.stopPropagation();
+  const handleDeleteMany = async (ids: string[]) => {
+    const confirmed = window.confirm(`¿Eliminar ${ids.length} huésped${ids.length !== 1 ? "es" : ""}?`);
+    if (!confirmed) return;
+    setDeleting(true);
+    try {
+      await Promise.all(ids.map((id) => deleteHuesped(id)));
+      sileo.success({ title: "Eliminados", description: `${ids.length} huésped${ids.length !== 1 ? "es eliminados" : " eliminado"}` });
+    } catch {
+      sileo.error({ title: "Error", description: "No se pudieron eliminar algunos huéspedes" });
+    } finally {
+      setDeleting(false);
+    }
+  };
+
+  const handleEdit = (huesped: Huesped) => {
     setEditingHuesped(huesped);
     setIsEditModalOpen(true);
     setSelectedHuesped(null);
@@ -70,7 +83,13 @@ export default function ClientsPage() {
           />
         ) : (
           <div className="p-4 sm:p-6">
-            <HuespedTable huespedes={huespedes} onRowClick={(huesped) => setSelectedHuesped(huesped)} />
+            <HuespedTable
+                huespedes={huespedes}
+                onRowClick={(huesped) => setSelectedHuesped(huesped)}
+                onEdit={handleEdit}
+                onDelete={(huesped) => handleDelete(huesped)}
+                onDeleteMany={handleDeleteMany}
+              />
           </div>
         )}
       </PanelHeader>
@@ -79,60 +98,34 @@ export default function ClientsPage() {
       <HuespedModal isOpen={isEditModalOpen} onClose={() => { setIsEditModalOpen(false); setEditingHuesped(null); }} onSuccess={fetchHuespedes} huesped={editingHuesped} />
       
       {selectedHuesped && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={() => setSelectedHuesped(null)}>
-          <div className="bg-paper-lightest rounded-2xl w-full max-w-md border border-border-light/50 shadow-2xl overflow-hidden" onClick={(e) => e.stopPropagation()}>
-            <div className="bg-gradient-to-r from-accent-primary to-accent-light px-6 py-4">
-              <div className="flex justify-between items-center">
-                <h2 className="text-xl font-bold text-paper-lightest font-playfair">Detalle del Huésped</h2>
-                <button onClick={() => setSelectedHuesped(null)} className="p-1.5 rounded-lg bg-paper-lightest/20 hover:bg-paper-lightest/30 text-paper-lightest transition-colors">
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
-                </button>
-              </div>
-            </div>
-
-            <div className="p-6 space-y-5">
-
+        <Modal isOpen={!!selectedHuesped} onClose={() => setSelectedHuesped(null)} title="Detalle del Huésped">
+          <div className="space-y-5">
               <div className="space-y-3">
                 <div className="flex items-center gap-3 bg-paper-medium/20 rounded-xl p-3">
                   <MdEmail className="w-5 h-5 text-text-muted flex-shrink-0" />
-                  <div>
-                    <p className="text-text-muted text-xs">Email</p>
-                    <p className="text-sm font-medium">{selectedHuesped.email}</p>
-                  </div>
+                  <div><p className="text-text-muted text-xs">Email</p><p className="text-sm font-medium">{selectedHuesped.email}</p></div>
                 </div>
                 <div className="flex items-center gap-3 bg-paper-medium/20 rounded-xl p-3">
                   <MdPhone className="w-5 h-5 text-text-muted flex-shrink-0" />
-                  <div>
-                    <p className="text-text-muted text-xs">Teléfono</p>
-                    <p className="text-sm font-medium">{selectedHuesped.telefono}</p>
-                  </div>
+                  <div><p className="text-text-muted text-xs">Teléfono</p><p className="text-sm font-medium">{selectedHuesped.telefono}</p></div>
                 </div>
                 <div className="flex items-center gap-3 bg-paper-medium/20 rounded-xl p-3">
                   <MdPerson className="w-5 h-5 text-text-muted flex-shrink-0" />
-                  <div>
-                    <p className="text-text-muted text-xs">Nacionalidad</p>
-                    <p className="text-sm font-medium">{selectedHuesped.nacionalidad}</p>
-                  </div>
+                  <div><p className="text-text-muted text-xs">Nacionalidad</p><p className="text-sm font-medium">{selectedHuesped.nacionalidad}</p></div>
                 </div>
                 {selectedHuesped.observacion && (
                   <div className="flex items-start gap-3 bg-paper-medium/10 rounded-xl p-3">
                     <MdNotes className="w-5 h-5 text-text-muted flex-shrink-0 mt-0.5" />
-                    <div>
-                      <p className="text-text-muted text-xs">Observacion</p>
-                      <p className="text-sm">{selectedHuesped.observacion}</p>
-                    </div>
+                    <div><p className="text-text-muted text-xs">Observación</p><p className="text-sm">{selectedHuesped.observacion}</p></div>
                   </div>
                 )}
               </div>
-
               <div className="flex gap-3 pt-2">
-                <button onClick={(e) => handleEdit(selectedHuesped, e)} className="flex-1 py-3 bg-accent-primary/10 text-accent-primary font-medium rounded-xl hover:bg-accent-primary/20 transition-all border border-accent-primary/20">Editar</button>
-                <button onClick={handleDelete} disabled={deleting} className="flex-1 py-3 bg-red-50 text-danger font-medium rounded-xl hover:bg-red-100 transition-all border border-red-200 disabled:opacity-50">{deleting ? "Eliminando..." : "Eliminar"}</button>
+                <button onClick={() => handleEdit(selectedHuesped)} className="flex-1 py-3 bg-accent-primary/10 text-accent-primary font-medium rounded-xl hover:bg-accent-primary/20 transition-all border border-accent-primary/20">Editar</button>
+                <button onClick={() => handleDelete(selectedHuesped)} disabled={deleting} className="flex-1 py-3 bg-red-50 text-danger font-medium rounded-xl hover:bg-red-100 transition-all border border-red-200 disabled:opacity-50">{deleting ? "Eliminando..." : "Eliminar"}</button>
               </div>
-              <button onClick={() => setSelectedHuesped(null)} className="w-full py-3 bg-paper-medium/30 text-text-dark font-medium rounded-xl hover:bg-paper-medium/50 transition-all border border-border-light/30">Cerrar</button>
-            </div>
           </div>
-        </div>
+        </Modal>
       )}
     </>
   );

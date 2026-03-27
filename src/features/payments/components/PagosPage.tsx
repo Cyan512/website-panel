@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { authClient } from "@/config/authClient";
-import { PanelHeader, Button, EmptyState, Loading } from "@/components";
-import { usePagos } from "../hooks/usePagos";
+import { PanelHeader, Button, EmptyState, Loading, Modal } from "@/components";
 import { PagoCard } from "./PagoCard";
 import { PagoModal } from "./PagoModal";
 import { sileo } from "sileo";
@@ -10,6 +9,7 @@ import { estadoPagoLabels } from "../types";
 import type { Pago } from "../types";
 import { MdPayment } from "react-icons/md";
 import { utils, writeFile } from "xlsx";
+import { usePagos } from "../hooks/usePagos";
 
 export default function PagosPage() {
   const { data: session } = authClient.useSession();
@@ -161,71 +161,47 @@ export default function PagosPage() {
       <PagoModal isOpen={isEditModalOpen} onClose={() => { setIsEditModalOpen(false); setEditingPago(null); }} onSuccess={fetchPagos} pago={editingPago} />
       
       {selectedPago && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={() => setSelectedPago(null)}>
-          <div className="bg-paper-lightest rounded-2xl w-full max-w-md border border-border-light/50 shadow-2xl overflow-hidden" onClick={(e) => e.stopPropagation()}>
-            <div className="bg-gradient-to-r from-accent-primary to-accent-light px-6 py-4">
-              <div className="flex justify-between items-center">
-                <h2 className="text-xl font-bold text-paper-lightest font-playfair">Detalle del Pago</h2>
-                <button onClick={() => setSelectedPago(null)} className="p-1.5 rounded-lg bg-paper-lightest/20 hover:bg-paper-lightest/30 text-paper-lightest transition-colors">
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
-                </button>
-              </div>
-            </div>
-
-            <div className="p-6 space-y-5">
+        <Modal isOpen={!!selectedPago} onClose={() => setSelectedPago(null)} title="Detalle del Pago">
+          <div className="space-y-5">
               <div className="text-center py-4 bg-paper-medium/20 rounded-2xl">
                 <p className="text-4xl font-bold font-playfair text-accent-primary">{selectedPago.moneda} {parseFloat(selectedPago.monto).toFixed(2)}</p>
                 <p className="text-text-muted mt-2">{selectedPago.concepto === "RESERVA" ? "Pago de Reserva" : "Pago de Consumo"}</p>
               </div>
-
               <div className="grid grid-cols-2 gap-3">
                 <div className="bg-paper-medium/20 rounded-xl p-3"><p className="text-text-muted text-xs">Método</p><p className="text-sm font-medium">{selectedPago.metodo}</p></div>
                 <div className="bg-paper-medium/20 rounded-xl p-3">
                   <p className="text-text-muted text-xs">Estado</p>
-                  <span className={cn(
-                    "inline-block px-2 py-1 text-xs font-semibold rounded-full mt-1",
+                  <span className={cn("inline-block px-2 py-1 text-xs font-semibold rounded-full mt-1",
                     selectedPago.estado === "CONFIRMADO" ? "bg-emerald-100 text-emerald-700" :
                     selectedPago.estado === "APLICADO" ? "bg-blue-100 text-blue-700" :
                     selectedPago.estado === "DEVUELTO" ? "bg-amber-100 text-amber-700" :
                     selectedPago.estado === "RETENIDO" ? "bg-orange-100 text-orange-700" :
                     "bg-red-100 text-red-700"
-                  )}>
-                    {estadoPagoLabels[selectedPago.estado]}
-                  </span>
+                  )}>{estadoPagoLabels[selectedPago.estado]}</span>
                 </div>
               </div>
-
               <div className="bg-paper-medium/10 rounded-xl p-3">
                 <p className="text-text-muted text-xs">Fecha de Pago</p>
-                <p className="text-sm font-medium">
-                  {new Date(selectedPago.fecha_pago).toLocaleDateString("es-ES", { 
-                    weekday: "long", year: "numeric", month: "long", day: "numeric" 
-                  })}
-                </p>
+                <p className="text-sm font-medium">{new Date(selectedPago.fecha_pago).toLocaleDateString("es-ES", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}</p>
               </div>
-
               {selectedPago.recibido_por && (
                 <div className="bg-paper-medium/10 rounded-xl p-3">
                   <p className="text-text-muted text-xs">Recibido por</p>
                   <p className="text-sm font-medium">{selectedPago.recibido_por.nombres} {selectedPago.recibido_por.apellidos}</p>
                 </div>
               )}
-
               {selectedPago.notas && (
                 <div className="bg-paper-medium/10 rounded-xl p-3">
                   <p className="text-text-muted text-xs">Notas</p>
                   <p className="text-sm">{selectedPago.notas}</p>
                 </div>
               )}
-
               <div className="flex gap-3 pt-2">
                 <button onClick={(e) => handleEdit(selectedPago, e)} className="flex-1 py-3 bg-accent-primary/10 text-accent-primary font-medium rounded-xl hover:bg-accent-primary/20 transition-all border border-accent-primary/20">Editar</button>
                 <button onClick={handleDelete} disabled={deleting} className="flex-1 py-3 bg-red-50 text-danger font-medium rounded-xl hover:bg-red-100 transition-all border border-red-200 disabled:opacity-50">{deleting ? "Eliminando..." : "Eliminar"}</button>
               </div>
-              <button onClick={() => setSelectedPago(null)} className="w-full py-3 bg-paper-medium/30 text-text-dark font-medium rounded-xl hover:bg-paper-medium/50 transition-all border border-border-light/30">Cerrar</button>
-            </div>
           </div>
-        </div>
+        </Modal>
       )}
     </>
   );

@@ -12,6 +12,7 @@ export default function RoomsPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedHabitacion, setSelectedHabitacion] = useState<Habitacion | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const [editingHabitacion, setEditingHabitacion] = useState<Habitacion | null>(null);
   const formatearFecha = (fecha: string) => {
     if (!fecha) return "Sin fecha";
 
@@ -38,6 +39,13 @@ export default function RoomsPage() {
       setDeleting(false);
     }
   };
+
+  const handleEdit = (habitacion: Habitacion, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setSelectedHabitacion(null);  
+    setEditingHabitacion(habitacion); 
+    setIsModalOpen(true);
+  }
 
   if (loading) {
     return <div className="flex items-center justify-center min-h-[60vh]"><div>Cargando...</div></div>;
@@ -89,6 +97,15 @@ export default function RoomsPage() {
       </PanelHeader>
 
       <RoomModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} onSuccess={fetchHabitaciones} />
+      <RoomModal
+        isOpen={isModalOpen} 
+        onClose={() => {
+          setIsModalOpen(false);
+          setEditingHabitacion(null);
+        }} 
+        onSuccess={fetchHabitaciones}
+        habitacion={editingHabitacion}
+      />
       
       {selectedHabitacion && (
         <Modal isOpen={!!selectedHabitacion} onClose={() => setSelectedHabitacion(null)} title={`Habitación ${selectedHabitacion.nro_habitacion}`}>
@@ -140,6 +157,9 @@ export default function RoomsPage() {
             )}
 
             <div className="flex gap-3 pt-2">
+              <Button onClick={(e) => handleEdit(selectedHabitacion, e)} className="flex-1">
+                Editar
+              </Button>
               <Button onClick={handleDelete} variant="danger" className="flex-1" disabled={deleting}>
                 {deleting ? "Eliminando..." : "Eliminar"}
               </Button>

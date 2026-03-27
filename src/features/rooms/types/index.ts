@@ -1,3 +1,5 @@
+export type EstadoHabitacion = "DISPONIBLE" | "RESERVADA" | "OCUPADA" | "LIMPIEZA" | "MANTENIMIENTO";
+
 export interface Habitacion {
   id: string;
   nro_habitacion: string;
@@ -6,7 +8,7 @@ export interface Habitacion {
   piso: number;
   tiene_ducha: boolean;
   tiene_banio: boolean;
-  url_imagen: string | null;
+  url_imagen: string[] | null;
   estado: EstadoHabitacion;
   notas: string | null;
   ulti_limpieza: string;
@@ -20,7 +22,7 @@ export interface CreateHabitacionDto {
   piso: number;
   tiene_ducha: boolean;
   tiene_banio: boolean;
-  url_imagen?: string | null;
+  url_imagen?: string[] | null;
   estado?: EstadoHabitacion;
   notas?: string | null;
   ulti_limpieza: string;
@@ -32,7 +34,7 @@ export interface UpdateHabitacionDto {
   piso?: number;
   tiene_ducha: boolean;
   tiene_banio: boolean;
-  url_imagen?: string | null;
+  url_imagen?: string[] | null;
   estado?: EstadoHabitacion;
   notas?: string | null;
   ulti_limpieza: string;
@@ -42,8 +44,6 @@ export interface UpdateEstadoHabitacionDto {
   estado?: EstadoHabitacion;
   ulti_limpieza: string;
 }
-
-export type EstadoHabitacion = "DISPONIBLE" | "RESERVADA" | "OCUPADA" | "LIMPIEZA" | "MANTENIMIENTO";
 
 export interface TipoHabitacion {
   id: string;
@@ -64,5 +64,3 @@ export interface UpdateTipoHabitacionDto {
   descripcion?: string | null;
   muebles?: string[];
 }
-
-

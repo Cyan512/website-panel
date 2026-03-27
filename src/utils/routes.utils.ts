@@ -7,5 +7,7 @@ export const ROUTES = {
   USERS: "/users",
   SETTINGS: "/settings",
   REPORTS: "/reports",
-  STOCK: "/stock"
+  STOCK: "/stock",
+  RATES: "/rates"
+  
 };

@@ -102,6 +102,7 @@ export function HuespedModal({ isOpen, onClose, onSuccess, huesped }: HuespedMod
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title={isEditing ? "Editar Huésped" : "Nuevo Huésped"} size="lg">
+      <div className="max-h-[70vh] overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
       <form onSubmit={handleSubmit} className="space-y-4">
 
         <div className="grid grid-cols-2 gap-3">
@@ -145,6 +146,7 @@ export function HuespedModal({ isOpen, onClose, onSuccess, huesped }: HuespedMod
           <Button type="submit" isLoading={loading} className="flex-1">{loading ? (isEditing ? "Guardando..." : "Creando...") : (isEditing ? "Guardar" : "Crear")}</Button>
         </div>
       </form>
+      </div>
     </Modal>
   );
 }
