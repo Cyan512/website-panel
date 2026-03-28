@@ -1,4 +1,4 @@
-export interface CategoriaMuebleOutputDto {
+export interface CategoriaMueble {
   id: string;
   nombre: string;
   descripcion: string | null;
@@ -7,13 +7,13 @@ export interface CategoriaMuebleOutputDto {
   updated_at: string;
 }
 
-export interface CreateCategoriaMuebleDto {
+export interface CreateCategoriaMueble {
   nombre: string;
   descripcion?: string;
   activo: boolean;
 }
 
-export interface UpdateCategoriaMuebleDto {
+export interface UpdateCategoriaMueble {
   nombre?: string;
   descripcion?: string;
   activo?: boolean;

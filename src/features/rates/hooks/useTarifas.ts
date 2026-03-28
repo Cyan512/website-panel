@@ -1,12 +1,13 @@
 import { useState, useEffect, useCallback } from "react";
 import { authClient } from "@/config/authClient";
 import { tarifasApi, canalesApi } from "../api";
-import type { TarifaOutput, CreateTarifaInput, UpdateTarifaInput, CanalOutput } from "../types";
+import type { Tarifa, CreateTarifa, UpdateTarifa } from "../types";
+import type { Canal } from "@/features/channels/types";
 
 export function useTarifas() {
   const { data: session } = authClient.useSession();
-  const [tarifas, setTarifas] = useState<TarifaOutput[]>([]);
-  const [canales, setCanales] = useState<CanalOutput[]>([]);
+  const [tarifas, setTarifas] = useState<Tarifa[]>([]);
+  const [canales, setCanales] = useState<Canal[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -31,13 +32,13 @@ export function useTarifas() {
     if (session) fetchTarifas();
   }, [session, fetchTarifas]);
 
-  const createTarifa = async (data: CreateTarifaInput): Promise<TarifaOutput> => {
+  const createTarifa = async (data: CreateTarifa): Promise<Tarifa> => {
     const tarifa = await tarifasApi.create(data);
     setTarifas((prev) => [tarifa, ...prev]);
     return tarifa;
   };
 
-  const updateTarifa = async (id: string, data: UpdateTarifaInput): Promise<TarifaOutput> => {
+  const updateTarifa = async (id: string, data: UpdateTarifa): Promise<Tarifa> => {
     const tarifa = await tarifasApi.update(id, data);
     setTarifas((prev) => prev.map((t) => (t.id === id ? tarifa : t)));
     return tarifa;

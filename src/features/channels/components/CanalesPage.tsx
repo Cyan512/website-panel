@@ -3,8 +3,9 @@ import { PanelHeader, Button, EmptyState, Loading, Modal } from "@/components";
 import { CanalCard } from "./CanalCard";
 import { CanalModal } from "./CanalModal";
 import { tipoCanalLabels, tipoCanalColors } from "../types";
-import type { CanalOutput, CreateCanalInput } from "../types";
+import type { Canal, CreateCanal } from "../types";
 import { sileo } from "sileo";
+import { isHandledError } from "@/utils/error.utils";
 import { MdHub } from "react-icons/md";
 import { cn } from "@/utils/cn";
 import { useCanales } from "../hooks/useCanales";
@@ -12,14 +13,14 @@ import { useCanales } from "../hooks/useCanales";
 export default function CanalesPage() {
   const { canales, loading, error, fetchCanales, createCanal, updateCanal, deleteCanal } = useCanales();
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingCanal, setEditingCanal] = useState<CanalOutput | null>(null);
-  const [selectedCanal, setSelectedCanal] = useState<CanalOutput | null>(null);
+  const [editingCanal, setEditingCanal] = useState<Canal | null>(null);
+  const [selectedCanal, setSelectedCanal] = useState<Canal | null>(null);
   const [deleting, setDeleting] = useState(false);
 
   if (loading) return <div className="flex items-center justify-center min-h-[60vh]"><Loading text="Cargando canales..." /></div>;
   if (error) return <div className="flex items-center justify-center min-h-[60vh]"><div className="text-danger">{error}</div></div>;
 
-  const handleSave = async (data: CreateCanalInput) => {
+  const handleSave = async (data: CreateCanal) => {
     if (editingCanal) return updateCanal(editingCanal.id, data);
     return createCanal(data);
   };
@@ -33,15 +34,15 @@ export default function CanalesPage() {
     try {
       await deleteCanal(selectedCanal.id);
       setSelectedCanal(null);
-    } catch {
-      sileo.error({ title: "Error", description: "No se pudo eliminar el canal" });
+    } catch (err) {
+      if (!isHandledError(err)) { sileo.error({ title: "Error", description: "No se pudo eliminar el canal" }); }
     } finally {
       setDeleting(false);
     }
   };
 
   const openCreate = () => { setEditingCanal(null); setIsModalOpen(true); };
-  const openEdit = (canal: CanalOutput) => { setEditingCanal(canal); setSelectedCanal(null); setIsModalOpen(true); };
+  const openEdit = (canal: Canal) => { setEditingCanal(canal); setSelectedCanal(null); setIsModalOpen(true); };
 
   const activos = canales.filter((c) => c.activo).length;
 
@@ -66,9 +67,9 @@ export default function CanalesPage() {
                 <p className="text-text-muted text-sm">Total Canales</p>
                 <p className="text-2xl font-bold font-playfair mt-1">{canales.length}</p>
               </div>
-              <div className="bg-gradient-to-br from-emerald-50 to-emerald-100/50 rounded-2xl p-5 border border-emerald-200/50">
+              <div className="bg-gradient-to-br from-emerald-40 to-emerald-100/50 rounded-2xl p-5 border border-emerald-200/50">
                 <p className="text-text-muted text-sm">Activos</p>
-                <p className="text-2xl font-bold font-playfair mt-1 text-emerald-700">{activos}</p>
+                <p className="text-2xl font-bold font-playfair mt-1 text-emerald-500">{activos}</p>
               </div>
               <div className="bg-gradient-to-br from-paper-medium/20 to-paper-medium/10 rounded-2xl p-5 border border-border-light/50">
                 <p className="text-text-muted text-sm">Inactivos</p>

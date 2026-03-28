@@ -33,24 +33,34 @@ axiosInstance.interceptors.response.use(
   (response) => {
     const method = response.config.method?.toLowerCase();
     const message = response.data?.message;
+    const isSuccess = response.data?.success !== false;
 
     if (message && MUTATING_METHODS.has(method ?? "")) {
-      const isSuccess = response.data?.success !== false;
       if (isSuccess) {
         sileo.success({ title: message });
+      } else {
+        sileo.error({ title: message });
+        const err = new Error(message) as Error & { handled: boolean };
+        err.handled = true;
+        return Promise.reject(err);
       }
     }
 
     return response;
   },
   (error) => {
-    const message =
-      error?.response?.data?.message ||
-      error?.message ||
-      "Error inesperado";
-
-    sileo.error({ title: message });
-
+    const isHandled = (error as { handled?: boolean })?.handled;
+    if (!isHandled) {
+      const message =
+        error?.response?.data?.message ||
+        error?.message ||
+        "Error inesperado";
+      sileo.error({ title: message });
+      // Marcar como manejado para que los catch de los componentes no dupliquen
+      if (error && typeof error === "object") {
+        (error as { handled?: boolean }).handled = true;
+      }
+    }
     return Promise.reject(error);
   },
 );

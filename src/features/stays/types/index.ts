@@ -1,34 +1,34 @@
 import type { Huesped } from "@/features/clients/types";
 import type { Habitacion } from "@/features/rooms/types";
 
-export type EstadoEstadia = "ACTIVA" | "CHECKOUT" | "CANCELADA";
+export type EstadoEstadia = "EN_CASA" | "COMPLETADA" | "SALIDA_ANTICIPADA";
 
 export const estadoEstadiaLabels: Record<EstadoEstadia, string> = {
-  ACTIVA: "Activa",
-  CHECKOUT: "Check-out",
-  CANCELADA: "Cancelada",
+  EN_CASA: "En Casa",
+  COMPLETADA: "Completada",
+  SALIDA_ANTICIPADA: "Salida Anticipada",
 };
 
 export const estadoEstadiaColors: Record<EstadoEstadia, string> = {
-  ACTIVA: "bg-emerald-100 text-emerald-700",
-  CHECKOUT: "bg-blue-100 text-blue-700",
-  CANCELADA: "bg-red-100 text-red-700",
+  EN_CASA: "bg-emerald-100 text-emerald-700",
+  COMPLETADA: "bg-blue-100 text-blue-700",
+  SALIDA_ANTICIPADA: "bg-amber-100 text-amber-700",
 };
 
-export interface EstanciaOutput {
+export interface Estancia {
   id: string;
-  reservaId: string;
+  reserva_id: string;
   habitacion: Habitacion;
   huesped: Huesped;
-  fechaEntrada: string;
-  fechaSalida: string | null;
+  fecha_entrada: string;
+  fecha_salida: string | null;
   estado: EstadoEstadia;
   notas: string | null;
   created_at: string;
   updated_at: string;
 }
 
-export interface CreateEstanciaInput {
+export interface CreateEstancia {
   reservaId: string;
   habitacionId: string;
   huespedId: string;
@@ -38,7 +38,7 @@ export interface CreateEstanciaInput {
   notas?: string | null;
 }
 
-export interface UpdateEstanciaInput {
+export interface UpdateEstancia {
   reservaId?: string;
   habitacionId?: string;
   huespedId?: string;
@@ -48,6 +48,6 @@ export interface UpdateEstanciaInput {
   notas?: string | null;
 }
 
-export interface CheckoutEstanciaInput {
+export interface CheckoutEstancia {
   fechaSalida: Date;
 }

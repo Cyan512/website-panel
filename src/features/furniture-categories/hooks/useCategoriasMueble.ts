@@ -1,11 +1,11 @@
 import { useState, useEffect, useCallback } from "react";
 import { authClient } from "@/config/authClient";
 import { categoriasMuebleApi } from "../api";
-import type { CategoriaMuebleOutputDto, CreateCategoriaMuebleDto, UpdateCategoriaMuebleDto } from "../types";
+import type { CategoriaMueble, CreateCategoriaMueble, UpdateCategoriaMueble } from "../types";
 
 export function useCategoriasMueble() {
   const { data: session } = authClient.useSession();
-  const [categorias, setCategorias] = useState<CategoriaMuebleOutputDto[]>([]);
+  const [categorias, setCategorias] = useState<CategoriaMueble[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -26,13 +26,13 @@ export function useCategoriasMueble() {
     if (session) fetchCategorias();
   }, [session, fetchCategorias]);
 
-  const createCategoria = async (data: CreateCategoriaMuebleDto): Promise<CategoriaMuebleOutputDto> => {
+  const createCategoria = async (data: CreateCategoriaMueble): Promise<CategoriaMueble> => {
     const cat = await categoriasMuebleApi.create(data);
     setCategorias((prev) => [cat, ...prev]);
     return cat;
   };
 
-  const updateCategoria = async (id: string, data: UpdateCategoriaMuebleDto): Promise<CategoriaMuebleOutputDto> => {
+  const updateCategoria = async (id: string, data: UpdateCategoriaMueble): Promise<CategoriaMueble> => {
     const cat = await categoriasMuebleApi.update(id, data);
     setCategorias((prev) => prev.map((c) => (c.id === id ? cat : c)));
     return cat;

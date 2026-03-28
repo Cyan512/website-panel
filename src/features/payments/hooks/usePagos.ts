@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { authClient } from "@/config/authClient";
 import { pagosApi } from "../api";
-import type { Pago, CreatePagoDto, UpdatePagoDto } from "../types";
+import type { Pago, CreatePago, UpdatePago } from "../types";
 
 export function usePagos() {
   const { data: session } = authClient.useSession();
@@ -28,13 +28,13 @@ export function usePagos() {
     }
   }, [session, fetchPagos]);
 
-  const createPago = async (data: CreatePagoDto): Promise<Pago> => {
+  const createPago = async (data: CreatePago): Promise<Pago> => {
     const pago = await pagosApi.create(data);
     setPagos(prev => [pago, ...prev]);
     return pago;
   };
 
-  const updatePago = async (id: string, data: UpdatePagoDto): Promise<Pago> => {
+  const updatePago = async (id: string, data: UpdatePago): Promise<Pago> => {
     const pago = await pagosApi.update(id, data);
     setPagos(prev => prev.map(p => p.id === id ? pago : p));
     return pago;

@@ -1,9 +1,9 @@
 import { cn } from "@/utils/cn";
 import { muebleConditionLabels, muebleConditionColors } from "../types";
-import type { MuebleOutput } from "../types";
+import type { Mueble } from "../types";
 
 interface Props {
-  mueble: MuebleOutput;
+  mueble: Mueble;
   onClick: () => void;
 }
 
@@ -29,8 +29,8 @@ export function MuebleCard({ mueble, onClick }: Props) {
       </div>
 
       <div className="space-y-0.5 text-xs text-text-muted">
-        {mueble.categoria && <p>Cat: <span className="text-text-primary">{mueble.categoria.nombre}</span></p>}
-        {mueble.habitacion && <p>Hab. <span className="text-text-primary">{mueble.habitacion.nro_habitacion}</span> — Piso {mueble.habitacion.piso}</p>}
+        {mueble.categoria_id && <p>Cat ID: <span className="text-text-primary font-mono">{mueble.categoria_id.slice(0, 8)}…</span></p>}
+        {mueble.habitacion_id && <p>Hab ID: <span className="text-text-primary font-mono">{mueble.habitacion_id.slice(0, 8)}…</span></p>}
       </div>
     </div>
   );

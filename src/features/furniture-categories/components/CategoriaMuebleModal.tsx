@@ -1,14 +1,15 @@
 import { useState, useEffect } from "react";
 import { Modal, Button, InputField } from "@/components";
 import { sileo } from "sileo";
-import type { CategoriaMuebleOutputDto, CreateCategoriaMuebleDto } from "../types";
+import { isHandledError } from "@/utils/error.utils";
+import type { CategoriaMueble, CreateCategoriaMueble } from "../types";
 
 interface Props {
   isOpen: boolean;
   onClose: () => void;
   onSuccess: () => void;
-  categoria?: CategoriaMuebleOutputDto | null;
-  onSave: (data: CreateCategoriaMuebleDto) => Promise<CategoriaMuebleOutputDto>;
+  categoria?: CategoriaMueble | null;
+  onSave: (data: CreateCategoriaMueble) => Promise<CategoriaMueble>;
 }
 
 const labelClass = "field-label block mb-2 text-text-secondary font-medium";
@@ -39,8 +40,8 @@ export function CategoriaMuebleModal({ isOpen, onClose, onSuccess, categoria, on
       sileo.success({ title: categoria ? "Categoría actualizada" : "Categoría creada", description: form.nombre });
       onSuccess();
       onClose();
-    } catch {
-      sileo.error({ title: "Error", description: "No se pudo guardar la categoría" });
+    } catch (err) {
+      if (!isHandledError(err)) { sileo.error({ title: "Error", description: "No se pudo guardar la categoría" }); }
     } finally {
       setSaving(false);
     }

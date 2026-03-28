@@ -1,46 +1,35 @@
-export type MuebleCondition = "NUEVO" | "BUENO" | "REGULAR" | "MALO" | "BAJA";
+export type MuebleCondition = "BUENO" | "REGULAR" | "DANADO" | "FALTANTE";
 
 export const muebleConditionLabels: Record<MuebleCondition, string> = {
-  NUEVO: "Nuevo",
   BUENO: "Bueno",
   REGULAR: "Regular",
-  MALO: "Malo",
-  BAJA: "Baja",
+  DANADO: "Dañado",
+  FALTANTE: "Faltante",
 };
 
 export const muebleConditionColors: Record<MuebleCondition, string> = {
-  NUEVO: "bg-emerald-100 text-emerald-700",
-  BUENO: "bg-blue-100 text-blue-700",
-  REGULAR: "bg-amber-100 text-amber-700",
-  MALO: "bg-orange-100 text-orange-700",
-  BAJA: "bg-red-100 text-red-700",
+  BUENO: "bg-emerald-500 text-emerald-100",
+  REGULAR: "bg-amber-500 text-amber-100",
+  DANADO: "bg-red-500 text-red-100",
+  FALTANTE: "bg-blue-500 text-blue-100",
 };
 
-export interface CategoriaOutput {
-  id: string;
-  nombre: string;
-  descripcion: string | null;
-  activo: boolean;
-}
-
-export interface MuebleOutput {
+export interface Mueble {
   id: string;
   codigo: string;
   nombre: string;
   descripcion: string | null;
   categoria_id: string;
-  categoria: CategoriaOutput | null;
   imagen_url: string | null;
   condicion: MuebleCondition;
   fecha_adquisicion: string | null;
   ultima_revision: string | null;
   habitacion_id: string | null;
-  habitacion: { id: string; nro_habitacion: string; piso: number } | null;
   created_at: string;
   updated_at: string;
 }
 
-export interface CreateMuebleInput {
+export interface CreateMueble {
   codigo: string;
   nombre: string;
   descripcion?: string;
@@ -52,7 +41,7 @@ export interface CreateMuebleInput {
   habitacion_id: string;
 }
 
-export interface UpdateMuebleInput {
+export interface UpdateMueble {
   codigo?: string;
   nombre?: string;
   descripcion?: string;

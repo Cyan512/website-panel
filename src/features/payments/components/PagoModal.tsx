@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { usePagos } from "../hooks/usePagos";
-import type { CreatePagoDto, UpdatePagoDto, Pago, ConceptoPago, EstadoPago, MetodoPago } from "../types";
+import type { CreatePago, UpdatePago, Pago, ConceptoPago, EstadoPago, MetodoPago } from "../types";
 import { Modal, Button } from "@/components";
 import { InputField } from "@/components";
 import { sileo } from "sileo";
@@ -22,7 +22,6 @@ const CONCEPTO_OPTIONS = [
 
 const ESTADO_OPTIONS = [
   { value: "CONFIRMADO", label: "Confirmado" },
-  { value: "APLICADO", label: "Aplicado" },
   { value: "DEVUELTO", label: "Devuelto" },
   { value: "RETENIDO", label: "Retenido" },
   { value: "ANULADO", label: "Anulado" },
@@ -34,8 +33,6 @@ const METODO_OPTIONS = [
   { value: "MASTERCARD", label: "Mastercard" },
   { value: "AMEX", label: "American Express" },
   { value: "TRANSFERENCIA", label: "Transferencia" },
-  { value: "CREDITO_AGENCIA", label: "Crédito Agencia" },
-  { value: "VOUCHER", label: "Voucher" },
 ];
 
 const MONEDAS = ["USD", "EUR", "PEN", "GBP"];
@@ -55,9 +52,7 @@ export function PagoModal({ isOpen, onClose, onSuccess, pago }: PagoModalProps) 
 
   useEffect(() => {
     if (pago) {
-      const fechaPago = pago.fecha_pago instanceof Date 
-        ? pago.fecha_pago.toISOString().split("T")[0]
-        : new Date(pago.fecha_pago).toISOString().split("T")[0];
+      const fechaPago = new Date(pago.fecha_pago).toISOString().split("T")[0];
       setFormData({
         concepto: pago.concepto || "RESERVA",
         estado: pago.estado || "CONFIRMADO",
@@ -65,7 +60,7 @@ export function PagoModal({ isOpen, onClose, onSuccess, pago }: PagoModalProps) 
         monto: String(pago.monto).replace(".", ","),
         moneda: pago.moneda || "USD",
         metodo: pago.metodo || "EFECTIVO",
-        notas: pago.notas || "",
+        notas: pago.observacion || "",
       });
     } else {
       setFormData({ ...defaultFormData, fecha_pago: new Date().toISOString().split("T")[0] });
@@ -86,25 +81,25 @@ export function PagoModal({ isOpen, onClose, onSuccess, pago }: PagoModalProps) 
     setLoading(true);
     try {
       if (isEditing && pago) {
-        const updateData: UpdatePagoDto = {
+        const updateData: UpdatePago = {
           concepto: formData.concepto,
           estado: formData.estado,
           fecha_pago: formData.fecha_pago,
           monto: montoNumerico,
           moneda: formData.moneda,
           metodo: formData.metodo,
-          notas: formData.notas.trim() || undefined,
+          observacion: formData.notas.trim() || undefined,
         };
         await updatePago(pago.id, updateData);
       } else {
-        const createData: CreatePagoDto = {
+        const createData: CreatePago = {
           concepto: formData.concepto,
           estado: formData.estado,
           fecha_pago: formData.fecha_pago,
           monto: montoNumerico,
           moneda: formData.moneda,
           metodo: formData.metodo,
-          notas: formData.notas.trim() || undefined,
+          observacion: formData.notas.trim() || undefined,
         };
         await createPago(createData);
       }

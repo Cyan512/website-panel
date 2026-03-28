@@ -5,6 +5,7 @@ import { RoomModal } from "./RoomModal";
 import { PanelHeader, Button, Modal } from "@/components";
 import { cn } from "@/utils/cn";
 import { sileo } from "sileo";
+import { isHandledError } from "@/utils/error.utils";
 import type { Habitacion } from "../types";
 
 export default function RoomsPage() {
@@ -13,6 +14,7 @@ export default function RoomsPage() {
   const [selectedHabitacion, setSelectedHabitacion] = useState<Habitacion | null>(null);
   const [deleting, setDeleting] = useState(false);
   const [editingHabitacion, setEditingHabitacion] = useState<Habitacion | null>(null);
+  const [filterEstado, setFilterEstado] = useState<string>("");
   const formatearFecha = (fecha: string) => {
     if (!fecha) return "Sin fecha";
 
@@ -33,8 +35,8 @@ export default function RoomsPage() {
     try {
       await deleteHabitacion(selectedHabitacion.id);
       setSelectedHabitacion(null);
-    } catch {
-      sileo.error({ title: "Error", description: "No se pudo eliminar la habitación. Puede estar en uso." });
+    } catch (err) {
+      if (!isHandledError(err)) { sileo.error({ title: "Error", description: "No se pudo eliminar la habitación. Puede estar en uso." }); }
     } finally {
       setDeleting(false);
     }
@@ -69,8 +71,29 @@ export default function RoomsPage() {
           </div>
         ) : (
           <>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 p-4 sm:p-6">
-              {habitaciones.map((habitacion) => (
+            {/* Filtros de estado */}
+            <div className="px-4 sm:px-6 pt-4 pb-3 flex gap-2 flex-wrap">
+              <button
+                onClick={() => setFilterEstado("")}
+                className={cn("text-xs px-3 py-1.5 rounded-xl border transition-all", filterEstado === "" ? "bg-primary text-white border-primary" : "border-border text-text-muted hover:border-primary/50")}
+              >
+                Todas
+              </button>
+              {Object.entries(STATUS_LABELS).map(([status, label]) => (
+                <button
+                  key={status}
+                  onClick={() => setFilterEstado(status)}
+                  className={cn("text-xs px-3 py-1.5 rounded-xl border transition-all", filterEstado === status ? "bg-primary text-white border-primary" : "border-border text-text-muted hover:border-primary/50")}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 px-4 sm:px-6 pb-6">
+              {habitaciones
+                .filter((h) => !filterEstado || h.estado === filterEstado)
+                .map((habitacion) => (
                 <RoomCard
                   key={habitacion.id}
                   room={habitacion}

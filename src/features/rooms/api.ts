@@ -1,5 +1,5 @@
 import axiosInstance from "@/config/axios/axios.instance";
-import type { Habitacion, CreateHabitacionDto, UpdateHabitacionDto, UpdateEstadoHabitacionDto, TipoHabitacion, CreateTipoHabitacionDto, UpdateTipoHabitacionDto } from "./types";
+import type { Habitacion, CreateHabitacion, UpdateHabitacion, UpdateEstadoHabitacion, TipoHabitacion, CreateTipoHabitacion, UpdateTipoHabitacion } from "./types";
 
 export const roomsApi = {
   getAll: async (): Promise<Habitacion[]> => {
@@ -12,7 +12,7 @@ export const roomsApi = {
     return response.data.data;
   },
 
-  create: async (data: CreateHabitacionDto): Promise<Habitacion> => {
+  create: async (data: CreateHabitacion): Promise<Habitacion> => {
     const cleanData: Record<string, unknown> = {
       nro_habitacion: data.nro_habitacion,
       tipo_habitacion_id: data.tipo_habitacion_id,
@@ -26,12 +26,12 @@ export const roomsApi = {
     return response.data.data;
   },
 
-  update: async (id: string, data: UpdateHabitacionDto): Promise<Habitacion> => {
+  update: async (id: string, data: UpdateHabitacion): Promise<Habitacion> => {
     const response = await axiosInstance.put<{ data: Habitacion }>(`/api/habitaciones/${id}`, data);
     return response.data.data;
   },
 
-  updateEstado: async (id: string, data: UpdateEstadoHabitacionDto): Promise<Habitacion> => {
+  updateEstado: async (id: string, data: UpdateEstadoHabitacion): Promise<Habitacion> => {
     const response = await axiosInstance.patch<{ data: Habitacion }>(`/api/habitaciones/${id}/estado`, data);
     return response.data.data;
   },
@@ -52,12 +52,12 @@ export const tiposHabitacionApi = {
     return response.data.data;
   },
 
-  create: async (data: CreateTipoHabitacionDto): Promise<TipoHabitacion> => {
+  create: async (data: CreateTipoHabitacion): Promise<TipoHabitacion> => {
     const response = await axiosInstance.post<{ data: TipoHabitacion }>("/api/tipos-habitacion", data);
     return response.data.data;
   },
 
-  update: async (id: string, data: UpdateTipoHabitacionDto): Promise<TipoHabitacion> => {
+  update: async (id: string, data: UpdateTipoHabitacion): Promise<TipoHabitacion> => {
     const response = await axiosInstance.put<{ data: TipoHabitacion }>(`/api/tipos-habitacion/${id}`, data);
     return response.data.data;
   },

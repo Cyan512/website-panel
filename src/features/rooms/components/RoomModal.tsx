@@ -4,7 +4,7 @@ import { Modal, Button } from "@/components";
 import { InputField } from "@/components";
 import { sileo } from "sileo";
 import { MdAdd, MdClose } from "react-icons/md";
-import type { CreateHabitacionDto, EstadoHabitacion, Habitacion, UpdateHabitacionDto } from "../types";
+import type { CreateHabitacion, EstadoHabitacion, Habitacion, UpdateHabitacion } from "../types";
 
 const ESTADO_OPTIONS: { value: EstadoHabitacion; label: string }[] = [
     { value: "DISPONIBLE", label: "Disponible" },
@@ -30,7 +30,7 @@ export function RoomModal({ isOpen, onClose, onSuccess, habitacion }: RoomModalP
     const [loading, setLoading] = useState(false);
     const [imageInput, setImageInput] = useState("");
 
-    const [formData, setFormData] = useState<CreateHabitacionDto>({
+    const [formData, setFormData] = useState<CreateHabitacion>({
         nro_habitacion: "",
         tipo_habitacion_id: "",
         piso: 1,
@@ -102,7 +102,7 @@ export function RoomModal({ isOpen, onClose, onSuccess, habitacion }: RoomModalP
         setLoading(true);
         try {
             if (isEditing && habitacion) {
-                const updateData: UpdateHabitacionDto = {
+                const updateData: UpdateHabitacion = {
                     nro_habitacion: formData.nro_habitacion,
                     tipo_habitacion_id: formData.tipo_habitacion_id,
                     piso: formData.piso,

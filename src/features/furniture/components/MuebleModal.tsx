@@ -1,18 +1,20 @@
 import { useState, useEffect } from "react";
 import { Modal, Button, InputField } from "@/components";
 import { sileo } from "sileo";
+import { isHandledError } from "@/utils/error.utils";
 import { muebleConditionLabels } from "../types";
-import type { MuebleOutput, CreateMuebleInput, MuebleCondition, CategoriaOutput } from "../types";
+import type { Mueble, CreateMueble, MuebleCondition } from "../types";
 import type { Habitacion } from "@/features/rooms/types";
+import type { CategoriaMueble } from "@/features/furniture-categories/types";
 
 interface Props {
   isOpen: boolean;
   onClose: () => void;
   onSuccess: () => void;
-  mueble?: MuebleOutput | null;
-  categorias: CategoriaOutput[];
+  mueble?: Mueble | null;
+  categorias: CategoriaMueble[];
   habitaciones: Habitacion[];
-  onSave: (data: CreateMuebleInput) => Promise<MuebleOutput>;
+  onSave: (data: CreateMueble) => Promise<Mueble>;
 }
 
 const selectClass = "field-input w-full rounded-xl py-3.5 text-sm px-3.5 focus:outline-none focus:ring-2 focus:ring-accent-primary/30 focus:border-accent-primary border border-border-light/50";
@@ -63,7 +65,7 @@ export function MuebleModal({ isOpen, onClose, onSuccess, mueble, categorias, ha
     if (!form.categoria_id) return sileo.error({ title: "Error", description: "Selecciona una categoría" });
     if (!form.habitacion_id) return sileo.error({ title: "Error", description: "Selecciona una habitación" });
 
-    const payload: CreateMuebleInput = {
+    const payload: CreateMueble = {
       codigo: form.codigo.trim(),
       nombre: form.nombre.trim(),
       categoria_id: form.categoria_id,
@@ -81,8 +83,8 @@ export function MuebleModal({ isOpen, onClose, onSuccess, mueble, categorias, ha
       sileo.success({ title: mueble ? "Mueble actualizado" : "Mueble creado", description: payload.nombre });
       onSuccess();
       onClose();
-    } catch {
-      sileo.error({ title: "Error", description: "No se pudo guardar el mueble" });
+    } catch (err) {
+      if (!isHandledError(err)) { sileo.error({ title: "Error", description: "No se pudo guardar el mueble" }); }
     } finally {
       setSaving(false);
     }

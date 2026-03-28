@@ -1,20 +1,10 @@
+import type { Canal } from "@/features/channels/types";
 import type { TipoHabitacion } from "@/features/rooms/types";
 
-export interface CanalOutput {
-  id: string;
-  nombre: string;
-}
-
-export interface TipoHabitacionOutput {
-  id: string;
-  nombre: string;
-  descripcion: string | null;
-}
-
-export interface TarifaOutput {
+export interface Tarifa {
   id: string;
   tipo_habitacion: TipoHabitacion;
-  canal: CanalOutput;
+  canal: Canal;
   precio_noche: number;
   iva: number | null;
   cargo_servicios: number | null;
@@ -23,7 +13,7 @@ export interface TarifaOutput {
   updated_at: string;
 }
 
-export interface CreateTarifaInput {
+export interface CreateTarifa {
   tipo_habitacion_id: string;
   canal_id: string;
   precio_noche: number;
@@ -32,7 +22,7 @@ export interface CreateTarifaInput {
   moneda?: string;
 }
 
-export interface UpdateTarifaInput {
+export interface UpdateTarifa {
   tipo_habitacion_id?: string;
   canal_id?: string;
   precio_noche?: number;

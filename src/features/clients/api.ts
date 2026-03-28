@@ -1,9 +1,11 @@
 import axiosInstance from "@/config/axios/axios.instance";
-import type { Huesped, CreateHuespedDto, UpdateHuespedDto } from "./types";
+import type { Huesped, CreateHuespedDto, UpdateHuespedDto, PaginatedHuespedes } from "./types";
 
 export const huespedesApi = {
-  getAll: async (): Promise<Huesped[]> => {
-    const response = await axiosInstance.get<{ success: boolean; data: Huesped[] }>("/api/huespedes");
+  getAll: async (page = 1, limit = 10): Promise<PaginatedHuespedes> => {
+    const response = await axiosInstance.get<{ success: boolean; data: PaginatedHuespedes }>(
+      `/api/huespedes?page=${page}&limit=${limit}`
+    );
     return response.data.data;
   },
 

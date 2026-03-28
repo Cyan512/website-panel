@@ -7,12 +7,12 @@ export const tipoCanalLabels: Record<TipoCanal, string> = {
 };
 
 export const tipoCanalColors: Record<TipoCanal, string> = {
-  OTA: "bg-blue-100 text-blue-700",
-  DIRECTO: "bg-emerald-100 text-emerald-700",
-  AGENTE: "bg-purple-100 text-purple-700",
+  OTA: "bg-blue-500 text-blue-100",
+  DIRECTO: "bg-emerald-500 text-emerald-100",
+  AGENTE: "bg-purple-500 text-purple-100",
 };
 
-export interface CanalOutput {
+export interface Canal {
   id: string;
   nombre: string;
   tipo: TipoCanal;
@@ -22,14 +22,14 @@ export interface CanalOutput {
   updated_at: string;
 }
 
-export interface CreateCanalInput {
+export interface CreateCanal {
   nombre: string;
   tipo: TipoCanal;
   activo?: boolean;
   notas?: string;
 }
 
-export interface UpdateCanalInput {
+export interface UpdateCanal {
   nombre?: string;
   tipo?: TipoCanal;
   activo?: boolean;

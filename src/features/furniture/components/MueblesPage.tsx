@@ -4,8 +4,9 @@ import { useHabitaciones } from "@/features/rooms/hooks/useRooms";
 import { MuebleCard } from "./MuebleCard";
 import { MuebleModal } from "./MuebleModal";
 import { muebleConditionLabels, muebleConditionColors } from "../types";
-import type { MuebleOutput, CreateMuebleInput, MuebleCondition } from "../types";
+import type { Mueble, CreateMueble, MuebleCondition } from "../types";
 import { sileo } from "sileo";
+import { isHandledError } from "@/utils/error.utils";
 import { MdChair } from "react-icons/md";
 import { cn } from "@/utils/cn";
 import { useMuebles } from "../hooks/useMuebles";
@@ -14,15 +15,15 @@ export default function MueblesPage() {
   const { muebles, categorias, loading, error, fetchMuebles, createMueble, updateMueble, deleteMueble } = useMuebles();
   const { habitaciones } = useHabitaciones();
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingMueble, setEditingMueble] = useState<MuebleOutput | null>(null);
-  const [selectedMueble, setSelectedMueble] = useState<MuebleOutput | null>(null);
+  const [editingMueble, setEditingMueble] = useState<Mueble | null>(null);
+  const [selectedMueble, setSelectedMueble] = useState<Mueble | null>(null);
   const [deleting, setDeleting] = useState(false);
   const [filterCondicion, setFilterCondicion] = useState<MuebleCondition | "">("");
 
   if (loading) return <div className="flex items-center justify-center min-h-[60vh]"><Loading text="Cargando muebles..." /></div>;
   if (error) return <div className="flex items-center justify-center min-h-[60vh]"><div className="text-danger">{error}</div></div>;
 
-  const handleSave = async (data: CreateMuebleInput) => {
+  const handleSave = async (data: CreateMueble) => {
     if (editingMueble) return updateMueble(editingMueble.id, data);
     return createMueble(data);
   };
@@ -35,15 +36,15 @@ export default function MueblesPage() {
     try {
       await deleteMueble(selectedMueble.id);
       setSelectedMueble(null);
-    } catch {
-      sileo.error({ title: "Error", description: "No se pudo eliminar el mueble" });
+    } catch (err) {
+      if (!isHandledError(err)) { sileo.error({ title: "Error", description: "No se pudo eliminar el mueble" }); }
     } finally {
       setDeleting(false);
     }
   };
 
   const openCreate = () => { setEditingMueble(null); setIsModalOpen(true); };
-  const openEdit = (m: MuebleOutput) => { setEditingMueble(m); setSelectedMueble(null); setIsModalOpen(true); };
+  const openEdit = (m: Mueble) => { setEditingMueble(m); setSelectedMueble(null); setIsModalOpen(true); };
 
   const filtered = filterCondicion ? muebles.filter((m) => m.condicion === filterCondicion) : muebles;
 
@@ -131,16 +132,16 @@ export default function MueblesPage() {
                 </span>
               </div>
               <div className="grid grid-cols-2 gap-3">
-                {selectedMueble.categoria && (
+                {selectedMueble.categoria_id && (
                   <div className="bg-paper-medium/20 rounded-xl p-3">
-                    <p className="text-text-muted text-xs">Categoría</p>
-                    <p className="text-sm font-medium">{selectedMueble.categoria.nombre}</p>
+                    <p className="text-text-muted text-xs">Categoría ID</p>
+                    <p className="text-sm font-medium font-mono">{selectedMueble.categoria_id.slice(0, 8)}…</p>
                   </div>
                 )}
-                {selectedMueble.habitacion && (
+                {selectedMueble.habitacion_id && (
                   <div className="bg-paper-medium/20 rounded-xl p-3">
-                    <p className="text-text-muted text-xs">Habitación</p>
-                    <p className="text-sm font-medium">Nro. {selectedMueble.habitacion.nro_habitacion} — Piso {selectedMueble.habitacion.piso}</p>
+                    <p className="text-text-muted text-xs">Habitación ID</p>
+                    <p className="text-sm font-medium font-mono">{selectedMueble.habitacion_id.slice(0, 8)}…</p>
                   </div>
                 )}
               </div>

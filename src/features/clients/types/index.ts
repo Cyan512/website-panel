@@ -1,4 +1,4 @@
-export type TipoDocumento  = "DNI" | "PASAPORTE" | "RUC" | "CE"
+export type TipoDocumento = "DNI" | "PASAPORTE" | "RUC" | "CE";
 
 export interface Huesped {
   id: string;
@@ -14,7 +14,21 @@ export interface Huesped {
   updated_at: Date;
 }
 
-export interface CreateHuespedDto {
+export interface PaginationMeta {
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+  hasNextPage: boolean;
+  hasPreviousPage: boolean;
+}
+
+export interface PaginatedHuespedes {
+  list: Huesped[];
+  pagination: PaginationMeta;
+}
+
+export interface CreateHuesped {
   tipo_doc?: string;
   nro_doc?: string;
   nombres: string;
@@ -25,7 +39,7 @@ export interface CreateHuespedDto {
   observacion: string | null;
 }
 
-export interface UpdateHuespedDto {
+export interface UpdateHuesped {
   tipo_doc?: string;
   nro_doc?: string;
   nombres: string;

@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
 import { useTiposHabitacion } from "../hooks/useRooms";
-import type { CreateTipoHabitacionDto, UpdateTipoHabitacionDto, TipoHabitacion } from "../types";
+import type { CreateTipoHabitacion, UpdateTipoHabitacion, TipoHabitacion } from "../types";
 import { Modal, Button } from "@/components";
 import { InputField } from "@/components";
 import { sileo } from "sileo";
+import { isHandledError } from "@/utils/error.utils";
 
 interface TipoHabitacionModalProps {
     isOpen: boolean;
@@ -16,7 +17,7 @@ export function TipoHabitacionModal({ isOpen, onClose, onSuccess, tipo }: TipoHa
     const { createTipo, updateTipo } = useTiposHabitacion();
     const isEditing = !!tipo;
     const [loading, setLoading] = useState(false);
-    const [formData, setFormData] = useState<CreateTipoHabitacionDto>({
+    const [formData, setFormData] = useState<CreateTipoHabitacion>({
         nombre: "",
         descripcion: null,
         muebles: [],
@@ -40,7 +41,7 @@ export function TipoHabitacionModal({ isOpen, onClose, onSuccess, tipo }: TipoHa
         setLoading(true);
         try {
             if (isEditing && tipo) {
-                const updateData: UpdateTipoHabitacionDto = {
+                const updateData: UpdateTipoHabitacion = {
                     nombre: formData.nombre,
                     descripcion: formData.descripcion,
                 };
@@ -50,8 +51,8 @@ export function TipoHabitacionModal({ isOpen, onClose, onSuccess, tipo }: TipoHa
             }
             onSuccess();
             onClose();
-        } catch {
-            sileo.error({ title: "Error", description: "No se pudo guardar el tipo de habitación" });
+        } catch (err) {
+            if (!isHandledError(err)) { sileo.error({ title: "Error", description: "No se pudo guardar el tipo de habitación" }); }
         } finally {
             setLoading(false);
         }

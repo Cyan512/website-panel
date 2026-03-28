@@ -1,15 +1,15 @@
 import { cn } from "@/utils/cn";
 import { estadoEstadiaLabels, estadoEstadiaColors } from "../types";
-import type { EstanciaOutput } from "../types";
+import type { Estancia } from "../types";
 
 interface Props {
-  estancia: EstanciaOutput;
+  estancia: Estancia;
   onClick: () => void;
 }
 
 export function EstanciaCard({ estancia, onClick }: Props) {
-  const noches = estancia.fechaSalida
-    ? Math.ceil((new Date(estancia.fechaSalida).getTime() - new Date(estancia.fechaEntrada).getTime()) / (1000 * 60 * 60 * 24))
+  const noches = estancia.fecha_salida
+    ? Math.ceil((new Date(estancia.fecha_salida).getTime() - new Date(estancia.fecha_entrada).getTime()) / (1000 * 60 * 60 * 24))
     : null;
 
   return (
@@ -28,9 +28,9 @@ export function EstanciaCard({ estancia, onClick }: Props) {
       </div>
 
       <div className="space-y-1 text-xs text-text-muted">
-        <p>Entrada: <span className="text-text-primary font-medium">{new Date(estancia.fechaEntrada).toLocaleDateString("es-ES")}</span></p>
-        {estancia.fechaSalida && (
-          <p>Salida: <span className="text-text-primary font-medium">{new Date(estancia.fechaSalida).toLocaleDateString("es-ES")}</span></p>
+        <p>Entrada: <span className="text-text-primary font-medium">{new Date(estancia.fecha_entrada).toLocaleDateString("es-ES")}</span></p>
+        {estancia.fecha_salida && (
+          <p>Salida: <span className="text-text-primary font-medium">{new Date(estancia.fecha_salida).toLocaleDateString("es-ES")}</span></p>
         )}
         {noches != null && <p>{noches} {noches === 1 ? "noche" : "noches"}</p>}
       </div>

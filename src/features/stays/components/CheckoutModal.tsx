@@ -1,14 +1,15 @@
 import { useState } from "react";
 import { Modal, Button, InputField } from "@/components";
 import { sileo } from "sileo";
-import type { EstanciaOutput, CheckoutEstanciaInput } from "../types";
+import { isHandledError } from "@/utils/error.utils";
+import type { Estancia, CheckoutEstancia } from "../types";
 
 interface Props {
   isOpen: boolean;
   onClose: () => void;
   onSuccess: () => void;
-  estancia: EstanciaOutput;
-  onCheckout: (id: string, data: CheckoutEstanciaInput) => Promise<EstanciaOutput>;
+  estancia: Estancia;
+  onCheckout: (id: string, data: CheckoutEstancia) => Promise<Estancia>;
 }
 
 export function CheckoutModal({ isOpen, onClose, onSuccess, estancia, onCheckout }: Props) {
@@ -25,8 +26,8 @@ export function CheckoutModal({ isOpen, onClose, onSuccess, estancia, onCheckout
       sileo.success({ title: "Check-out realizado", description: `${estancia.huesped.nombres} ${estancia.huesped.apellidos}` });
       onSuccess();
       onClose();
-    } catch {
-      sileo.error({ title: "Error", description: "No se pudo realizar el check-out" });
+    } catch (err) {
+      if (!isHandledError(err)) { sileo.error({ title: "Error", description: "No se pudo realizar el check-out" }); }
     } finally {
       setSaving(false);
     }
@@ -38,7 +39,7 @@ export function CheckoutModal({ isOpen, onClose, onSuccess, estancia, onCheckout
         <div className="bg-paper-medium/20 rounded-xl p-4 text-sm space-y-1">
           <p><span className="text-text-muted">Huésped:</span> <span className="font-medium">{estancia.huesped.nombres} {estancia.huesped.apellidos}</span></p>
           <p><span className="text-text-muted">Habitación:</span> <span className="font-medium">Nro. {estancia.habitacion.nro_habitacion}</span></p>
-          <p><span className="text-text-muted">Entrada:</span> <span className="font-medium">{new Date(estancia.fechaEntrada).toLocaleString("es-ES")}</span></p>
+          <p><span className="text-text-muted">Entrada:</span> <span className="font-medium">{new Date(estancia.fecha_entrada).toLocaleString("es-ES")}</span></p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">

@@ -1,14 +1,15 @@
 import { useState } from "react";
 import { Modal, Button } from "@/components";
 import { sileo } from "sileo";
-import type { ReservaOutput, CancelReservaInput } from "../types";
+import { isHandledError } from "@/utils/error.utils";
+import type { Reserva, CancelReserva } from "../types";
 
 interface Props {
   isOpen: boolean;
   onClose: () => void;
   onSuccess: () => void;
-  reserva: ReservaOutput;
-  onCancel: (id: string, data: CancelReservaInput) => Promise<ReservaOutput>;
+  reserva: Reserva;
+  onCancel: (id: string, data: CancelReserva) => Promise<Reserva>;
 }
 
 export function CancelModal({ isOpen, onClose, onSuccess, reserva, onCancel }: Props) {
@@ -25,8 +26,8 @@ export function CancelModal({ isOpen, onClose, onSuccess, reserva, onCancel }: P
       sileo.success({ title: "Reserva cancelada", description: reserva.codigo });
       onSuccess();
       onClose();
-    } catch {
-      sileo.error({ title: "Error", description: "No se pudo cancelar la reserva" });
+    } catch (err) {
+      if (!isHandledError(err)) { sileo.error({ title: "Error", description: "No se pudo cancelar la reserva" }); }
     } finally {
       setSaving(false);
     }
@@ -37,7 +38,7 @@ export function CancelModal({ isOpen, onClose, onSuccess, reserva, onCancel }: P
       <div className="space-y-4">
         <div className="bg-red-50 border border-red-200 rounded-xl p-4 text-sm">
           <p className="font-medium text-danger">Reserva: {reserva.codigo}</p>
-          <p className="text-text-muted mt-1">{reserva.huesped.nombres} {reserva.huesped.apellidos} — Hab. {reserva.habitacion.nro_habitacion}</p>
+          <p className="text-text-muted mt-1">{reserva.nombre_huesped} — Hab. {reserva.nro_habitacion}</p>
         </div>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>

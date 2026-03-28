@@ -1,11 +1,11 @@
 import { useState, useEffect, useCallback } from "react";
 import { authClient } from "@/config/authClient";
 import { canalesApi } from "../api";
-import type { CanalOutput, CreateCanalInput, UpdateCanalInput } from "../types";
+import type { Canal, CreateCanal, UpdateCanal } from "../types";
 
 export function useCanales() {
   const { data: session } = authClient.useSession();
-  const [canales, setCanales] = useState<CanalOutput[]>([]);
+  const [canales, setCanales] = useState<Canal[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -26,13 +26,13 @@ export function useCanales() {
     if (session) fetchCanales();
   }, [session, fetchCanales]);
 
-  const createCanal = async (data: CreateCanalInput): Promise<CanalOutput> => {
+  const createCanal = async (data: CreateCanal): Promise<Canal> => {
     const canal = await canalesApi.create(data);
     setCanales((prev) => [canal, ...prev]);
     return canal;
   };
 
-  const updateCanal = async (id: string, data: UpdateCanalInput): Promise<CanalOutput> => {
+  const updateCanal = async (id: string, data: UpdateCanal): Promise<Canal> => {
     const canal = await canalesApi.update(id, data);
     setCanales((prev) => prev.map((c) => (c.id === id ? canal : c)));
     return canal;

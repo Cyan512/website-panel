@@ -2,7 +2,7 @@ import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { authClient } from "@/config/authClient";
 import {
   MdDashboard, MdEventNote, MdPeople, MdInventory, MdMenu, MdClose,
-  MdOutlineSpa, MdPayment, MdLocalOffer, MdHub, MdBedroomParent,
+  MdPayment, MdLocalOffer, MdHub, MdBedroomParent,
   MdChair, MdCategory, MdHotel, MdExpandMore, MdExpandLess,
   MdLogout, MdPerson, MdSettings, MdKeyboardArrowUp,
 } from "react-icons/md";
@@ -189,7 +189,7 @@ export default function Sidebar() {
       )}>
         <div className="py-5 px-4 border-b border-border shrink-0">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-xl overflow-hidden shadow-xl shadow-primary/100 shrink-0">
+            <div className="w-12 h-12 rounded-xl overflow-hidden drop-shadow-xl drop-shadow-primary/100 shrink-0">
               <img src="/chakana_sin_fondo.svg" alt="Logo" className="w-full h-full object-cover" />
             </div>
             <div>

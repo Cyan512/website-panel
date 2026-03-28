@@ -1,12 +1,13 @@
 import { useState, useEffect, useCallback } from "react";
 import { authClient } from "@/config/authClient";
 import { mueblesApi, categoriasApi } from "../api";
-import type { MuebleOutput, CreateMuebleInput, UpdateMuebleInput, CategoriaOutput } from "../types";
+import type { Mueble, CreateMueble, UpdateMueble } from "../types";
+import type { CategoriaMueble } from "@/features/furniture-categories/types";
 
 export function useMuebles() {
   const { data: session } = authClient.useSession();
-  const [muebles, setMuebles] = useState<MuebleOutput[]>([]);
-  const [categorias, setCategorias] = useState<CategoriaOutput[]>([]);
+  const [muebles, setMuebles] = useState<Mueble[]>([]);
+  const [categorias, setCategorias] = useState<CategoriaMueble[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -31,13 +32,13 @@ export function useMuebles() {
     if (session) fetchMuebles();
   }, [session, fetchMuebles]);
 
-  const createMueble = async (data: CreateMuebleInput): Promise<MuebleOutput> => {
+  const createMueble = async (data: CreateMueble): Promise<Mueble> => {
     const mueble = await mueblesApi.create(data);
     setMuebles((prev) => [mueble, ...prev]);
     return mueble;
   };
 
-  const updateMueble = async (id: string, data: UpdateMuebleInput): Promise<MuebleOutput> => {
+  const updateMueble = async (id: string, data: UpdateMueble): Promise<Mueble> => {
     const mueble = await mueblesApi.update(id, data);
     setMuebles((prev) => prev.map((m) => (m.id === id ? mueble : m)));
     return mueble;

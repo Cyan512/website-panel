@@ -24,7 +24,7 @@
   /* Textos — basados en #D8C7A1 */
   --color-text-primary: #f8fafc;
   --color-text-secondary: #cbd5e1;
-  --color-text-muted: #b9c7da;
+  --color-text-muted: #a4b0c2b4;
   --color-text-dark: #1e293b;
 
   /* Bordes */
@@ -92,4 +92,9 @@ body {
   .field-input {
     @apply bg-bg-tertiary/50 border border-border text-text-primary placeholder:text-text-muted;
   }
+}
+
+/* Sileo toaster por encima de modales */
+[data-sileo-viewport] {
+  z-index: 9999 !important;
 }

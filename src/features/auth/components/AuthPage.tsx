@@ -2,7 +2,6 @@ import { LoginForm } from "./LoginForm";
 import { RegisterForm } from "./RegisterForm";
 import { useState } from "react";
 import { CiLogin, CiUser } from "react-icons/ci";
-import { MdOutlineSpa } from "react-icons/md";
 
 export default function AuthPage() {
     const [activeTab, setActiveTab] = useState<'login' | 'register'>('login');
@@ -15,12 +14,9 @@ export default function AuthPage() {
             
             <div className="w-full max-w-md relative z-10">
                 <div className="text-center mb-8">
-                    <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-primary to-accent shadow-2xl shadow-primary/20 mb-5">
-                        <MdOutlineSpa className="w-8 h-8 text-white" />
+                    <div className="flex items-center justify-center mb-5">
+                        <img src="/logo_hotel.svg" alt="Logo" className="h-40 w-auto object-contain drop-shadow-2xl drop-shadow-primary/100" />
                     </div>
-                    <h1 className="text-3xl font-bold text-text-primary mb-2">
-                        Kori Hotel
-                    </h1>
                     <p className="text-text-muted text-sm">
                         Panel de Administración
                     </p>

@@ -4,22 +4,23 @@ import { useTarifas } from "../hooks/useTarifas";
 import { useTiposHabitacion } from "@/features/rooms/hooks/useRooms";
 import { TarifaCard } from "./TarifaCard";
 import { TarifaModal } from "./TarifaModal";
-import type { TarifaOutput, CreateTarifaInput } from "../types";
+import type { Tarifa, CreateTarifa } from "../types";
 import { sileo } from "sileo";
+import { isHandledError } from "@/utils/error.utils";
 import { MdLocalOffer } from "react-icons/md";
 
 export default function TarifasPage() {
   const { tarifas, canales, loading, error, fetchTarifas, createTarifa, updateTarifa, deleteTarifa } = useTarifas();
   const { tipos: tiposHabitacion } = useTiposHabitacion();
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingTarifa, setEditingTarifa] = useState<TarifaOutput | null>(null);
-  const [selectedTarifa, setSelectedTarifa] = useState<TarifaOutput | null>(null);
+  const [editingTarifa, setEditingTarifa] = useState<Tarifa | null>(null);
+  const [selectedTarifa, setSelectedTarifa] = useState<Tarifa | null>(null);
   const [deleting, setDeleting] = useState(false);
 
   if (loading) return <div className="flex items-center justify-center min-h-[60vh]"><Loading text="Cargando tarifas..." /></div>;
   if (error) return <div className="flex items-center justify-center min-h-[60vh]"><div className="text-danger">{error}</div></div>;
 
-  const handleSave = async (data: CreateTarifaInput) => {
+  const handleSave = async (data: CreateTarifa) => {
     if (editingTarifa) return updateTarifa(editingTarifa.id, data);
     return createTarifa(data);
   };
@@ -33,15 +34,15 @@ export default function TarifasPage() {
     try {
       await deleteTarifa(selectedTarifa.id);
       setSelectedTarifa(null);
-    } catch {
-      sileo.error({ title: "Error", description: "No se pudo eliminar la tarifa" });
+    } catch (err) {
+      if (!isHandledError(err)) { sileo.error({ title: "Error", description: "No se pudo eliminar la tarifa" }); }
     } finally {
       setDeleting(false);
     }
   };
 
   const openCreate = () => { setEditingTarifa(null); setIsModalOpen(true); };
-  const openEdit = (tarifa: TarifaOutput) => { setEditingTarifa(tarifa); setSelectedTarifa(null); setIsModalOpen(true); };
+  const openEdit = (tarifa: Tarifa) => { setEditingTarifa(tarifa); setSelectedTarifa(null); setIsModalOpen(true); };
 
   return (
     <>
@@ -64,9 +65,9 @@ export default function TarifasPage() {
                 <p className="text-text-muted text-sm">Total Tarifas</p>
                 <p className="text-2xl font-bold font-playfair mt-1">{tarifas.length}</p>
               </div>
-              <div className="bg-gradient-to-br from-emerald-50 to-emerald-100/50 rounded-2xl p-5 border border-emerald-200/50">
+              <div className="bg-gradient-to-br from-emerald-40 to-emerald-100/50 rounded-2xl p-5 border border-emerald-200/50">
                 <p className="text-text-muted text-sm">Canales</p>
-                <p className="text-2xl font-bold font-playfair mt-1 text-emerald-700">{canales.length}</p>
+                <p className="text-2xl font-bold font-playfair mt-1 text-emerald-500">{canales.length}</p>
               </div>
               <div className="bg-gradient-to-br from-paper-medium/20 to-paper-medium/10 rounded-2xl p-5 border border-border-light/50">
                 <p className="text-text-muted text-sm">Tipos de Habitación</p>

@@ -1,84 +1,97 @@
 import { useState, useEffect } from "react";
 import { Modal, Button, InputField } from "@/components";
 import { sileo } from "sileo";
-import type { ReservaOutput, CreateReservaInput, EstadoReserva } from "../types";
+import { isHandledError } from "@/utils/error.utils";
+import type { Reserva, CreateReserva, UpdateReserva, EstadoReserva } from "../types";
 import { estadoReservaLabels } from "../types";
 import type { Huesped } from "@/features/clients/types";
 import type { Habitacion } from "@/features/rooms/types";
-import type { TarifaOutput } from "@/features/rates/types";
+import type { Tarifa } from "@/features/rates/types";
 
 interface Props {
   isOpen: boolean;
   onClose: () => void;
   onSuccess: () => void;
-  reserva?: ReservaOutput | null;
+  reserva?: Reserva | null;
   huespedes: Huesped[];
   habitaciones: Habitacion[];
-  tarifas: TarifaOutput[];
-  onSave: (data: CreateReservaInput) => Promise<ReservaOutput>;
+  tarifas: Tarifa[];
+  onCreate: (data: CreateReserva) => Promise<Reserva>;
+  onUpdate: (data: UpdateReserva) => Promise<Reserva>;
 }
 
 const selectClass = "field-input w-full rounded-xl py-3.5 text-sm px-3.5 focus:outline-none focus:ring-2 focus:ring-accent-primary/30 focus:border-accent-primary border border-border-light/50";
 const labelClass = "field-label block mb-2 text-text-secondary font-medium";
 const toDateInput = (d?: string | Date | null) => d ? new Date(d).toISOString().slice(0, 10) : "";
 
-export function ReservaModal({ isOpen, onClose, onSuccess, reserva, huespedes, habitaciones, tarifas, onSave }: Props) {
+export function ReservaModal({ isOpen, onClose, onSuccess, reserva, huespedes, habitaciones, tarifas, onCreate, onUpdate }: Props) {
   const [form, setForm] = useState({
-    codigo: "", huespedId: "", habitacionId: "", tarifaId: "",
+    huespedId: "", habitacionId: "", tarifaId: "",
     fechaEntrada: "", fechaSalida: "", adultos: "1", ninos: "0", montoDescuento: "",
-    estado: "PENDIENTE" as EstadoReserva,
+    estado: "TENTATIVA" as EstadoReserva,
   });
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     if (reserva) {
       setForm({
-        codigo: reserva.codigo,
         huespedId: reserva.huesped.id,
         habitacionId: reserva.habitacion.id,
         tarifaId: reserva.tarifa.id,
-        fechaEntrada: toDateInput(reserva.fechaEntrada),
-        fechaSalida: toDateInput(reserva.fechaSalida),
+        fechaEntrada: toDateInput(reserva.fecha_entrada),
+        fechaSalida: toDateInput(reserva.fecha_salida),
         adultos: String(reserva.adultos),
         ninos: String(reserva.ninos),
-        montoDescuento: reserva.montoDescuento != null ? String(reserva.montoDescuento) : "",
+        montoDescuento: reserva.monto_descuento != null ? String(reserva.monto_descuento) : "",
         estado: reserva.estado,
       });
     } else {
       setForm({
-        codigo: "", huespedId: huespedes[0]?.id ?? "", habitacionId: habitaciones[0]?.id ?? "",
+        huespedId: huespedes[0]?.id ?? "", habitacionId: habitaciones[0]?.id ?? "",
         tarifaId: tarifas[0]?.id ?? "", fechaEntrada: "", fechaSalida: "",
-        adultos: "1", ninos: "0", montoDescuento: "", estado: "PENDIENTE",
+        adultos: "1", ninos: "0", montoDescuento: "", estado: "TENTATIVA",
       });
     }
   }, [reserva, isOpen, huespedes, habitaciones, tarifas]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!form.codigo.trim()) return sileo.error({ title: "Error", description: "El código es requerido" });
     if (!form.fechaEntrada || !form.fechaSalida) return sileo.error({ title: "Error", description: "Las fechas son requeridas" });
     if (new Date(form.fechaSalida) <= new Date(form.fechaEntrada)) return sileo.error({ title: "Error", description: "La fecha de salida debe ser posterior a la entrada" });
 
-    const payload: CreateReservaInput = {
-      codigo: form.codigo.trim(),
-      huespedId: form.huespedId,
-      habitacionId: form.habitacionId,
-      tarifaId: form.tarifaId,
-      fechaEntrada: new Date(form.fechaEntrada),
-      fechaSalida: new Date(form.fechaSalida),
-      adultos: parseInt(form.adultos) || 1,
-      ninos: parseInt(form.ninos) || 0,
-      ...(form.montoDescuento !== "" && { montoDescuento: parseFloat(form.montoDescuento) }),
-    };
-
     setSaving(true);
     try {
-      await onSave(payload);
-      sileo.success({ title: reserva ? "Reserva actualizada" : "Reserva creada", description: `Código: ${payload.codigo}` });
+      if (reserva) {
+        const updatePayload: UpdateReserva = {
+          huespedId: form.huespedId,
+          habitacionId: form.habitacionId,
+          tarifaId: form.tarifaId,
+          fechaEntrada: new Date(form.fechaEntrada),
+          fechaSalida: new Date(form.fechaSalida),
+          adultos: parseInt(form.adultos) || 1,
+          ninos: parseInt(form.ninos) || 0,
+          estado: form.estado,
+          ...(form.montoDescuento !== "" && { montoDescuento: parseFloat(form.montoDescuento) }),
+        };
+        await onUpdate(updatePayload);
+      } else {
+        const createPayload: CreateReserva = {
+          huespedId: form.huespedId,
+          habitacionId: form.habitacionId,
+          tarifaId: form.tarifaId,
+          fechaEntrada: new Date(form.fechaEntrada),
+          fechaSalida: new Date(form.fechaSalida),
+          adultos: parseInt(form.adultos) || 1,
+          ninos: parseInt(form.ninos) || 0,
+          ...(form.montoDescuento !== "" && { montoDescuento: parseFloat(form.montoDescuento) }),
+        };
+        await onCreate(createPayload);
+      }
+      sileo.success({ title: reserva ? "Reserva actualizada" : "Reserva creada" });
       onSuccess();
       onClose();
-    } catch {
-      sileo.error({ title: "Error", description: "No se pudo guardar la reserva" });
+    } catch (err) {
+      if (!isHandledError(err)) { sileo.error({ title: "Error", description: "No se pudo guardar la reserva" }); }
     } finally {
       setSaving(false);
     }
@@ -95,9 +108,9 @@ export function ReservaModal({ isOpen, onClose, onSuccess, reserva, huespedes, h
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title={reserva ? "Editar Reserva" : "Nueva Reserva"} size="lg">
+      <div className="max-h-[70vh] overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <InputField label="Código" value={form.codigo} onChange={(e) => setForm((f) => ({ ...f, codigo: e.target.value }))} placeholder="Ej: RES-001" required />
           {reserva && (
             <div>
               <label className={labelClass}>Estado</label>
@@ -168,6 +181,7 @@ export function ReservaModal({ isOpen, onClose, onSuccess, reserva, huespedes, h
           <Button type="submit" isLoading={saving} className="flex-1">{saving ? "Guardando..." : reserva ? "Actualizar" : "Crear"}</Button>
         </div>
       </form>
+      </div>
     </Modal>
   );
 }

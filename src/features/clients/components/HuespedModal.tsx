@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useHuespedes } from "../hooks/useHuespedes";
-import type { CreateHuespedDto, UpdateHuespedDto, Huesped, TipoDocumento } from "../types";
+import type { CreateHuesped, UpdateHuesped, Huesped, TipoDocumento } from "../types";
 import { Modal, Button } from "@/components";
 import { InputField } from "@/components";
 import { sileo } from "sileo";
@@ -60,7 +60,7 @@ export function HuespedModal({ isOpen, onClose, onSuccess, huesped }: HuespedMod
     try {
       
       if (isEditing && huesped) {
-        const updateData: UpdateHuespedDto = {
+        const updateData: UpdateHuesped = {
           tipo_doc: formData.tipo_doc.trim(),
           nro_doc: formData.nro_doc.trim(),
           nombres: formData.nombres.trim(),
@@ -72,7 +72,7 @@ export function HuespedModal({ isOpen, onClose, onSuccess, huesped }: HuespedMod
         };
         await updateHuesped(huesped.id, updateData);
       } else {
-        const createData: CreateHuespedDto = {
+        const createData: CreateHuesped = {
           tipo_doc: formData.tipo_doc.trim(),
           nro_doc: formData.nro_doc.trim(),
           nombres: formData.nombres.trim(),

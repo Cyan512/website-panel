@@ -26,7 +26,7 @@ export default function DashboardPage() {
   }
 
   const statsCards = [
-    { label: "Habitaciones", value: stats.totalHabitaciones, icon: MdHotel, color: "from-emerald-500 to-emerald-600" },
+    { label: "Habitaciones", value: stats.totalHabitaciones, icon: MdHotel, color: "from-emerald-400 to-emerald-500" },
     { label: "Reservas", value: stats.reservas, icon: MdEventNote, color: "from-blue-500 to-blue-600" },
     { label: "Huéspedes", value: stats.ocupadas, icon: MdPeople, color: "from-violet-500 to-violet-600" },
     { label: "Inventario", value: stats.totalInventario, icon: MdInventory, color: "from-amber-500 to-amber-600" },

@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Modal, Button, InputField } from "@/components";
 import { sileo } from "sileo";
+import { isHandledError } from "@/utils/error.utils";
 import { tipoCanalLabels } from "../types";
 import type { CanalOutput, CreateCanalInput, TipoCanal } from "../types";
 
@@ -51,8 +52,8 @@ export function CanalModal({ isOpen, onClose, onSuccess, canal, onSave }: Props)
       sileo.success({ title: canal ? "Canal actualizado" : "Canal creado", description: payload.nombre });
       onSuccess();
       onClose();
-    } catch {
-      sileo.error({ title: "Error", description: "No se pudo guardar el canal" });
+    } catch (err) {
+      if (!isHandledError(err)) { sileo.error({ title: "Error", description: "No se pudo guardar el canal" }); }
     } finally {
       setSaving(false);
     }

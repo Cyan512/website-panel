@@ -1,11 +1,11 @@
 import { useState, useEffect, useCallback } from "react";
 import { authClient } from "@/config/authClient";
 import { estanciasApi } from "../api";
-import type { EstanciaOutput, CreateEstanciaInput, UpdateEstanciaInput, CheckoutEstanciaInput } from "../types";
+import type { Estancia, CreateEstancia, UpdateEstancia, CheckoutEstancia } from "../types";
 
 export function useEstancias() {
   const { data: session } = authClient.useSession();
-  const [estancias, setEstancias] = useState<EstanciaOutput[]>([]);
+  const [estancias, setEstancias] = useState<Estancia[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -26,19 +26,19 @@ export function useEstancias() {
     if (session) fetchEstancias();
   }, [session, fetchEstancias]);
 
-  const createEstancia = async (data: CreateEstanciaInput): Promise<EstanciaOutput> => {
+  const createEstancia = async (data: CreateEstancia): Promise<Estancia> => {
     const estancia = await estanciasApi.create(data);
     setEstancias((prev) => [estancia, ...prev]);
     return estancia;
   };
 
-  const updateEstancia = async (id: string, data: UpdateEstanciaInput): Promise<EstanciaOutput> => {
+  const updateEstancia = async (id: string, data: UpdateEstancia): Promise<Estancia> => {
     const estancia = await estanciasApi.update(id, data);
     setEstancias((prev) => prev.map((e) => (e.id === id ? estancia : e)));
     return estancia;
   };
 
-  const checkoutEstancia = async (id: string, data: CheckoutEstanciaInput): Promise<EstanciaOutput> => {
+  const checkoutEstancia = async (id: string, data: CheckoutEstancia): Promise<Estancia> => {
     const estancia = await estanciasApi.checkout(id, data);
     setEstancias((prev) => prev.map((e) => (e.id === id ? estancia : e)));
     return estancia;

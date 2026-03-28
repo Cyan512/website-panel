@@ -1,19 +1,19 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Modal, Button, InputField } from "@/components";
 import { sileo } from "sileo";
 import { estadoEstadiaLabels } from "../types";
-import type { EstanciaOutput, CreateEstanciaInput, EstadoEstadia } from "../types";
-import type { Huesped } from "@/features/clients/types";
-import type { Habitacion } from "@/features/rooms/types";
+import type { Estancia, CreateEstancia, EstadoEstadia } from "../types";
+import { useReservas } from "@/features/reservations/hooks/useReservas";
+import type { Reserva } from "@/features/reservations/types";
+import { cn } from "@/utils/cn";
+import { isHandledError } from "@/utils/error.utils";
 
 interface Props {
   isOpen: boolean;
   onClose: () => void;
   onSuccess: () => void;
-  estancia?: EstanciaOutput | null;
-  habitaciones: Habitacion[];
-  huespedes: Huesped[];
-  onSave: (data: CreateEstanciaInput) => Promise<EstanciaOutput>;
+  estancia?: Estancia | null;
+  onSave: (data: CreateEstancia) => Promise<Estancia>;
 }
 
 const toDateInput = (d?: string | Date | null) => {
@@ -24,52 +24,68 @@ const toDateInput = (d?: string | Date | null) => {
 const selectClass = "field-input w-full rounded-xl py-3.5 text-sm px-3.5 focus:outline-none focus:ring-2 focus:ring-accent-primary/30 focus:border-accent-primary border border-border-light/50";
 const labelClass = "field-label block mb-2 text-text-secondary font-medium";
 
-export function EstanciaModal({ isOpen, onClose, onSuccess, estancia, habitaciones, huespedes, onSave }: Props) {
+export function EstanciaModal({ isOpen, onClose, onSuccess, estancia, onSave }: Props) {
+  const { reservas } = useReservas();
+
+  const [reservaQuery, setReservaQuery] = useState("");
+  const [reservaSeleccionada, setReservaSeleccionada] = useState<Reserva | null>(null);
+  const [showSuggestions, setShowSuggestions] = useState(false);
   const [form, setForm] = useState({
-    reservaId: "",
-    habitacionId: "",
-    huespedId: "",
-    fechaEntrada: "",
+    fechaEntrada: toDateInput(new Date()),
     fechaSalida: "",
-    estado: "ACTIVA" as EstadoEstadia,
+    estado: "EN_CASA" as EstadoEstadia,
     notas: "",
   });
   const [saving, setSaving] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
+    if (!isOpen) return;
     if (estancia) {
+      // Buscar la reserva correspondiente
+      const r = reservas.find((x) => x.id === estancia.reserva_id) ?? null;
+      setReservaSeleccionada(r);
+      setReservaQuery(r?.codigo ?? estancia.reserva_id);
       setForm({
-        reservaId: estancia.reservaId,
-        habitacionId: estancia.habitacion.id,
-        huespedId: estancia.huesped.id,
-        fechaEntrada: toDateInput(estancia.fechaEntrada),
-        fechaSalida: toDateInput(estancia.fechaSalida),
+        fechaEntrada: toDateInput(estancia.fecha_entrada),
+        fechaSalida: toDateInput(estancia.fecha_salida),
         estado: estancia.estado,
         notas: estancia.notas ?? "",
       });
     } else {
-      setForm({
-        reservaId: "",
-        habitacionId: habitaciones[0]?.id ?? "",
-        huespedId: huespedes[0]?.id ?? "",
-        fechaEntrada: toDateInput(new Date()),
-        fechaSalida: "",
-        estado: "ACTIVA",
-        notas: "",
-      });
+      setReservaSeleccionada(null);
+      setReservaQuery("");
+      setForm({ fechaEntrada: toDateInput(new Date()), fechaSalida: "", estado: "EN_CASA", notas: "" });
     }
-  }, [estancia, isOpen, habitaciones, huespedes]);
+  }, [isOpen, estancia, reservas]);
+
+  // Autocompletar fechas desde la reserva seleccionada
+  const handleSelectReserva = (r: Reserva) => {
+    setReservaSeleccionada(r);
+    setReservaQuery(r.codigo);
+    setShowSuggestions(false);
+    setForm((f) => ({
+      ...f,
+      fechaEntrada: toDateInput(r.fecha_entrada),
+      fechaSalida: toDateInput(r.fecha_salida),
+    }));
+  };
+
+  const suggestions = reservaQuery.trim()
+    ? reservas.filter((r) =>
+        r.codigo.toLowerCase().includes(reservaQuery.toLowerCase()) ||
+        r.nombre_huesped.toLowerCase().includes(reservaQuery.toLowerCase())
+      ).slice(0, 6)
+    : [];
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!form.habitacionId) return sileo.error({ title: "Error", description: "Selecciona una habitación" });
-    if (!form.huespedId) return sileo.error({ title: "Error", description: "Selecciona un huésped" });
-    if (!form.reservaId.trim()) return sileo.error({ title: "Error", description: "El ID de reserva es requerido" });
+    if (!reservaSeleccionada) return sileo.error({ title: "Error", description: "Selecciona una reserva válida" });
 
-    const payload: CreateEstanciaInput = {
-      reservaId: form.reservaId.trim(),
-      habitacionId: form.habitacionId,
-      huespedId: form.huespedId,
+    const payload: CreateEstancia = {
+      reservaId: reservaSeleccionada.id,
+      habitacionId: reservaSeleccionada.habitacion.id,
+      huespedId: reservaSeleccionada.huesped.id,
       estado: form.estado,
       ...(form.fechaEntrada && { fechaEntrada: new Date(form.fechaEntrada) }),
       ...(form.fechaSalida ? { fechaSalida: new Date(form.fechaSalida) } : { fechaSalida: null }),
@@ -82,8 +98,10 @@ export function EstanciaModal({ isOpen, onClose, onSuccess, estancia, habitacion
       sileo.success({ title: estancia ? "Estancia actualizada" : "Estancia creada" });
       onSuccess();
       onClose();
-    } catch {
-      sileo.error({ title: "Error", description: "No se pudo guardar la estancia" });
+    } catch (err) {
+      if (!isHandledError(err)) {
+        sileo.error({ title: "Error", description: "No se pudo guardar la estancia" });
+      }
     } finally {
       setSaving(false);
     }
@@ -92,34 +110,72 @@ export function EstanciaModal({ isOpen, onClose, onSuccess, estancia, habitacion
   return (
     <Modal isOpen={isOpen} onClose={onClose} title={estancia ? "Editar Estancia" : "Nueva Estancia"} size="lg">
       <form onSubmit={handleSubmit} className="space-y-4">
-        <InputField
-          label="ID de Reserva"
-          value={form.reservaId}
-          onChange={(e) => setForm((f) => ({ ...f, reservaId: e.target.value }))}
-          placeholder="ID de la reserva asociada"
-          required
-        />
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div>
-            <label className={labelClass}>Habitación</label>
-            <select value={form.habitacionId} onChange={(e) => setForm((f) => ({ ...f, habitacionId: e.target.value }))} className={selectClass} required>
-              <option value="">Seleccionar...</option>
-              {habitaciones.map((h) => (
-                <option key={h.id} value={h.id}>Hab. {h.nro_habitacion} — Piso {h.piso}</option>
+        {/* Buscador de reserva */}
+        <div className="relative">
+          <label className={labelClass}>Reserva</label>
+          <input
+            ref={inputRef}
+            type="text"
+            value={reservaQuery}
+            onChange={(e) => {
+              setReservaQuery(e.target.value);
+              setReservaSeleccionada(null);
+              setShowSuggestions(true);
+            }}
+            onFocus={() => setShowSuggestions(true)}
+            onBlur={() => setTimeout(() => setShowSuggestions(false), 150)}
+            placeholder="Buscar por código o nombre de huésped..."
+            className={cn(selectClass, reservaSeleccionada ? "border-emerald-500/50 bg-emerald-500/5" : "")}
+            required
+          />
+
+          {/* Sugerencias */}
+          {showSuggestions && suggestions.length > 0 && (
+            <div className="absolute z-50 top-full left-0 right-0 mt-1 bg-bg-card border border-border rounded-xl shadow-xl overflow-hidden">
+              {suggestions.map((r) => (
+                <button
+                  key={r.id}
+                  type="button"
+                  onMouseDown={() => handleSelectReserva(r)}
+                  className="w-full flex items-start gap-3 px-4 py-3 hover:bg-bg-hover transition-colors text-left border-b border-border/50 last:border-0"
+                >
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <span className="font-mono text-xs font-semibold text-primary">{r.codigo}</span>
+                      <span className={cn("text-[10px] px-1.5 py-0.5 rounded-full font-medium",
+                        r.estado === "CONFIRMADA" ? "bg-emerald-100 text-emerald-700" :
+                        r.estado === "TENTATIVA" ? "bg-amber-100 text-amber-700" :
+                        "bg-gray-100 text-gray-600"
+                      )}>{r.estado}</span>
+                    </div>
+                    <p className="text-sm text-text-primary mt-0.5">{r.nombre_huesped}</p>
+                    <p className="text-xs text-text-muted">
+                      Hab. {r.nro_habitacion} · {new Date(r.fecha_entrada).toLocaleDateString("es-ES")} → {new Date(r.fecha_salida).toLocaleDateString("es-ES")}
+                    </p>
+                  </div>
+                </button>
               ))}
-            </select>
-          </div>
-          <div>
-            <label className={labelClass}>Huésped</label>
-            <select value={form.huespedId} onChange={(e) => setForm((f) => ({ ...f, huespedId: e.target.value }))} className={selectClass} required>
-              <option value="">Seleccionar...</option>
-              {huespedes.map((h) => (
-                <option key={h.id} value={h.id}>{h.nombres} {h.apellidos}</option>
-              ))}
-            </select>
-          </div>
+            </div>
+          )}
         </div>
+
+        {/* Preview de datos autocompletados */}
+        {reservaSeleccionada && (
+          <div className="bg-primary/5 border border-primary/20 rounded-xl p-4 text-sm space-y-1.5">
+            <p className="text-xs font-semibold text-primary uppercase tracking-wide mb-2">Datos autocompletados</p>
+            <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs">
+              <span className="text-text-muted">Huésped</span>
+              <span className="text-text-primary font-medium">{reservaSeleccionada.nombre_huesped}</span>
+              <span className="text-text-muted">Habitación</span>
+              <span className="text-text-primary font-medium">Nro. {reservaSeleccionada.nro_habitacion}</span>
+              <span className="text-text-muted">Tipo</span>
+              <span className="text-text-primary font-medium">{reservaSeleccionada.nombre_tipo_hab}</span>
+              <span className="text-text-muted">Canal</span>
+              <span className="text-text-primary font-medium">{reservaSeleccionada.nombre_canal}</span>
+            </div>
+          </div>
+        )}
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <InputField

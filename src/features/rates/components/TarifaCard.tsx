@@ -1,7 +1,7 @@
-import type { TarifaOutput } from "../types";
+import type { Tarifa } from "../types";
 
 interface Props {
-  tarifa: TarifaOutput;
+  tarifa: Tarifa;
   onClick: () => void;
 }
 

@@ -1,17 +1,19 @@
 import { useState, useEffect } from "react";
 import { Modal, Button, InputField } from "@/components";
 import { sileo } from "sileo";
-import type { TarifaOutput, CreateTarifaInput, CanalOutput } from "../types";
+import { isHandledError } from "@/utils/error.utils";
+import type { Tarifa, CreateTarifa } from "../types";
 import type { TipoHabitacion } from "@/features/rooms/types";
+import type { Canal } from "@/features/channels/types";
 
 interface Props {
   isOpen: boolean;
   onClose: () => void;
   onSuccess: () => void;
-  tarifa?: TarifaOutput | null;
+  tarifa?: Tarifa | null;
   tiposHabitacion: TipoHabitacion[];
-  canales: CanalOutput[];
-  onSave: (data: CreateTarifaInput) => Promise<TarifaOutput>;
+  canales: Canal[];
+  onSave: (data: CreateTarifa) => Promise<Tarifa>;
 }
 
 const defaultForm = {
@@ -55,7 +57,7 @@ export function TarifaModal({ isOpen, onClose, onSuccess, tarifa, tiposHabitacio
     if (!form.canal_id) return sileo.error({ title: "Error", description: "Selecciona un canal" });
     if (!precio || precio <= 0) return sileo.error({ title: "Error", description: "El precio debe ser mayor a 0" });
 
-    const payload: CreateTarifaInput = {
+    const payload: CreateTarifa = {
       tipo_habitacion_id: form.tipo_habitacion_id,
       canal_id: form.canal_id,
       precio_noche: precio,
@@ -70,8 +72,8 @@ export function TarifaModal({ isOpen, onClose, onSuccess, tarifa, tiposHabitacio
       sileo.success({ title: tarifa ? "Tarifa actualizada" : "Tarifa creada" });
       onSuccess();
       onClose();
-    } catch {
-      sileo.error({ title: "Error", description: "No se pudo guardar la tarifa" });
+    } catch (err) {
+      if (!isHandledError(err)) { sileo.error({ title: "Error", description: "No se pudo guardar la tarifa" }); }
     } finally {
       setSaving(false);
     }

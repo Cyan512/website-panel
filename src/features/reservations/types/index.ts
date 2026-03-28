@@ -1,43 +1,62 @@
 import type { Huesped } from "@/features/clients/types";
-import type { Habitacion } from "@/features/rooms/types";
-import type { TarifaOutput } from "@/features/rates/types";
+import type { Tarifa } from "@/features/rates/types";
 
-export type EstadoReserva = "PENDIENTE" | "CONFIRMADA" | "CANCELADA" | "COMPLETADA";
+export type EstadoReserva = "TENTATIVA" | "CONFIRMADA" | "EN_CASA" | "COMPLETADA" | "CANCELADA" | "NO_LLEGO";
 
 export const estadoReservaLabels: Record<EstadoReserva, string> = {
-  PENDIENTE: "Pendiente",
+  TENTATIVA: "Tentativa",
   CONFIRMADA: "Confirmada",
-  CANCELADA: "Cancelada",
+  EN_CASA: "En Casa",
   COMPLETADA: "Completada",
+  CANCELADA: "Cancelada",
+  NO_LLEGO: "No Llegó",
 };
 
 export const estadoReservaColors: Record<EstadoReserva, string> = {
-  PENDIENTE: "bg-amber-100 text-amber-700",
-  CONFIRMADA: "bg-emerald-100 text-emerald-700",
-  CANCELADA: "bg-red-100 text-red-700",
-  COMPLETADA: "bg-blue-100 text-blue-700",
+  TENTATIVA: "bg-amber-200 text-amber-600",
+  CONFIRMADA: "bg-emerald-200 text-emerald-600",
+  EN_CASA: "bg-blue-200 text-blue-600",
+  COMPLETADA: "bg-indigo-200 text-indigo-600",
+  CANCELADA: "bg-red-200 text-red-600",
+  NO_LLEGO: "bg-gray-200 text-gray-600",
 };
 
-export interface ReservaOutput {
+export interface ReservaHabitacion {
+  id: string;
+  nro_habitacion: string;
+  piso: number;
+  estado: string;
+}
+
+export interface Reserva {
   id: string;
   codigo: string;
   huesped: Huesped;
-  habitacion: Habitacion;
-  tarifa: TarifaOutput;
-  pagoId: string | null;
-  fechaEntrada: string;
-  fechaSalida: string;
+  habitacion: ReservaHabitacion;
+  tarifa: Tarifa;
+  pago: unknown | null;
+  fecha_entrada: string;
+  fecha_salida: string;
   adultos: number;
   ninos: number;
-  montoDescuento: number | null;
+  nombre_huesped: string;
+  nro_habitacion: string;
+  nombre_tipo_hab: string;
+  nombre_canal: string;
+  precio_noche: number;
+  iva: number | null;
+  cargo_servicios: number | null;
+  monto_total: number;
+  monto_descuento: number | null;
+  monto_final: number;
   estado: EstadoReserva;
-  motivoCancel: string | null;
+  motivo_cancel: string | null;
+  cancelado_en: string | null;
   created_at: string;
   updated_at: string;
 }
 
-export interface CreateReservaInput {
-  codigo: string;
+export interface CreateReserva {
   huespedId: string;
   habitacionId: string;
   tarifaId: string;
@@ -48,7 +67,7 @@ export interface CreateReservaInput {
   montoDescuento?: number;
 }
 
-export interface UpdateReservaInput {
+export interface UpdateReserva {
   huespedId?: string;
   habitacionId?: string;
   tarifaId?: string;
@@ -61,6 +80,10 @@ export interface UpdateReservaInput {
   estado?: EstadoReserva;
 }
 
-export interface CancelReservaInput {
+export interface CancelReserva {
   motivoCancel: string;
+}
+
+export interface UpdateEstadoReserva {
+  estado: EstadoReserva;
 }

@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { authClient } from "@/config/authClient";
 import { roomsApi, tiposHabitacionApi } from "../api";
-import type { Habitacion, TipoHabitacion, CreateHabitacionDto, UpdateEstadoHabitacionDto } from "../types";
+import type { Habitacion, TipoHabitacion, CreateHabitacion, UpdateEstadoHabitacion } from "../types";
 
 export function useHabitaciones() {
   const { data: session } = authClient.useSession();
@@ -28,7 +28,7 @@ export function useHabitaciones() {
     }
   }, [session, fetchHabitaciones]);
 
-  const createHabitacion = async (data: CreateHabitacionDto): Promise<Habitacion> => {
+  const createHabitacion = async (data: CreateHabitacion): Promise<Habitacion> => {
     const habitacion = await roomsApi.create(data);
     setHabitaciones(prev => [...prev, habitacion]);
     return habitacion;
@@ -40,7 +40,7 @@ export function useHabitaciones() {
     return habitacion;
   }
 
-  const updateEstadoHabitacion = async (id: string, data: UpdateEstadoHabitacionDto): Promise<Habitacion> => {
+  const updateEstadoHabitacion = async (id: string, data: UpdateEstadoHabitacion): Promise<Habitacion> => {
     const habitacion = await roomsApi.updateEstado(id, data);
     setHabitaciones(prev => prev.map(h => h.id === id ? habitacion : h));
     return habitacion;

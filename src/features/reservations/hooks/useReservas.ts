@@ -1,11 +1,11 @@
 import { useState, useEffect, useCallback } from "react";
 import { authClient } from "@/config/authClient";
 import { reservasApi } from "../api";
-import type { ReservaOutput, CreateReservaInput, UpdateReservaInput, CancelReservaInput } from "../types";
+import type { Reserva, CreateReserva, UpdateReserva, CancelReserva, UpdateEstadoReserva } from "../types";
 
 export function useReservas() {
   const { data: session } = authClient.useSession();
-  const [reservas, setReservas] = useState<ReservaOutput[]>([]);
+  const [reservas, setReservas] = useState<Reserva[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -26,19 +26,25 @@ export function useReservas() {
     if (session) fetchReservas();
   }, [session, fetchReservas]);
 
-  const createReserva = async (data: CreateReservaInput): Promise<ReservaOutput> => {
+  const createReserva = async (data: CreateReserva): Promise<Reserva> => {
     const r = await reservasApi.create(data);
     setReservas((prev) => [r, ...prev]);
     return r;
   };
 
-  const updateReserva = async (id: string, data: UpdateReservaInput): Promise<ReservaOutput> => {
+  const updateReserva = async (id: string, data: UpdateReserva): Promise<Reserva> => {
     const r = await reservasApi.update(id, data);
     setReservas((prev) => prev.map((x) => (x.id === id ? r : x)));
     return r;
   };
 
-  const cancelReserva = async (id: string, data: CancelReservaInput): Promise<ReservaOutput> => {
+  const updateEstadoReserva = async (id: string, data: UpdateEstadoReserva): Promise<Reserva> => {
+    const r = await reservasApi.updateEstado(id, data);
+    setReservas((prev) => prev.map((x) => (x.id === id ? r : x)));
+    return r;
+  };
+
+  const cancelReserva = async (id: string, data: CancelReserva): Promise<Reserva> => {
     const r = await reservasApi.cancel(id, data);
     setReservas((prev) => prev.map((x) => (x.id === id ? r : x)));
     return r;
@@ -49,5 +55,5 @@ export function useReservas() {
     setReservas((prev) => prev.filter((x) => x.id !== id));
   };
 
-  return { reservas, loading, error, fetchReservas, createReserva, updateReserva, cancelReserva, deleteReserva };
+  return { reservas, loading, error, fetchReservas, createReserva, updateReserva, updateEstadoReserva, cancelReserva, deleteReserva };
 }

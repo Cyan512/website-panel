@@ -16,7 +16,7 @@ export interface Habitacion {
   updated_at: Date;
 }
 
-export interface CreateHabitacionDto {
+export interface CreateHabitacion {
   nro_habitacion: string;
   tipo_habitacion_id: string;
   piso: number;
@@ -28,7 +28,7 @@ export interface CreateHabitacionDto {
   ulti_limpieza: string;
 }
 
-export interface UpdateHabitacionDto {
+export interface UpdateHabitacion {
   nro_habitacion?: string;
   tipo_habitacion_id: string;
   piso?: number;
@@ -40,7 +40,7 @@ export interface UpdateHabitacionDto {
   ulti_limpieza: string;
 }
 
-export interface UpdateEstadoHabitacionDto {
+export interface UpdateEstadoHabitacion {
   estado?: EstadoHabitacion;
   ulti_limpieza: string;
 }
@@ -53,13 +53,13 @@ export interface TipoHabitacion {
   updated_at: Date;
 }
 
-export interface CreateTipoHabitacionDto {
+export interface CreateTipoHabitacion {
   nombre: string;
   descripcion?: string | null;
   muebles?: string[];
 }
 
-export interface UpdateTipoHabitacionDto {
+export interface UpdateTipoHabitacion {
   nombre?: string;
   descripcion?: string | null;
   muebles?: string[];
