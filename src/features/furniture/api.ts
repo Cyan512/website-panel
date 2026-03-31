@@ -1,35 +1,36 @@
 import axiosInstance from "@/config/axios/axios.instance";
-import type { MuebleOutput, CreateMuebleInput, UpdateMuebleInput, CategoriaOutput } from "./types";
+import type { Mueble, CreateMueble, UpdateMueble } from "./types";
+import type { CategoriaMueble } from "../furniture-categories/types";
 
 export const mueblesApi = {
-  getAll: async (): Promise<MuebleOutput[]> => {
-    const response = await axiosInstance.get<{ success: boolean; data: MuebleOutput[] }>("/api/muebles");
+  getAll: async (): Promise<Mueble[]> => {
+    const response = await axiosInstance.get<{ success: boolean; data: Mueble[] }>("/api/private/muebles");
     return response.data.data;
   },
 
-  getById: async (id: string): Promise<MuebleOutput> => {
-    const response = await axiosInstance.get<{ success: boolean; data: MuebleOutput }>(`/api/muebles/${id}`);
+  getById: async (id: string): Promise<Mueble> => {
+    const response = await axiosInstance.get<{ success: boolean; data: Mueble }>(`/api/private/muebles/${id}`);
     return response.data.data;
   },
 
-  create: async (data: CreateMuebleInput): Promise<MuebleOutput> => {
-    const response = await axiosInstance.post<{ success: boolean; data: MuebleOutput }>("/api/muebles", data);
+  create: async (data: CreateMueble): Promise<Mueble> => {
+    const response = await axiosInstance.post<{ success: boolean; data: Mueble }>("/api/private/muebles", data);
     return response.data.data;
   },
 
-  update: async (id: string, data: UpdateMuebleInput): Promise<MuebleOutput> => {
-    const response = await axiosInstance.put<{ success: boolean; data: MuebleOutput }>(`/api/muebles/${id}`, data);
+  update: async (id: string, data: UpdateMueble): Promise<Mueble> => {
+    const response = await axiosInstance.put<{ success: boolean; data: Mueble }>(`/api/private/muebles/${id}`, data);
     return response.data.data;
   },
 
   delete: async (id: string): Promise<void> => {
-    await axiosInstance.delete(`/api/muebles/${id}`);
+    await axiosInstance.delete(`/api/private/muebles/${id}`);
   },
 };
 
 export const categoriasApi = {
-  getAll: async (): Promise<CategoriaOutput[]> => {
-    const response = await axiosInstance.get<{ success: boolean; data: CategoriaOutput[] }>("/api/categorias-mueble");
+  getAll: async (): Promise<CategoriaMueble[]> => {
+    const response = await axiosInstance.get<{ success: boolean; data: CategoriaMueble[] }>("/api/private/categorias-mueble");
     return response.data.data;
   },
 };

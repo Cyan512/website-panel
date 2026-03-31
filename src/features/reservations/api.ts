@@ -1,38 +1,43 @@
 import axiosInstance from "@/config/axios/axios.instance";
-import type { Reserva, CreateReserva, UpdateReserva, CancelReserva, UpdateEstadoReserva } from "./types";
+import type { Reserva, CreateReserva, UpdateReserva, CancelReserva, UpdateEstadoReserva, PaginatedReservas } from "./types";
 
 export const reservasApi = {
-  getAll: async (): Promise<Reserva[]> => {
-    const response = await axiosInstance.get<{ success: boolean; data: Reserva[] }>("/api/reservas");
+  getAll: async (page = 1, limit = 10, name?: string, tipo?: string): Promise<PaginatedReservas> => {
+    const params = new URLSearchParams({ page: String(page), limit: String(limit) });
+    if (name) params.set("name", name);
+    if (tipo) params.set("tipo", tipo);
+    const response = await axiosInstance.get<{ success: boolean; data: PaginatedReservas }>(
+      `/api/private/reservas?${params.toString()}`
+    );
     return response.data.data;
   },
 
   getById: async (id: string): Promise<Reserva> => {
-    const response = await axiosInstance.get<{ success: boolean; data: Reserva }>(`/api/reservas/${id}`);
+    const response = await axiosInstance.get<{ success: boolean; data: Reserva }>(`/api/private/reservas/${id}`);
     return response.data.data;
   },
 
   create: async (data: CreateReserva): Promise<Reserva> => {
-    const response = await axiosInstance.post<{ success: boolean; data: Reserva }>("/api/reservas", data);
+    const response = await axiosInstance.post<{ success: boolean; data: Reserva }>("/api/private/reservas", data);
     return response.data.data;
   },
 
   update: async (id: string, data: UpdateReserva): Promise<Reserva> => {
-    const response = await axiosInstance.put<{ success: boolean; data: Reserva }>(`/api/reservas/${id}`, data);
+    const response = await axiosInstance.put<{ success: boolean; data: Reserva }>(`/api/private/reservas/${id}`, data);
     return response.data.data;
   },
 
   updateEstado: async (id: string, data: UpdateEstadoReserva): Promise<Reserva> => {
-    const response = await axiosInstance.patch<{ success: boolean; data: Reserva }>(`/api/reservas/${id}/estado`, data);
+    const response = await axiosInstance.patch<{ success: boolean; data: Reserva }>(`/api/private/reservas/${id}/estado`, data);
     return response.data.data;
   },
 
   cancel: async (id: string, data: CancelReserva): Promise<Reserva> => {
-    const response = await axiosInstance.patch<{ success: boolean; data: Reserva }>(`/api/reservas/${id}/cancel`, data);
+    const response = await axiosInstance.patch<{ success: boolean; data: Reserva }>(`/api/private/reservas/${id}/cancel`, data);
     return response.data.data;
   },
 
   delete: async (id: string): Promise<void> => {
-    await axiosInstance.delete(`/api/reservas/${id}`);
+    await axiosInstance.delete(`/api/private/reservas/${id}`);
   },
 };

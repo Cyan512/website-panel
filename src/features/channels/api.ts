@@ -1,28 +1,28 @@
 import axiosInstance from "@/config/axios/axios.instance";
-import type { CanalOutput, CreateCanalInput, UpdateCanalInput } from "./types";
+import type { Canal, CreateCanal, UpdateCanal } from "./types";
 
 export const canalesApi = {
-  getAll: async (): Promise<CanalOutput[]> => {
-    const response = await axiosInstance.get<{ success: boolean; data: CanalOutput[] }>("/api/canales");
+  getAll: async (): Promise<Canal[]> => {
+    const response = await axiosInstance.get<{ success: boolean; data: Canal[] }>("/api/private/canales");
     return response.data.data;
   },
 
-  getById: async (id: string): Promise<CanalOutput> => {
-    const response = await axiosInstance.get<{ success: boolean; data: CanalOutput }>(`/api/canales/${id}`);
+  getById: async (id: string): Promise<Canal> => {
+    const response = await axiosInstance.get<{ success: boolean; data: Canal }>(`/api/private/canales/${id}`);
     return response.data.data;
   },
 
-  create: async (data: CreateCanalInput): Promise<CanalOutput> => {
-    const response = await axiosInstance.post<{ success: boolean; data: CanalOutput }>("/api/canales", data);
+  create: async (data: CreateCanal): Promise<Canal> => {
+    const response = await axiosInstance.post<{ success: boolean; data: Canal }>("/api/private/canales", data);
     return response.data.data;
   },
 
-  update: async (id: string, data: UpdateCanalInput): Promise<CanalOutput> => {
-    const response = await axiosInstance.put<{ success: boolean; data: CanalOutput }>(`/api/canales/${id}`, data);
+  update: async (id: string, data: UpdateCanal): Promise<Canal> => {
+    const response = await axiosInstance.put<{ success: boolean; data: Canal }>(`/api/private/canales/${id}`, data);
     return response.data.data;
   },
 
   delete: async (id: string): Promise<void> => {
-    await axiosInstance.delete(`/api/canales/${id}`);
+    await axiosInstance.delete(`/api/private/canales/${id}`);
   },
 };

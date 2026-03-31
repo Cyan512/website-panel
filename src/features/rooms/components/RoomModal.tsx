@@ -1,9 +1,9 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useHabitaciones, useTiposHabitacion } from "../hooks/useRooms";
 import { Modal, Button } from "@/components";
 import { InputField } from "@/components";
 import { sileo } from "sileo";
-import { MdAdd, MdClose } from "react-icons/md";
+import { MdUpload, MdClose } from "react-icons/md";
 import type { CreateHabitacion, EstadoHabitacion, Habitacion, UpdateHabitacion } from "../types";
 
 const ESTADO_OPTIONS: { value: EstadoHabitacion; label: string }[] = [
@@ -28,7 +28,8 @@ export function RoomModal({ isOpen, onClose, onSuccess, habitacion }: RoomModalP
     const { tipos, loading: loadingTipos } = useTiposHabitacion();
     const isEditing = !!habitacion;
     const [loading, setLoading] = useState(false);
-    const [imageInput, setImageInput] = useState("");
+    const [files, setFiles] = useState<File[]>([]);
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
     const [formData, setFormData] = useState<CreateHabitacion>({
         nro_habitacion: "",
@@ -36,7 +37,6 @@ export function RoomModal({ isOpen, onClose, onSuccess, habitacion }: RoomModalP
         piso: 1,
         tiene_banio: true,
         tiene_ducha: true,
-        url_imagen: null,
         estado: "DISPONIBLE",
         notas: "",
         ulti_limpieza: "",
@@ -44,7 +44,7 @@ export function RoomModal({ isOpen, onClose, onSuccess, habitacion }: RoomModalP
 
     useEffect(() => {
         if (!isOpen) return;
-        setImageInput("");
+        setFiles([]);
         if (habitacion) {
             setFormData({
                 nro_habitacion: habitacion.nro_habitacion,
@@ -52,7 +52,6 @@ export function RoomModal({ isOpen, onClose, onSuccess, habitacion }: RoomModalP
                 piso: habitacion.piso,
                 tiene_banio: habitacion.tiene_banio,
                 tiene_ducha: habitacion.tiene_ducha,
-                url_imagen: habitacion.url_imagen,
                 estado: habitacion.estado,
                 notas: habitacion.notas,
                 ulti_limpieza: habitacion.ulti_limpieza
@@ -66,7 +65,6 @@ export function RoomModal({ isOpen, onClose, onSuccess, habitacion }: RoomModalP
                 piso: 1,
                 tiene_banio: true,
                 tiene_ducha: true,
-                url_imagen: null,
                 estado: "DISPONIBLE",
                 notas: "",
                 ulti_limpieza: "",
@@ -80,22 +78,14 @@ export function RoomModal({ isOpen, onClose, onSuccess, habitacion }: RoomModalP
         }
     }, [tipos, formData.tipo_habitacion_id]);
 
-    // Image list helpers
-    const images = formData.url_imagen ?? [];
-
-    const addImage = () => {
-        const url = imageInput.trim();
-        if (!url) return;
-        setFormData((prev) => ({ ...prev, url_imagen: [...(prev.url_imagen ?? []), url] }));
-        setImageInput("");
+    // File helpers
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const selected = Array.from(e.target.files ?? []);
+        setFiles((prev) => [...prev, ...selected]);
+        e.target.value = "";
     };
 
-    const removeImage = (idx: number) => {
-        setFormData((prev) => {
-            const next = (prev.url_imagen ?? []).filter((_, i) => i !== idx);
-            return { ...prev, url_imagen: next.length > 0 ? next : null };
-        });
-    };
+    const removeFile = (idx: number) => setFiles((prev) => prev.filter((_, i) => i !== idx));
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -108,16 +98,14 @@ export function RoomModal({ isOpen, onClose, onSuccess, habitacion }: RoomModalP
                     piso: formData.piso,
                     tiene_banio: formData.tiene_banio,
                     tiene_ducha: formData.tiene_ducha,
-                    url_imagen: formData.url_imagen,
                     estado: formData.estado,
                     ulti_limpieza: formData.ulti_limpieza,
+                    notas: formData.notas?.trim() || null,
+                    ...(files.length > 0 && { imagenes: files }),
                 };
-                if (formData.notas && formData.notas.trim() !== '') {
-                    updateData.notas = formData.notas;
-                }
                 await updateHabitacion(habitacion.id, updateData);
             } else {
-                await createHabitacion(formData);
+                await createHabitacion({ ...formData, imagenes: files.length > 0 ? files : undefined });
             }
             onSuccess();
             onClose();
@@ -176,32 +164,44 @@ export function RoomModal({ isOpen, onClose, onSuccess, habitacion }: RoomModalP
                         <input type="date" value={formData.ulti_limpieza} onChange={(e) => setFormData({ ...formData, ulti_limpieza: e.target.value })} className={selectClass + " [color-scheme:dark]"} />
                     </div>
 
-                    {/* Multi-image input */}
                     <div>
-                        <label className="field-label block mb-2 text-text-secondary font-medium">Imágenes (opcional)</label>
-                        <div className="flex gap-2">
-                            <input
-                                type="url"
-                                value={imageInput}
-                                onChange={(e) => setImageInput(e.target.value)}
-                                onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addImage(); } }}
-                                placeholder="https://ejemplo.com/imagen.jpg"
-                                className={selectClass + " flex-1"}
-                            />
-                            <button type="button" onClick={addImage} className="px-3 py-2 rounded-xl bg-primary/10 text-primary border border-primary/20 hover:bg-primary/20 transition-all">
-                                <MdAdd className="w-5 h-5" />
-                            </button>
-                        </div>
+                        <label className="field-label block mb-2 text-text-secondary font-medium">
+                            Imágenes {isEditing ? "(reemplaza las actuales)" : "(opcional)"}
+                        </label>
+                        <input
+                            ref={fileInputRef}
+                            type="file"
+                            accept="image/*"
+                            multiple
+                            className="hidden"
+                            onChange={handleFileChange}
+                        />
+                        <button
+                            type="button"
+                            onClick={() => fileInputRef.current?.click()}
+                            className="w-full flex items-center justify-center gap-2 py-3 rounded-xl border-2 border-dashed border-border hover:border-primary/50 hover:bg-primary/5 transition-all text-text-muted hover:text-primary text-sm"
+                        >
+                            <MdUpload className="w-5 h-5" />
+                            Seleccionar imágenes
+                        </button>
 
-                        {images.length > 0 && (
-                            <div className="mt-3 space-y-2">
-                                {images.map((url, idx) => (
-                                    <div key={idx} className="flex items-center gap-2 bg-bg-tertiary/30 rounded-xl px-3 py-2 border border-border">
-                                        <img src={url} alt="" className="w-10 h-10 rounded-lg object-cover shrink-0 border border-border" onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
-                                        <span className="text-xs text-text-muted truncate flex-1">{url}</span>
-                                        <button type="button" onClick={() => removeImage(idx)} className="p-1 rounded-lg hover:bg-danger/10 hover:text-danger text-text-muted transition-all shrink-0">
-                                            <MdClose className="w-4 h-4" />
+                        {files.length > 0 && (
+                            <div className="mt-3 grid grid-cols-3 gap-2">
+                                {files.map((file, idx) => (
+                                    <div key={idx} className="relative group rounded-xl overflow-hidden border border-border aspect-square bg-bg-tertiary/30">
+                                        <img
+                                            src={URL.createObjectURL(file)}
+                                            alt={file.name}
+                                            className="w-full h-full object-cover"
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={() => removeFile(idx)}
+                                            className="absolute top-1 right-1 p-1 rounded-lg bg-black/60 text-white opacity-0 group-hover:opacity-100 transition-opacity"
+                                        >
+                                            <MdClose className="w-3.5 h-3.5" />
                                         </button>
+                                        <p className="absolute bottom-0 left-0 right-0 text-[10px] text-white bg-black/50 px-1.5 py-0.5 truncate">{file.name}</p>
                                     </div>
                                 ))}
                             </div>

@@ -22,7 +22,7 @@ export interface CreateHabitacion {
   piso: number;
   tiene_ducha: boolean;
   tiene_banio: boolean;
-  url_imagen?: string[] | null;
+  imagenes?: File[];
   estado?: EstadoHabitacion;
   notas?: string | null;
   ulti_limpieza: string;
@@ -34,7 +34,7 @@ export interface UpdateHabitacion {
   piso?: number;
   tiene_ducha: boolean;
   tiene_banio: boolean;
-  url_imagen?: string[] | null;
+  imagenes?: File[];
   estado?: EstadoHabitacion;
   notas?: string | null;
   ulti_limpieza: string;

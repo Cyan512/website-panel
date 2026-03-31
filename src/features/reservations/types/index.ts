@@ -21,6 +21,20 @@ export const estadoReservaColors: Record<EstadoReserva, string> = {
   NO_LLEGO: "bg-gray-200 text-gray-600",
 };
 
+export interface PaginatedReservas {
+  list: Reserva[];
+  pagination: PaginationMeta;
+}
+
+export interface PaginationMeta {
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+  hasNextPage: boolean;
+  hasPreviousPage: boolean;
+}
+
 export interface ReservaHabitacion {
   id: string;
   nro_habitacion: string;

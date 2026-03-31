@@ -1,35 +1,36 @@
 import axiosInstance from "@/config/axios/axios.instance";
-import type { TarifaOutput, CreateTarifaInput, UpdateTarifaInput, CanalOutput } from "./types";
+import type { Tarifa, CreateTarifa, UpdateTarifa } from "./types";
+import type { Canal } from "../channels/types";
 
 export const tarifasApi = {
-  getAll: async (): Promise<TarifaOutput[]> => {
-    const response = await axiosInstance.get<{ success: boolean; data: TarifaOutput[] }>("/api/tarifas");
+  getAll: async (): Promise<Tarifa[]> => {
+    const response = await axiosInstance.get<{ success: boolean; data: Tarifa[] }>("/api/private/tarifas");
     return response.data.data;
   },
 
-  getById: async (id: string): Promise<TarifaOutput> => {
-    const response = await axiosInstance.get<{ success: boolean; data: TarifaOutput }>(`/api/tarifas/${id}`);
+  getById: async (id: string): Promise<Tarifa> => {
+    const response = await axiosInstance.get<{ success: boolean; data: Tarifa }>(`/api/private/tarifas/${id}`);
     return response.data.data;
   },
 
-  create: async (data: CreateTarifaInput): Promise<TarifaOutput> => {
-    const response = await axiosInstance.post<{ success: boolean; data: TarifaOutput }>("/api/tarifas", data);
+  create: async (data: CreateTarifa): Promise<Tarifa> => {
+    const response = await axiosInstance.post<{ success: boolean; data: Tarifa }>("/api/private/private/tarifas", data);
     return response.data.data;
   },
 
-  update: async (id: string, data: UpdateTarifaInput): Promise<TarifaOutput> => {
-    const response = await axiosInstance.put<{ success: boolean; data: TarifaOutput }>(`/api/tarifas/${id}`, data);
+  update: async (id: string, data: UpdateTarifa): Promise<Tarifa> => {
+    const response = await axiosInstance.put<{ success: boolean; data: Tarifa }>(`/api/private/tarifas/${id}`, data);
     return response.data.data;
   },
 
   delete: async (id: string): Promise<void> => {
-    await axiosInstance.delete(`/api/tarifas/${id}`);
+    await axiosInstance.delete(`/api/private/tarifas/${id}`);
   },
 };
 
 export const canalesApi = {
-  getAll: async (): Promise<CanalOutput[]> => {
-    const response = await axiosInstance.get<{ success: boolean; data: CanalOutput[] }>("/api/canales");
+  getAll: async (): Promise<Canal[]> => {
+    const response = await axiosInstance.get<{ success: boolean; data: Canal[] }>("/api/private/canales");
     return response.data.data;
   },
 };

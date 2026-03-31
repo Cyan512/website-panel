@@ -13,7 +13,7 @@ export default function ClientsPage() {
   const { data: session } = authClient.useSession();
   const {
     huespedes, pagination, limit, loading, error,
-    fetchHuespedes, goToPage, changeLimit, deleteHuesped,
+    fetchHuespedes, goToPage, changeLimit, changeSearch, deleteHuesped,
   } = useHuespedes();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -23,8 +23,12 @@ export default function ClientsPage() {
   const [deleting, setDeleting] = useState(false);
   const [search, setSearch] = useState("");
 
+  const handleSearchChange = (q: string) => {
+    setSearch(q);
+    changeSearch(q);
+  };
+
   if (!session) return <Loading text="Verificando sesión..." />;
-  if (loading) return <div className="flex items-center justify-center min-h-[60vh]"><Loading text="Cargando huéspedes..." /></div>;
   if (error) return <div className="flex items-center justify-center min-h-[60vh]"><div className="text-danger">{error}</div></div>;
 
   const handleDelete = async (huesped?: Huesped) => {
@@ -84,9 +88,10 @@ export default function ClientsPage() {
               pagination={pagination}
               limit={limit}
               search={search}
+              loading={loading}
               onPageChange={goToPage}
               onLimitChange={changeLimit}
-              onSearch={setSearch}
+              onSearch={handleSearchChange}
               onRowClick={setSelectedHuesped}
               onEdit={handleEdit}
               onDelete={handleDelete}

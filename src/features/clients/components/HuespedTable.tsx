@@ -7,6 +7,7 @@ interface Props {
   huespedes: Huesped[];
   pagination: PaginationMeta;
   limit: number;
+  loading?: boolean;
   onPageChange: (page: number) => void;
   onLimitChange: (limit: number) => void;
   onSearch: (q: string) => void;
@@ -18,7 +19,7 @@ interface Props {
 }
 
 export function HuespedTable({
-  huespedes, pagination, limit, onPageChange, onLimitChange, onSearch, search,
+  huespedes, pagination, limit, loading = false, onPageChange, onLimitChange, onSearch, search,
   onRowClick, onEdit, onDelete, onDeleteMany,
 }: Props) {
   const [selected, setSelected] = useState<Set<string>>(new Set());
@@ -112,7 +113,9 @@ export function HuespedTable({
             </tr>
           </thead>
           <tbody>
-            {huespedes.length === 0 ? (
+            {loading ? (
+              <tr><td colSpan={7} className="text-center py-10 text-text-muted text-sm">Buscando...</td></tr>
+            ) : huespedes.length === 0 ? (
               <tr><td colSpan={7} className="text-center py-10 text-text-muted text-sm">No hay huéspedes registrados</td></tr>
             ) : huespedes.map((h) => (
               <tr key={h.id} className={cn("border-b border-border/50 last:border-0 transition-colors", selected.has(h.id) ? "bg-primary/5" : "hover:bg-accent-primary/5")}>

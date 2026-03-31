@@ -40,6 +40,7 @@ export interface Pago {
 }
 
 export interface CreatePago {
+  reservaId?: string | null;
   concepto: ConceptoPago;
   estado?: EstadoPago;
   fecha_pago?: string | null;

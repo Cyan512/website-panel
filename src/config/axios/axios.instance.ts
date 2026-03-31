@@ -10,7 +10,7 @@ const MUTATING_METHODS = new Set(["post", "put", "patch", "delete"]);
 const axiosInstance: AxiosInstance = axios.create({
   baseURL: environment.app.apiEndpoint,
   headers: {
-    "Content-Type": "application/json",
+    "Content-Type": undefined,
   },
   withCredentials: true,
 });
