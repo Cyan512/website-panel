@@ -27,7 +27,7 @@ const toDateInput = (d?: string | Date | null) => d ? new Date(d).toISOString().
 export function ReservaModal({ isOpen, onClose, onSuccess, reserva, huespedes, habitaciones, tarifas, onCreate, onUpdate }: Props) {
   const [form, setForm] = useState({
     huespedId: "", habitacionId: "", tarifaId: "",
-    fechaEntrada: "", fechaSalida: "", adultos: "1", ninos: "0", montoDescuento: "",
+    fecha_inicio: "", fecha_fin: "", adultos: "1", ninos: "0",
     estado: "TENTATIVA" as EstadoReserva,
   });
   const [saving, setSaving] = useState(false);
@@ -35,29 +35,28 @@ export function ReservaModal({ isOpen, onClose, onSuccess, reserva, huespedes, h
   useEffect(() => {
     if (reserva) {
       setForm({
-        huespedId: reserva.huesped.id,
-        habitacionId: reserva.habitacion.id,
-        tarifaId: reserva.tarifa.id,
-        fechaEntrada: toDateInput(reserva.fecha_entrada),
-        fechaSalida: toDateInput(reserva.fecha_salida),
+        huespedId: reserva.huespedId,
+        habitacionId: reserva.habitacionId,
+        tarifaId: reserva.tarifaId,
+        fecha_inicio: toDateInput(reserva.fecha_inicio),
+        fecha_fin: toDateInput(reserva.fecha_fin),
         adultos: String(reserva.adultos),
         ninos: String(reserva.ninos),
-        montoDescuento: reserva.monto_descuento != null ? String(reserva.monto_descuento) : "",
         estado: reserva.estado,
       });
     } else {
       setForm({
         huespedId: huespedes[0]?.id ?? "", habitacionId: habitaciones[0]?.id ?? "",
-        tarifaId: tarifas[0]?.id ?? "", fechaEntrada: "", fechaSalida: "",
-        adultos: "1", ninos: "0", montoDescuento: "", estado: "TENTATIVA",
+        tarifaId: tarifas[0]?.id ?? "", fecha_inicio: "", fecha_fin: "",
+        adultos: "1", ninos: "0", estado: "TENTATIVA",
       });
     }
   }, [reserva, isOpen, huespedes, habitaciones, tarifas]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!form.fechaEntrada || !form.fechaSalida) return sileo.error({ title: "Error", description: "Las fechas son requeridas" });
-    if (new Date(form.fechaSalida) <= new Date(form.fechaEntrada)) return sileo.error({ title: "Error", description: "La fecha de salida debe ser posterior a la entrada" });
+    if (!form.fecha_inicio || !form.fecha_fin) return sileo.error({ title: "Error", description: "Las fechas son requeridas" });
+    if (new Date(form.fecha_fin) <= new Date(form.fecha_inicio)) return sileo.error({ title: "Error", description: "La fecha de salida debe ser posterior a la entrada" });
 
     setSaving(true);
     try {
@@ -66,12 +65,11 @@ export function ReservaModal({ isOpen, onClose, onSuccess, reserva, huespedes, h
           huespedId: form.huespedId,
           habitacionId: form.habitacionId,
           tarifaId: form.tarifaId,
-          fechaEntrada: new Date(form.fechaEntrada),
-          fechaSalida: new Date(form.fechaSalida),
+          fechaInicio: new Date(form.fecha_inicio).toISOString().split('T')[0],
+          fechaFin: new Date(form.fecha_fin).toISOString().split('T')[0],
           adultos: parseInt(form.adultos) || 1,
           ninos: parseInt(form.ninos) || 0,
           estado: form.estado,
-          ...(form.montoDescuento !== "" && { montoDescuento: parseFloat(form.montoDescuento) }),
         };
         await onUpdate(updatePayload);
       } else {
@@ -79,11 +77,10 @@ export function ReservaModal({ isOpen, onClose, onSuccess, reserva, huespedes, h
           huespedId: form.huespedId,
           habitacionId: form.habitacionId,
           tarifaId: form.tarifaId,
-          fechaEntrada: new Date(form.fechaEntrada),
-          fechaSalida: new Date(form.fechaSalida),
+          fechaInicio: new Date(form.fecha_inicio).toISOString().split('T')[0],
+          fechaFin: new Date(form.fecha_fin).toISOString().split('T')[0],
           adultos: parseInt(form.adultos) || 1,
           ninos: parseInt(form.ninos) || 0,
-          ...(form.montoDescuento !== "" && { montoDescuento: parseFloat(form.montoDescuento) }),
         };
         await onCreate(createPayload);
       }
@@ -97,14 +94,13 @@ export function ReservaModal({ isOpen, onClose, onSuccess, reserva, huespedes, h
     }
   };
 
-  const noches = form.fechaEntrada && form.fechaSalida
-    ? Math.max(0, Math.ceil((new Date(form.fechaSalida).getTime() - new Date(form.fechaEntrada).getTime()) / 86400000))
+  const noches = form.fecha_inicio && form.fecha_fin
+    ? Math.max(0, Math.ceil((new Date(form.fecha_fin).getTime() - new Date(form.fecha_inicio).getTime()) / 86400000))
     : 0;
 
   const tarifaSeleccionada = tarifas.find((t) => t.id === form.tarifaId);
   const montoBase = tarifaSeleccionada ? tarifaSeleccionada.precio_noche * noches : 0;
-  const descuento = parseFloat(form.montoDescuento) || 0;
-  const total = Math.max(0, montoBase - descuento);
+  const total = Math.max(0, montoBase);
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title={reserva ? "Editar Reserva" : "Nueva Reserva"} size="lg">
@@ -147,14 +143,13 @@ export function ReservaModal({ isOpen, onClose, onSuccess, reserva, huespedes, h
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <InputField label="Fecha entrada" type="date" value={form.fechaEntrada} onChange={(e) => setForm((f) => ({ ...f, fechaEntrada: e.target.value }))} required />
-          <InputField label="Fecha salida" type="date" value={form.fechaSalida} onChange={(e) => setForm((f) => ({ ...f, fechaSalida: e.target.value }))} required />
+          <InputField label="Fecha entrada" type="date" value={form.fecha_inicio} onChange={(e) => setForm((f) => ({ ...f, fecha_inicio: e.target.value }))} required />
+          <InputField label="Fecha salida" type="date" value={form.fecha_fin} onChange={(e) => setForm((f) => ({ ...f, fecha_fin: e.target.value }))} required />
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <InputField label="Adultos" type="number" min={1} value={form.adultos} onChange={(e) => setForm((f) => ({ ...f, adultos: e.target.value }))} required />
           <InputField label="Niños" type="number" min={0} value={form.ninos} onChange={(e) => setForm((f) => ({ ...f, ninos: e.target.value }))} />
-          <InputField label="Descuento (opcional)" type="number" min={0} step={0.01} value={form.montoDescuento} onChange={(e) => setForm((f) => ({ ...f, montoDescuento: e.target.value }))} placeholder="0.00" />
         </div>
 
         {noches > 0 && tarifaSeleccionada && (
@@ -163,12 +158,6 @@ export function ReservaModal({ isOpen, onClose, onSuccess, reserva, huespedes, h
               <span>{noches} noche{noches !== 1 ? "s" : ""} × {tarifaSeleccionada.moneda} {tarifaSeleccionada.precio_noche}</span>
               <span>{tarifaSeleccionada.moneda} {montoBase.toFixed(2)}</span>
             </div>
-            {descuento > 0 && (
-              <div className="flex justify-between text-danger">
-                <span>Descuento</span>
-                <span>− {tarifaSeleccionada.moneda} {descuento.toFixed(2)}</span>
-              </div>
-            )}
             <div className="flex justify-between font-semibold text-text-primary border-t border-accent-primary/20 pt-1 mt-1">
               <span>Total estimado</span>
               <span>{tarifaSeleccionada.moneda} {total.toFixed(2)}</span>

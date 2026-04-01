@@ -6,7 +6,7 @@ import { useTarifas } from "@/features/rates/hooks/useTarifas";
 import { ReservaModal } from "./ReservaModal";
 import { CancelModal } from "./CancelModal";
 import { estadoReservaLabels, estadoReservaColors } from "../types";
-import type { Reserva, CreateReserva, UpdateReserva, EstadoReserva } from "../types";
+import type { Reserva, CreateReserva, UpdateReserva } from "../types";
 import { sileo } from "sileo";
 import { isHandledError } from "@/utils/error.utils";
 import { MdEventNote, MdEdit, MdDelete, MdCancel, MdSearch } from "react-icons/md";
@@ -16,7 +16,7 @@ import { useReservas } from "../hooks/useReservas";
 export default function ReservationsPage() {
   const {
     reservas, pagination, page, limit, search, loading, error,
-    fetchReservas, goToPage, changeLimit, changeSearch, changeEstado,
+    fetchReservas, goToPage, changeLimit, changeSearch, changeTipo,
     createReserva, updateReserva, cancelReserva, deleteReserva,
   } = useReservas();
 
@@ -29,12 +29,11 @@ export default function ReservationsPage() {
   const [editingReserva, setEditingReserva] = useState<Reserva | null>(null);
   const [cancelingReserva, setCancelingReserva] = useState<Reserva | null>(null);
   const [selectedReserva, setSelectedReserva] = useState<Reserva | null>(null);
-  const [filterEstado, setFilterEstado] = useState<EstadoReserva | "">("");
+  const [tipoSearch, setTipoSearch] = useState("");
   const [deleting, setDeleting] = useState(false);
 
   if (error) return <div className="flex items-center justify-center min-h-[60vh]"><div className="text-danger">{error}</div></div>;
 
-  // filtered = reservas de la página actual (ya filtradas por el servidor)
   const filtered = reservas;
 
   const { total, totalPages, hasNextPage } = pagination;
@@ -70,7 +69,7 @@ export default function ReservationsPage() {
 
   const openEdit = (r: Reserva) => { setEditingReserva(r); setSelectedReserva(null); setIsModalOpen(true); };
   const openCancel = (r: Reserva) => { setCancelingReserva(r); setSelectedReserva(null); setIsCancelOpen(true); };
-  const noches = (r: Reserva) => Math.ceil((new Date(r.fecha_salida).getTime() - new Date(r.fecha_entrada).getTime()) / 86400000);
+  const noches = (r: Reserva) => Math.ceil((new Date(r.fecha_fin).getTime() - new Date(r.fecha_inicio).getTime()) / 86400000);
 
   const counts = {
     total: pagination.total,
@@ -86,7 +85,7 @@ export default function ReservationsPage() {
         subtitle="Gestión de reservas del hotel"
         action={<Button onClick={() => { setEditingReserva(null); setIsModalOpen(true); }}>+ Nueva Reserva</Button>}
       >
-        {total === 0 && !search ? (
+        {total === 0 && !search && !tipoSearch ? (
           <EmptyState icon={<MdEventNote className="w-10 h-10 text-text-muted/50" />} title="Sin reservas" description="Crea la primera reserva" action={{ label: "Nueva Reserva", onClick: () => setIsModalOpen(true) }} />
         ) : (
           <>
@@ -117,10 +116,24 @@ export default function ReservationsPage() {
                 <input
                   type="text"
                   value={search}
-                  onChange={(e) => changeSearch(e.target.value)}                  placeholder="Buscar por nombre de huésped..."
+                  onChange={(e) => changeSearch(e.target.value)}                  
+                  placeholder="Buscar por nombre de huésped..."
                   className="w-full pl-9 pr-4 py-2.5 text-sm rounded-xl border border-border bg-bg-card text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-primary/30"
                 />
               </div>
+
+              <div className="relative flex-1">
+                <MdSearch className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
+                <input
+                  type="text"
+                  value={tipoSearch}
+                  onChange={(e) => { setTipoSearch(e.target.value); changeTipo(e.target.value); }}
+                  placeholder="Filtrar por tipo habitación (ej: Suite, Doble...)"
+                  className="w-full pl-9 pr-4 py-2.5 text-sm rounded-xl border border-border bg-bg-card text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-primary/30"
+                />
+              </div>
+
+
               <div className="flex items-center gap-2 shrink-0">
                 <span className="text-xs text-text-muted hidden sm:block">Mostrar</span>
                 <select value={limit} onChange={(e) => changeLimit(Number(e.target.value))} className="text-sm rounded-xl border border-border bg-bg-card text-text-primary px-2 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary/30">
@@ -130,15 +143,8 @@ export default function ReservationsPage() {
               </div>
             </div>
 
-            {/* Estado filters */}
-            <div className="px-4 sm:px-6 pb-3 flex gap-2 flex-wrap">
-              <button onClick={() => { setFilterEstado(""); changeEstado(""); }} className={cn("text-xs px-3 py-1.5 rounded-xl border transition-all", filterEstado === "" ? "bg-primary text-white border-primary" : "border-border text-text-muted hover:border-primary/50")}>Todos</button>
-              {(Object.keys(estadoReservaLabels) as EstadoReserva[]).map((k) => (
-                <button key={k} onClick={() => { setFilterEstado(k); changeEstado(k); }} className={cn("text-xs px-3 py-1.5 rounded-xl border transition-all", filterEstado === k ? "bg-primary text-white border-primary" : "border-border text-text-muted hover:border-primary/50")}>
-                  {estadoReservaLabels[k]}
-                </button>
-              ))}
-            </div>
+            {/* Filtro tipo de habitación */}
+            
 
             {/* Table */}
             <div className="overflow-x-auto px-4 sm:px-6 pb-2">
@@ -165,8 +171,8 @@ export default function ReservationsPage() {
                       <td className="py-3 px-2 font-medium text-text-primary">{r.nombre_huesped}</td>
                       <td className="py-3 px-2 text-text-muted hidden sm:table-cell">Hab. {r.nro_habitacion}</td>
                       <td className="py-3 px-2 hidden md:table-cell">
-                        <p className="text-text-primary text-xs">{new Date(r.fecha_entrada).toLocaleDateString("es-ES")}</p>
-                        <p className="text-text-muted text-xs">{new Date(r.fecha_salida).toLocaleDateString("es-ES")} · {noches(r)}n</p>
+                        <p className="text-text-primary text-xs">{new Date(r.fecha_inicio).toLocaleDateString("es-ES")}</p>
+                        <p className="text-text-muted text-xs">{new Date(r.fecha_fin).toLocaleDateString("es-ES")} · {noches(r)}n</p>
                       </td>
                       <td className="py-3 px-2 text-text-muted hidden lg:table-cell">{r.adultos}A{r.ninos > 0 ? ` ${r.ninos}N` : ""}</td>
                       <td className="py-3 px-2">
@@ -244,23 +250,17 @@ export default function ReservationsPage() {
               { label: "Habitación", value: `Nro. ${selectedReserva.nro_habitacion}` },
               { label: "Tipo hab.", value: selectedReserva.nombre_tipo_hab },
               { label: "Canal", value: selectedReserva.nombre_canal },
-              { label: "Entrada", value: new Date(selectedReserva.fecha_entrada).toLocaleDateString("es-ES", { weekday: "short", day: "numeric", month: "short", year: "numeric" }) },
-              { label: "Salida", value: new Date(selectedReserva.fecha_salida).toLocaleDateString("es-ES", { weekday: "short", day: "numeric", month: "short", year: "numeric" }) },
-              { label: "Noches", value: String(noches(selectedReserva)) },
+              { label: "Entrada", value: new Date(selectedReserva.fecha_inicio).toLocaleDateString("es-ES", { weekday: "short", day: "numeric", month: "short", year: "numeric" }) },
+              { label: "Salida", value: new Date(selectedReserva.fecha_fin).toLocaleDateString("es-ES", { weekday: "short", day: "numeric", month: "short", year: "numeric" }) },
+              { label: "Noches", value: String(selectedReserva.cantidad_noches) },
               { label: "Huéspedes", value: `${selectedReserva.adultos}A${selectedReserva.ninos > 0 ? ` · ${selectedReserva.ninos}N` : ""}` },
-              { label: "Total", value: `${selectedReserva.tarifa.moneda} ${selectedReserva.monto_final.toFixed(2)}` },
+              { label: "Total", value: `S/ ${selectedReserva.monto_total.toFixed(2)}` },
             ].map(({ label, value }) => (
               <div key={label} className="flex justify-between items-start gap-4 bg-paper-medium/10 rounded-xl px-3 py-2.5">
                 <span className="text-text-muted text-xs shrink-0">{label}</span>
                 <span className="text-text-primary text-sm font-medium text-right">{value}</span>
               </div>
             ))}
-            {selectedReserva.monto_descuento != null && selectedReserva.monto_descuento > 0 && (
-              <div className="flex justify-between items-start gap-4 bg-paper-medium/10 rounded-xl px-3 py-2.5">
-                <span className="text-text-muted text-xs">Descuento</span>
-                <span className="text-danger text-sm font-medium">− {selectedReserva.tarifa.moneda} {selectedReserva.monto_descuento.toFixed(2)}</span>
-              </div>
-            )}
             {selectedReserva.motivo_cancel && (
               <div className="bg-red-50 border border-red-200 rounded-xl px-3 py-2.5">
                 <p className="text-xs text-text-muted">Motivo cancelación</p>

@@ -1,45 +1,60 @@
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=IM+Fell+English:ital@0;1&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Lora:ital,wght@0,400;0,500;0,600;1,400&display=swap");
 
 @import "tailwindcss";
 
 :root {
-  /* Fondos — basados en #1C1C1C */
-  --color-bg-primary: #1c1c1c;
-  --color-bg-secondary: #272727;
-  --color-bg-tertiary: #333333;
-  --color-bg-card: #272727;
-  --color-bg-hover: #333333;
+  /* ── FONDOS ─────────────────────────────────────────── */
+  --color-bg-primary:   #f5e8c0;   /* pergamino general */
+  --color-bg-secondary: #fdf6e3;   /* tarjetas, modales, tablas */
+  --color-bg-tertiary:  #ede0b8;   /* hover suave */
+  --color-bg-card:      #f7ebcc;
+  --color-bg-card2:     #efca6a;
+  --color-bg-hover:     #ede0b8;
 
-  /* Primario — azul #3A6BAF */
-  --color-primary: #3a6baf;
-  --color-primary-hover: #2f5a96;
-  --color-primary-light: #3f5f8a;
-  --color-primary-muted: #3a6baf20;
+  /* ── SIDEBAR ────────────────────────────────────────── */
+  --color-sidebar-from: #3e1a06;
+  --color-sidebar-mid:  #5c2a0e;
+  --color-sidebar-to:   #7a3a18;
+  --color-sidebar-border: #b8892a;
 
-  /* Acento — dorado #C9A227 */
-  --color-accent: #c9a227;
-  --color-accent-hover: #b08e20;
-  --color-accent-light: #d8b84a;
+  /* ── PRIMARIO — Rojo Inca ───────────────────────────── */
+  --color-primary:       #9e2424;
+  --color-primary-hover: #c23030;
+  --color-primary-light: #b83030;
+  --color-primary-muted: #9e242415;
 
-  /* Textos — basados en #D8C7A1 */
-  --color-text-primary: #f8fafc;
-  --color-text-secondary: #cbd5e1;
-  --color-text-muted: #a4b0c2b4;
-  --color-text-dark: #1e293b;
+  /* ── ACENTO — Oro andino ────────────────────────────── */
+  --color-accent:       #b8892a;   /* oro base — pasa AA sobre oscuro */
+  --color-accent-hover: #d4a83c;
+  --color-accent-light: #ecc85a;   /* oro claro — solo sobre fondos oscuros */
 
-  /* Bordes */
-  --color-border: #3a3530;
-  --color-border-light: #4e4840;
+  /* ── TEXTOS ─────────────────────────────────────────── */
+  --color-text-primary:   #2a1506;  /* ratio ~14:1 sobre pg0 ✓ */
+  --color-text-secondary: #5c3818;  /* ratio ~7.5:1 sobre pg0 ✓ */
+  --color-text-muted:     #6b4e2a;  /* ratio ~4.8:1 sobre pg0 ✓ (corregido de #8c6a48) */
+  --color-text-dark:      #2a1506;
+  --color-text-light:     #fdf6e3;  /* sobre fondos oscuros */
+  --color-text-gold:      #ecc85a;  /* activo sidebar — ratio ~7.8:1 sobre #3e1a06 ✓ */
 
-  /* Estados */
-  --color-success: #4a8c5c;
-  --color-success-bg: #4a8c5c15;
-  --color-warning: #c9a227;
-  --color-warning-bg: #c9a22715;
-  --color-danger: #8b1e2d;
-  --color-danger-bg: #8b1e2d15;
-  --color-info: #3f5f8a;
-  --color-info-bg: #3f5f8a15;
+  /* ── BORDES ─────────────────────────────────────────── */
+  --color-border:       #c4a87a;   /* 2px — ratio ~2.8:1 sobre pg0 (mejorado) */
+  --color-border-light: #d8c8a8;
+  --color-border-active: #b8892a;
+
+  /* ── ESTADOS ────────────────────────────────────────── */
+  --color-success:    #2e4e28;
+  --color-success-bg: rgba(74, 120, 64, 0.12);
+  --color-warning:    #8c7355;
+  --color-warning-bg: rgba(140, 115, 85, 0.12);
+  --color-danger:     #7b1c1c;
+  --color-danger-bg:  rgba(123, 28, 28, 0.12);
+  --color-info:       #7a3a18;
+  --color-info-bg:    rgba(122, 58, 24, 0.12);
+
+  /* ── SOMBRAS ────────────────────────────────────────── */
+  --shadow-sm:  0 2px 16px rgba(90, 42, 14, 0.13);
+  --shadow-md:  0 4px 28px rgba(90, 42, 14, 0.18);
+  --shadow-btn: 0 3px 14px rgba(123, 28, 28, 0.30);
 
   --spacing-button-width: 350px;
   --spacing-button-height: 40px;
@@ -47,54 +62,237 @@
 }
 
 @theme {
-  --color-bg-primary: var(--color-bg-primary);
-  --color-bg-secondary: var(--color-bg-secondary);
-  --color-bg-tertiary: var(--color-bg-tertiary);
-  --color-bg-card: var(--color-bg-card);
-  --color-bg-hover: var(--color-bg-hover);
-  --color-primary: var(--color-primary);
+  --color-bg-primary:    var(--color-bg-primary);
+  --color-bg-secondary:  var(--color-bg-secondary);
+  --color-bg-tertiary:   var(--color-bg-tertiary);
+  --color-bg-card:       var(--color-bg-card);
+  --color-bg-hover:      var(--color-bg-hover);
+  --color-primary:       var(--color-primary);
   --color-primary-hover: var(--color-primary-hover);
   --color-primary-light: var(--color-primary-light);
   --color-primary-muted: var(--color-primary-muted);
-  --color-accent: var(--color-accent);
-  --color-accent-hover: var(--color-accent-hover);
-  --color-accent-light: var(--color-accent-light);
-  --color-text-primary: var(--color-text-primary);
-  --color-text-secondary: var(--color-text-secondary);
-  --color-text-muted: var(--color-text-muted);
-  --color-text-dark: var(--color-text-dark);
-  --color-border: var(--color-border);
-  --color-border-light: var(--color-border-light);
-  --color-success: var(--color-success);
-  --color-success-bg: var(--color-success-bg);
-  --color-warning: var(--color-warning);
-  --color-warning-bg: var(--color-warning-bg);
-  --color-danger: var(--color-danger);
-  --color-danger-bg: var(--color-danger-bg);
-  --color-info: var(--color-info);
-  --color-info-bg: var(--color-info-bg);
+  --color-accent:        var(--color-accent);
+  --color-accent-hover:  var(--color-accent-hover);
+  --color-accent-light:  var(--color-accent-light);
+  --color-text-primary:  var(--color-text-primary);
+  --color-text-secondary:var(--color-text-secondary);
+  --color-text-muted:    var(--color-text-muted);
+  --color-text-dark:     var(--color-text-dark);
+  --color-border:        var(--color-border);
+  --color-border-light:  var(--color-border-light);
+  --color-success:       var(--color-success);
+  --color-success-bg:    var(--color-success-bg);
+  --color-warning:       var(--color-warning);
+  --color-warning-bg:    var(--color-warning-bg);
+  --color-danger:        var(--color-danger);
+  --color-danger-bg:     var(--color-danger-bg);
+  --color-info:          var(--color-info);
+  --color-info-bg:       var(--color-info-bg);
 }
 
+/* ── TIPOGRAFÍA BASE ──────────────────────────────────── */
 * {
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  font-family: 'Lora', Georgia, serif;
+  font-feature-settings: "kern" 1, "liga" 1;
 }
 
 body {
   background-color: var(--color-bg-primary);
   color: var(--color-text-primary);
+  font-size: 14px;
+  line-height: 1.6;
 }
 
+/* Títulos decorativos / números grandes */
+.font-playfair,
+h1, h2 {
+  font-family: 'Playfair Display', Georgia, serif;
+}
+
+/* Números grandes de tarjetas — solo 24px+ */
+.font-display {
+  font-family: 'IM Fell English', Georgia, serif;
+  font-feature-settings: "kern" 1, "liga" 1;
+}
+
+/* ── SIDEBAR ──────────────────────────────────────────── */
+aside {
+  background: linear-gradient(
+    160deg,
+    var(--color-sidebar-from) 0%,
+    var(--color-sidebar-mid) 55%,
+    var(--color-sidebar-to) 100%
+  );
+  border-right: 3px solid var(--color-sidebar-border);
+}
+
+/* Todos los textos dentro del sidebar van claros */
+aside,
+aside * {
+  color: inherit;
+}
+
+aside h2,
+aside .text-text-primary,
+aside [class*="text-text-primary"] {
+  color: #fdf6e3 !important;
+}
+
+aside .text-text-secondary,
+aside [class*="text-text-secondary"] {
+  color: rgba(240, 224, 180, 0.88) !important;
+}
+
+aside .text-text-muted,
+aside [class*="text-text-muted"] {
+  color: rgba(240, 224, 180, 0.60) !important;
+}
+
+aside .text-text-muted2,
+aside [class*="text-text-muted2"] {
+  color: rgb(97, 87, 61) !important;
+}
+
+/* Item activo — oro */
+aside .bg-primary {
+  background: rgba(184, 137, 42, 0.25) !important;
+  color: #ecc85a !important;
+}
+
+aside .bg-primary * {
+  color: #ecc85a !important;
+}
+
+/* Item activo texto */
+aside .text-primary,
+aside [class*="text-primary"] {
+  color: #ecc85a !important;
+}
+
+aside .text-primary2,
+aside [class*="text-primary2"] {
+  color: #ceaa3d !important;
+}
+
+
+/* Hover items */
+aside .hover\:bg-bg-hover:hover,
+aside [class*="hover:bg-bg-hover"]:hover {
+  background: rgba(255, 255, 255, 0.08) !important;
+}
+
+/* Sección label "Principal" */
+aside [class*="uppercase"][class*="tracking"] {
+  color: rgba(236, 200, 90, 0.65) !important;
+}
+
+/* Borde izquierdo del grupo activo */
+aside .border-l {
+  border-color: rgba(184, 137, 42, 0.40) !important;
+}
+
+/* Botón de perfil */
+aside button[class*="bg-bg-tertiary"],
+aside button[class*="bg-bg-hover"] {
+  background: rgba(255, 255, 255, 0.07) !important;
+  border-color: rgba(184, 137, 42, 0.30) !important;
+}
+
+/* Flecha y íconos */
+aside svg {
+  color: inherit;
+}
+
+/* ── BADGES / ESTADOS ─────────────────────────────────── */
+
+/* Mínimo 12px para badges funcionales */
+[class*="rounded-full"] {
+  font-size: max(11px, 0.75rem);
+  letter-spacing: 0.025em;
+}
+
+/* Estado: Confirmado / Libre */
+.badge-success {
+  background: rgba(74, 120, 64, 0.12);
+  color: #2e4e28;
+  border: 1.5px solid rgba(74, 120, 64, 0.35);
+}
+
+/* Estado: Pendiente / Limpieza */
+.badge-warning {
+  background: rgba(140, 115, 85, 0.12);
+  color: #6b4e2a;
+  border: 1.5px solid rgba(140, 115, 85, 0.35);
+}
+
+/* Estado: Check-Out / Cancelado */
+.badge-danger {
+  background: rgba(123, 28, 28, 0.12);
+  color: #7b1c1c;
+  border: 1.5px solid rgba(158, 36, 36, 0.30);
+}
+
+/* Estado: Check-In / En Casa */
+.badge-info {
+  background: rgba(163, 82, 40, 0.12);
+  color: #7a3a18;
+  border: 1.5px solid rgba(163, 82, 40, 0.35);
+}
+
+/* Estado: Reservado */
+.badge-reserved {
+  background: rgba(184, 137, 42, 0.15);
+  color: #7a5a10;
+  border: 1.5px solid rgba(184, 137, 42, 0.40);
+}
+
+/* ── CAMPOS DE FORMULARIO ─────────────────────────────── */
 @layer components {
   .field-label {
-    @apply text-xs font-semibold tracking-wide uppercase text-text-secondary;
+    @apply text-xs font-semibold tracking-wide uppercase;
+    color: var(--color-text-secondary);
+    font-family: 'italic', Georgia, serif;
+    letter-spacing: 0.06em;
   }
 
   .field-input {
-    @apply bg-bg-tertiary/50 border border-border text-text-primary placeholder:text-text-muted;
+    background: rgba(255, 255, 255, 0.55);
+    border: 1.5px solid var(--color-border);
+    color: var(--color-text-primary);
+    font-family: 'italic', Georgia, serif;
+    font-size: 14px;
+  }
+
+  .field-input::placeholder {
+    color: var(--color-text-muted);
+    opacity: 0.8;
+  }
+
+  .field-input:focus {
+    border-color: var(--color-accent);
+    background: rgba(255, 255, 255, 0.75);
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(184, 137, 42, 0.15);
   }
 }
 
-/* Sileo toaster por encima de modales */
+/* ── BOTONES PRIMARIOS (Rojo Inca) ────────────────────── */
+button[class*="bg-primary"],
+a[class*="bg-primary"] {
+  box-shadow: var(--shadow-btn);
+}
+
+/* ── TARJETAS Y PANELES ───────────────────────────────── */
+.bg-bg-card,
+[class*="rounded-2xl"][class*="border"] {
+  box-shadow: var(--shadow-sm);
+}
+
+/* ── SOMBRAS UTILITARIAS ──────────────────────────────── */
+.shadow-andean-sm { box-shadow: var(--shadow-sm); }
+.shadow-andean-md { box-shadow: var(--shadow-md); }
+
+/* ── SILEO TOASTER ────────────────────────────────────── */
 [data-sileo-viewport] {
   z-index: 9999 !important;
 }

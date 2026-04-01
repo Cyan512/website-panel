@@ -4,7 +4,6 @@ import type { CreatePago, UpdatePago, Pago, ConceptoPago, EstadoPago, MetodoPago
 import { Modal, Button } from "@/components";
 import { InputField } from "@/components";
 import { sileo } from "sileo";
-import { useReservas } from "@/features/reservations/hooks/useReservas";
 import type { Reserva } from "@/features/reservations/types";
 import { cn } from "@/utils/cn";
 import { MdSearch } from "react-icons/md";
@@ -53,7 +52,6 @@ interface PagoModalProps {
 
 export function PagoModal({ isOpen, onClose, onSuccess, pago }: PagoModalProps) {
   const { createPago, updatePago } = usePagos();
-  const { reservas } = useReservas();
   const { data: session } = authClient.useSession();
   const isEditing = !!pago;
   const [loading, setLoading] = useState(false);
@@ -61,9 +59,34 @@ export function PagoModal({ isOpen, onClose, onSuccess, pago }: PagoModalProps) 
 
   // Reserva search
   const [reservaQuery, setReservaQuery] = useState("");
+  const [suggestions, setSuggestions] = useState<Reserva[]>([]);
   const [reservaSeleccionada, setReservaSeleccionada] = useState<Reserva | null>(null);
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [searching, setSearching] = useState(false);
   const searchRef = useRef<HTMLInputElement>(null);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const searchReservas = async (q: string) => {
+    if (!q.trim()) { setSuggestions([]); return; }
+    setSearching(true);
+    try {
+      const { reservasApi } = await import("@/features/reservations/api");
+      const data = await reservasApi.getAll(1, 10, q);
+      setSuggestions(data.list);
+    } catch {
+      setSuggestions([]);
+    } finally {
+      setSearching(false);
+    }
+  };
+
+  const handleQueryChange = (q: string) => {
+    setReservaQuery(q);
+    setReservaSeleccionada(null);
+    setShowSuggestions(true);
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => searchReservas(q), 300);
+  };
 
   useEffect(() => {
     if (!isOpen) return;
@@ -86,23 +109,16 @@ export function PagoModal({ isOpen, onClose, onSuccess, pago }: PagoModalProps) 
     }
   }, [pago, isOpen]);
 
-  const suggestions = reservaQuery.trim()
-    ? reservas.filter((r) =>
-        r.codigo.toLowerCase().includes(reservaQuery.toLowerCase()) ||
-        r.nombre_huesped.toLowerCase().includes(reservaQuery.toLowerCase())
-      ).slice(0, 6)
-    : [];
+  const suggestions_filtered = reservaQuery.trim() ? suggestions : [];
 
   const handleSelectReserva = (r: Reserva) => {
     setReservaSeleccionada(r);
-    setReservaQuery(r.codigo);
+    setReservaQuery(`${r.codigo} — ${r.nombre_huesped}`);
     setShowSuggestions(false);
-    // Autocompletar datos de la reserva
     setFormData((prev) => ({
       ...prev,
       concepto: "RESERVA",
-      moneda: r.tarifa.moneda,
-      monto: r.monto_final.toFixed(2),
+      monto: r.monto_total != null ? Number(r.monto_total).toFixed(2) : "",
     }));
   };
 
@@ -130,7 +146,6 @@ export function PagoModal({ isOpen, onClose, onSuccess, pago }: PagoModalProps) 
         await updatePago(pago.id, updateData);
       } else {
         const createData: CreatePago = {
-          reservaId: reservaSeleccionada?.id ?? null,
           concepto: formData.concepto,
           estado: formData.estado,
           fecha_pago: formData.fecha_pago,
@@ -182,7 +197,7 @@ export function PagoModal({ isOpen, onClose, onSuccess, pago }: PagoModalProps) 
                 ref={searchRef}
                 type="text"
                 value={reservaQuery}
-                onChange={(e) => { setReservaQuery(e.target.value); setReservaSeleccionada(null); setShowSuggestions(true); }}
+                onChange={(e) => handleQueryChange(e.target.value)}
                 onFocus={() => setShowSuggestions(true)}
                 onBlur={() => setTimeout(() => setShowSuggestions(false), 150)}
                 placeholder="Buscar por código o nombre de huésped..."
@@ -190,9 +205,11 @@ export function PagoModal({ isOpen, onClose, onSuccess, pago }: PagoModalProps) 
               />
             </div>
 
-            {showSuggestions && suggestions.length > 0 && (
+            {showSuggestions && (searching || suggestions_filtered.length > 0) && (
               <div className="absolute z-50 top-full left-0 right-0 mt-1 bg-bg-card border border-border rounded-xl shadow-xl overflow-hidden">
-                {suggestions.map((r) => (
+                {searching ? (
+                  <div className="px-4 py-3 text-sm text-text-muted">Buscando...</div>
+                ) : suggestions_filtered.map((r) => (
                   <button
                     key={r.id}
                     type="button"
@@ -206,15 +223,13 @@ export function PagoModal({ isOpen, onClose, onSuccess, pago }: PagoModalProps) 
                       </div>
                       <p className="text-sm text-text-primary mt-0.5">{r.nombre_huesped}</p>
                       <p className="text-xs text-text-muted">
-                        Hab. {r.nro_habitacion} · {r.tarifa.moneda} {r.monto_final.toFixed(2)}
+                        Hab. {r.nro_habitacion} {r.monto_total != null ? `· S/ ${Number(r.monto_total).toFixed(2)}` : ""}
                       </p>
                     </div>
                   </button>
                 ))}
               </div>
             )}
-
-            {/* Preview reserva seleccionada */}
             {reservaSeleccionada && (
               <div className="mt-2 bg-primary/5 border border-primary/20 rounded-xl px-4 py-3 text-xs grid grid-cols-2 gap-x-4 gap-y-1">
                 <span className="text-text-muted">Huésped</span>
@@ -222,7 +237,7 @@ export function PagoModal({ isOpen, onClose, onSuccess, pago }: PagoModalProps) 
                 <span className="text-text-muted">Habitación</span>
                 <span className="text-text-primary font-medium">Nro. {reservaSeleccionada.nro_habitacion}</span>
                 <span className="text-text-muted">Total reserva</span>
-                <span className="text-text-primary font-medium">{reservaSeleccionada.tarifa.moneda} {reservaSeleccionada.monto_final.toFixed(2)}</span>
+                <span className="text-text-primary font-medium">S/ {reservaSeleccionada.monto_total != null ? Number(reservaSeleccionada.monto_total).toFixed(2) : "—"}</span>
               </div>
             )}
           </div>

@@ -21,7 +21,7 @@ export function useReservas(initialPage = 1, initialLimit = 10) {
     try {
       setLoading(true);
       setError(null);
-      const data = await reservasApi.getAll(p, l, q, t);
+      const data = await reservasApi.getAll(p, l, q || undefined, t || undefined);
       setReservas(data.list);
       setPagination(data.pagination);
     } catch {
@@ -38,7 +38,7 @@ export function useReservas(initialPage = 1, initialLimit = 10) {
   const goToPage = (p: number) => setPage(p);
   const changeLimit = (l: number) => { setLimit(l); setPage(1); };
   const changeSearch = (q: string) => { setSearch(q); setPage(1); };
-  const changeEstado = (t: string) => { setTipo(t); setPage(1); };
+  const changeTipo = (t: string) => { setTipo(t); setPage(1); };
 
   const createReserva = async (data: CreateReserva): Promise<Reserva> => {
     const r = await reservasApi.create(data);
@@ -76,7 +76,7 @@ export function useReservas(initialPage = 1, initialLimit = 10) {
   return {
     reservas, pagination, page, limit, search, tipo, loading, error,
     fetchReservas: () => fetchReservas(page, limit, search, tipo),
-    goToPage, changeLimit, changeSearch, changeEstado,
+    goToPage, changeLimit, changeSearch, changeTipo,
     createReserva, updateReserva, updateEstadoReserva, cancelReserva, deleteReserva,
   };
 }

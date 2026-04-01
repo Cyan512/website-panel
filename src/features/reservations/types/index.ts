@@ -1,6 +1,3 @@
-import type { Huesped } from "@/features/clients/types";
-import type { Tarifa } from "@/features/rates/types";
-
 export type EstadoReserva = "TENTATIVA" | "CONFIRMADA" | "EN_CASA" | "COMPLETADA" | "CANCELADA" | "NO_LLEGO";
 
 export const estadoReservaLabels: Record<EstadoReserva, string> = {
@@ -21,11 +18,6 @@ export const estadoReservaColors: Record<EstadoReserva, string> = {
   NO_LLEGO: "bg-gray-200 text-gray-600",
 };
 
-export interface PaginatedReservas {
-  list: Reserva[];
-  pagination: PaginationMeta;
-}
-
 export interface PaginationMeta {
   page: number;
   limit: number;
@@ -35,22 +27,20 @@ export interface PaginationMeta {
   hasPreviousPage: boolean;
 }
 
-export interface ReservaHabitacion {
-  id: string;
-  nro_habitacion: string;
-  piso: number;
-  estado: string;
+export interface PaginatedReservas {
+  list: Reserva[];
+  pagination: PaginationMeta;
 }
 
 export interface Reserva {
   id: string;
   codigo: string;
-  huesped: Huesped;
-  habitacion: ReservaHabitacion;
-  tarifa: Tarifa;
-  pago: unknown | null;
-  fecha_entrada: string;
-  fecha_salida: string;
+  huespedId: string;
+  habitacionId: string;
+  tarifaId: string;
+  pagoId: string | null;
+  fecha_inicio: string;
+  fecha_fin: string;
   adultos: number;
   ninos: number;
   nombre_huesped: string;
@@ -58,11 +48,10 @@ export interface Reserva {
   nombre_tipo_hab: string;
   nombre_canal: string;
   precio_noche: number;
+  cantidad_noches: number;
   iva: number | null;
   cargo_servicios: number | null;
   monto_total: number;
-  monto_descuento: number | null;
-  monto_final: number;
   estado: EstadoReserva;
   motivo_cancel: string | null;
   cancelado_en: string | null;
@@ -74,11 +63,10 @@ export interface CreateReserva {
   huespedId: string;
   habitacionId: string;
   tarifaId: string;
-  fechaEntrada: Date;
-  fechaSalida: Date;
+  fechaInicio: string;
+  fechaFin: string;
   adultos: number;
   ninos: number;
-  montoDescuento?: number;
 }
 
 export interface UpdateReserva {
@@ -86,11 +74,10 @@ export interface UpdateReserva {
   habitacionId?: string;
   tarifaId?: string;
   pagoId?: string | null;
-  fechaEntrada?: Date;
-  fechaSalida?: Date;
+  fechaInicio?: string;
+  fechaFin?: string;
   adultos?: number;
   ninos?: number;
-  montoDescuento?: number;
   estado?: EstadoReserva;
 }
 

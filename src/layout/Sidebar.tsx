@@ -48,7 +48,7 @@ const navItems: NavItem[] = [
     },
   },
   { kind: "link", item: { id: "client", icon: MdPeople, label: "Huéspedes", path: "/clients", roles: ["ADMIN"] } },
-  { kind: "link", item: { id: "stock", icon: MdInventory, label: "Inventario", path: "/stock", roles: ["ADMIN"] } },
+  // { kind: "link", item: { id: "stock", icon: MdInventory, label: "Inventario", path: "/stock", roles: ["ADMIN"] } },
   { kind: "link", item: { id: "stays", icon: MdBedroomParent, label: "Estancias", path: "/stays", roles: ["ADMIN"] } },
   {
     kind: "group",
@@ -240,20 +240,20 @@ export default function Sidebar() {
             {isProfileOpen && (
               <div className="absolute bottom-full left-0 right-0 mb-2 bg-bg-card border border-border rounded-xl shadow-2xl overflow-hidden z-50">
                 <div className="px-4 py-3 border-b border-border">
-                  <p className="text-sm font-semibold text-text-primary truncate">{session?.user?.name || "Usuario"}</p>
-                  <p className="text-xs text-text-muted truncate">{session?.user?.email || ""}</p>
+                  <p className="text-sm font-semibold text-text-primary2 truncate">{session?.user?.name || "Usuario"}</p>
+                  <p className="text-xs text-text-muted2 truncate">{session?.user?.email || ""}</p>
                 </div>
                 <div className="py-1">
                   <button
                     onClick={() => { setIsProfileOpen(false); navigate("/profile"); }}
-                    className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-text-secondary hover:bg-bg-hover hover:text-text-primary transition-colors"
+                    className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-text-secondary hover:bg-bg-hover hover:text-text-primary2 transition-colors"
                   >
                     <MdPerson className="w-4 h-4 shrink-0" />
                     Mi perfil
                   </button>
                   <button
                     onClick={() => { setIsProfileOpen(false); navigate("/settings"); }}
-                    className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-text-secondary hover:bg-bg-hover hover:text-text-primary transition-colors"
+                    className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-text-secondary hover:bg-bg-hover hover:text-text-primary2 transition-colors"
                   >
                     <MdSettings className="w-4 h-4 shrink-0" />
                     Configuración

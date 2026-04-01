@@ -2,9 +2,9 @@ import axiosInstance from "@/config/axios/axios.instance";
 import type { Reserva, CreateReserva, UpdateReserva, CancelReserva, UpdateEstadoReserva, PaginatedReservas } from "./types";
 
 export const reservasApi = {
-  getAll: async (page = 1, limit = 10, name?: string, tipo?: string): Promise<PaginatedReservas> => {
+  getAll: async (page = 1, limit = 10, nombre?: string, tipo?: string): Promise<PaginatedReservas> => {
     const params = new URLSearchParams({ page: String(page), limit: String(limit) });
-    if (name) params.set("name", name);
+    if (nombre) params.set("nombre", nombre);
     if (tipo) params.set("tipo", tipo);
     const response = await axiosInstance.get<{ success: boolean; data: PaginatedReservas }>(
       `/api/private/reservas?${params.toString()}`

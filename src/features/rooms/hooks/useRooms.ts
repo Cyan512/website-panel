@@ -1,45 +1,54 @@
 import { useState, useEffect, useCallback } from "react";
 import { authClient } from "@/config/authClient";
 import { roomsApi, tiposHabitacionApi } from "../api";
-import type { Habitacion, TipoHabitacion, CreateHabitacion, UpdateEstadoHabitacion } from "../types";
+import type { Habitacion, TipoHabitacion, CreateHabitacion, UpdateEstadoHabitacion, PaginatedHabitaciones } from "../types";
 
-export function useHabitaciones() {
+export function useHabitaciones(initialPage = 1, initialLimit = 10) {
   const { data: session } = authClient.useSession();
   const [habitaciones, setHabitaciones] = useState<Habitacion[]>([]);
+  const [pagination, setPagination] = useState<PaginatedHabitaciones["pagination"]>({
+    page: initialPage, limit: initialLimit, total: 0, totalPages: 1,
+    hasNextPage: false, hasPreviousPage: false,
+  });
+  const [page, setPage] = useState(initialPage);
+  const [limit, setLimit] = useState(initialLimit);
+  const [tipo, setTipo] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchHabitaciones = useCallback(async () => {
+  const fetchHabitaciones = useCallback(async (p = page, l = limit, t = tipo) => {
     try {
       setLoading(true);
       setError(null);
-      const data = await roomsApi.getAll();
-      setHabitaciones(data);
+      const data = await roomsApi.getAll(p, l, t || undefined);
+      setHabitaciones(data.list);
+      setPagination(data.pagination);
     } catch {
       setError("Error al cargar habitaciones");
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [page, limit, tipo]);
 
   useEffect(() => {
-    if (session) {
-      fetchHabitaciones();
-    }
-  }, [session, fetchHabitaciones]);
+    if (session) fetchHabitaciones(page, limit, tipo);
+  }, [session, page, limit, tipo]);
+
+  const goToPage = (p: number) => setPage(p);
+  const changeLimit = (l: number) => { setLimit(l); setPage(1); };
+  const changeTipo = (t: string) => { setTipo(t); setPage(1); };
 
   const createHabitacion = async (data: CreateHabitacion): Promise<Habitacion> => {
     const habitacion = await roomsApi.create(data);
-    setHabitaciones(prev => [...prev, habitacion]);
+    await fetchHabitaciones(page, limit, tipo);
     return habitacion;
   };
 
   const updateHabitacion = async (id: string, data: Parameters<typeof roomsApi.update>[1]): Promise<Habitacion> => {
-    console.log(data)
     const habitacion = await roomsApi.update(id, data);
     setHabitaciones(prev => prev.map(h => h.id === id ? habitacion : h));
     return habitacion;
-  }
+  };
 
   const updateEstadoHabitacion = async (id: string, data: UpdateEstadoHabitacion): Promise<Habitacion> => {
     const habitacion = await roomsApi.updateEstado(id, data);
@@ -49,18 +58,18 @@ export function useHabitaciones() {
 
   const deleteHabitacion = async (id: string): Promise<void> => {
     await roomsApi.delete(id);
-    setHabitaciones(prev => prev.filter(h => h.id !== id));
+    const newTotal = pagination.total - 1;
+    const newTotalPages = Math.max(1, Math.ceil(newTotal / limit));
+    const targetPage = page > newTotalPages ? newTotalPages : page;
+    await fetchHabitaciones(targetPage, limit, tipo);
+    if (targetPage !== page) setPage(targetPage);
   };
 
   return {
-    habitaciones,
-    loading,
-    error,
-    fetchHabitaciones,
-    createHabitacion,
-    updateHabitacion,
-    updateEstadoHabitacion,
-    deleteHabitacion,
+    habitaciones, pagination, page, limit, tipo, loading, error,
+    fetchHabitaciones: () => fetchHabitaciones(page, limit, tipo),
+    goToPage, changeLimit, changeTipo,
+    createHabitacion, updateHabitacion, updateEstadoHabitacion, deleteHabitacion,
   };
 }
 
@@ -83,9 +92,7 @@ export function useHabitacion(id: string) {
     }
   }, [id]);
 
-  useEffect(() => {
-    fetchHabitacion();
-  }, [fetchHabitacion]);
+  useEffect(() => { fetchHabitacion(); }, [fetchHabitacion]);
 
   return { habitacion, loading, error, fetchHabitacion };
 }
@@ -110,9 +117,7 @@ export function useTiposHabitacion() {
   }, []);
 
   useEffect(() => {
-    if (session) {
-      fetchTipos();
-    }
+    if (session) fetchTipos();
   }, [session, fetchTipos]);
 
   const createTipo = async (data: Parameters<typeof tiposHabitacionApi.create>[0]): Promise<TipoHabitacion> => {
@@ -132,13 +137,5 @@ export function useTiposHabitacion() {
     setTipos(prev => prev.filter(t => t.id !== id));
   };
 
-  return {
-    tipos,
-    loading,
-    error,
-    fetchTipos,
-    createTipo,
-    updateTipo,
-    deleteTipo,
-  };
+  return { tipos, loading, error, fetchTipos, createTipo, updateTipo, deleteTipo };
 }

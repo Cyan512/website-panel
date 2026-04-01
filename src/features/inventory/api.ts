@@ -13,7 +13,7 @@ export const inventoryApi = {
   },
 
   create: async (data: CreateMuebleDto): Promise<Mueble> => {
-    const response = await axiosInstance.post<{ success: boolean; data: Mueble }>("/api/private/private/muebles", data);
+    const response = await axiosInstance.post<{ success: boolean; data: Mueble }>("/api/private/muebles", data);
     return response.data.data;
   },
 

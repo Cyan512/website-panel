@@ -3,7 +3,6 @@ import { Modal, Button, InputField } from "@/components";
 import { sileo } from "sileo";
 import { estadoEstadiaLabels } from "../types";
 import type { Estancia, CreateEstancia, EstadoEstadia } from "../types";
-import { useReservas } from "@/features/reservations/hooks/useReservas";
 import type { Reserva } from "@/features/reservations/types";
 import { cn } from "@/utils/cn";
 import { isHandledError } from "@/utils/error.utils";
@@ -25,11 +24,11 @@ const selectClass = "field-input w-full rounded-xl py-3.5 text-sm px-3.5 focus:o
 const labelClass = "field-label block mb-2 text-text-secondary font-medium";
 
 export function EstanciaModal({ isOpen, onClose, onSuccess, estancia, onSave }: Props) {
-  const { reservas } = useReservas();
-
   const [reservaQuery, setReservaQuery] = useState("");
+  const [suggestions, setSuggestions] = useState<Reserva[]>([]);
   const [reservaSeleccionada, setReservaSeleccionada] = useState<Reserva | null>(null);
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [searching, setSearching] = useState(false);
   const [form, setForm] = useState({
     fechaEntrada: toDateInput(new Date()),
     fechaSalida: "",
@@ -38,14 +37,35 @@ export function EstanciaModal({ isOpen, onClose, onSuccess, estancia, onSave }: 
   });
   const [saving, setSaving] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const searchReservas = async (q: string) => {
+    if (!q.trim()) { setSuggestions([]); return; }
+    setSearching(true);
+    try {
+      const { reservasApi } = await import("@/features/reservations/api");
+      const data = await reservasApi.getAll(1, 10, q);
+      setSuggestions(data.list);
+    } catch {
+      setSuggestions([]);
+    } finally {
+      setSearching(false);
+    }
+  };
+
+  const handleQueryChange = (q: string) => {
+    setReservaQuery(q);
+    setReservaSeleccionada(null);
+    setShowSuggestions(true);
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => searchReservas(q), 300);
+  };
 
   useEffect(() => {
     if (!isOpen) return;
     if (estancia) {
-      // Buscar la reserva correspondiente
-      const r = reservas.find((x) => x.id === estancia.reserva_id) ?? null;
-      setReservaSeleccionada(r);
-      setReservaQuery(r?.codigo ?? estancia.reserva_id);
+      setReservaSeleccionada(null);
+      setReservaQuery(estancia.reserva_id);
       setForm({
         fechaEntrada: toDateInput(estancia.fecha_entrada),
         fechaSalida: toDateInput(estancia.fecha_salida),
@@ -55,28 +75,22 @@ export function EstanciaModal({ isOpen, onClose, onSuccess, estancia, onSave }: 
     } else {
       setReservaSeleccionada(null);
       setReservaQuery("");
+      setSuggestions([]);
       setForm({ fechaEntrada: toDateInput(new Date()), fechaSalida: "", estado: "EN_CASA", notas: "" });
     }
-  }, [isOpen, estancia, reservas]);
+  }, [isOpen, estancia]);
 
-  // Autocompletar fechas desde la reserva seleccionada
   const handleSelectReserva = (r: Reserva) => {
     setReservaSeleccionada(r);
-    setReservaQuery(r.codigo);
+    setReservaQuery(`${r.codigo} — ${r.nombre_huesped}`);
     setShowSuggestions(false);
+    setSuggestions([]);
     setForm((f) => ({
       ...f,
-      fechaEntrada: toDateInput(r.fecha_entrada),
-      fechaSalida: toDateInput(r.fecha_salida),
+      fechaEntrada: toDateInput(r.fecha_inicio),
+      fechaSalida: toDateInput(r.fecha_fin),
     }));
   };
-
-  const suggestions = reservaQuery.trim()
-    ? reservas.filter((r) =>
-        r.codigo.toLowerCase().includes(reservaQuery.toLowerCase()) ||
-        r.nombre_huesped.toLowerCase().includes(reservaQuery.toLowerCase())
-      ).slice(0, 6)
-    : [];
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -84,8 +98,8 @@ export function EstanciaModal({ isOpen, onClose, onSuccess, estancia, onSave }: 
 
     const payload: CreateEstancia = {
       reservaId: reservaSeleccionada.id,
-      habitacionId: reservaSeleccionada.habitacion.id,
-      huespedId: reservaSeleccionada.huesped.id,
+      habitacionId: reservaSeleccionada.habitacionId,
+      huespedId: reservaSeleccionada.huespedId,
       estado: form.estado,
       ...(form.fechaEntrada && { fechaEntrada: new Date(form.fechaEntrada) }),
       ...(form.fechaSalida ? { fechaSalida: new Date(form.fechaSalida) } : { fechaSalida: null }),
@@ -118,11 +132,7 @@ export function EstanciaModal({ isOpen, onClose, onSuccess, estancia, onSave }: 
             ref={inputRef}
             type="text"
             value={reservaQuery}
-            onChange={(e) => {
-              setReservaQuery(e.target.value);
-              setReservaSeleccionada(null);
-              setShowSuggestions(true);
-            }}
+            onChange={(e) => handleQueryChange(e.target.value)}
             onFocus={() => setShowSuggestions(true)}
             onBlur={() => setTimeout(() => setShowSuggestions(false), 150)}
             placeholder="Buscar por código o nombre de huésped..."
@@ -130,10 +140,11 @@ export function EstanciaModal({ isOpen, onClose, onSuccess, estancia, onSave }: 
             required
           />
 
-          {/* Sugerencias */}
-          {showSuggestions && suggestions.length > 0 && (
+          {showSuggestions && (searching || suggestions.length > 0) && (
             <div className="absolute z-50 top-full left-0 right-0 mt-1 bg-bg-card border border-border rounded-xl shadow-xl overflow-hidden">
-              {suggestions.map((r) => (
+              {searching ? (
+                <div className="px-4 py-3 text-sm text-text-muted">Buscando...</div>
+              ) : suggestions.map((r) => (
                 <button
                   key={r.id}
                   type="button"
@@ -151,7 +162,7 @@ export function EstanciaModal({ isOpen, onClose, onSuccess, estancia, onSave }: 
                     </div>
                     <p className="text-sm text-text-primary mt-0.5">{r.nombre_huesped}</p>
                     <p className="text-xs text-text-muted">
-                      Hab. {r.nro_habitacion} · {new Date(r.fecha_entrada).toLocaleDateString("es-ES")} → {new Date(r.fecha_salida).toLocaleDateString("es-ES")}
+                      Hab. {r.nro_habitacion} · {new Date(r.fecha_inicio).toLocaleDateString("es-ES")} → {new Date(r.fecha_fin).toLocaleDateString("es-ES")}
                     </p>
                   </div>
                 </button>

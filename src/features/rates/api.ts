@@ -14,7 +14,7 @@ export const tarifasApi = {
   },
 
   create: async (data: CreateTarifa): Promise<Tarifa> => {
-    const response = await axiosInstance.post<{ success: boolean; data: Tarifa }>("/api/private/private/tarifas", data);
+    const response = await axiosInstance.post<{ success: boolean; data: Tarifa }>("/api/private/tarifas", data);
     return response.data.data;
   },
 
