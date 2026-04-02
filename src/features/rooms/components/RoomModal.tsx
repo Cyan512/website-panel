@@ -137,7 +137,7 @@ export function RoomModal({ isOpen, onClose, onSuccess, habitacion }: RoomModalP
                                 className={selectClass}
                             >
                                 <option value="true">Disponible</option>
-                                <option value="false">No disponible</option>
+                                <option value="false">Ocupada</option>
                             </select>
                         </div>
                     </div>

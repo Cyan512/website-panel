@@ -1,8 +1,9 @@
 import { authClient } from "@/config/authClient";
 import { Card, CardBody, Loading } from "@/components";
-import { MdHotel, MdPeople, MdEventNote, MdInventory } from "react-icons/md";
+import { MdHotel, MdLogin, MdLogout, MdAttachMoney, MdTrendingUp, MdTrendingDown } from "react-icons/md";
 import { useDashboard } from "../hooks/useDashboard";
 import Ingresos from "./Ingresos";
+import { cn } from "@/utils/cn";
 
 function formatTimeAgo(date: Date): string {
   const now = new Date();
@@ -25,11 +26,58 @@ export default function DashboardPage() {
     return <Loading fullScreen />;
   }
 
+  const now = new Date();
+  const mesLabel = now.toLocaleDateString("es-ES", { month: "long", year: "numeric" });
+  const mesAnteriorLabel = new Date(now.getFullYear(), now.getMonth() - 1, 1)
+    .toLocaleDateString("es-ES", { month: "long" });
+  const ingresoDelta = stats.ingresosMesAnterior > 0
+    ? ((stats.ingresosMes - stats.ingresosMesAnterior) / stats.ingresosMesAnterior) * 100
+    : 0;
+  const fmt = (n: number) => n.toLocaleString("es-PE", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
   const statsCards = [
-    { label: "Habitaciones", value: stats.totalHabitaciones, icon: MdHotel, color: "from-emerald-400 to-emerald-500" },
-    { label: "Reservas", value: stats.reservas, icon: MdEventNote, color: "from-blue-500 to-blue-600" },
-    { label: "Huéspedes", value: stats.ocupadas, icon: MdPeople, color: "from-violet-500 to-violet-600" },
-    { label: "Inventario", value: stats.totalInventario, icon: MdInventory, color: "from-amber-500 to-amber-600" },
+    {
+      label: "Ocupación hoy",
+      icon: MdHotel,
+      color: "from-blue-500 to-blue-600",
+      main: `${stats.porcentajeOcupacionHoy}%`,
+      sub: `${stats.ocupadasHoy} de ${stats.totalHabitaciones} hab. ocupadas`,
+      extra: (
+        <span className={cn("text-xs font-medium flex items-center gap-0.5", stats.porcentajeOcupacionHoy >= stats.porcentajeOcupacionAyer ? "text-emerald-600" : "text-red-500")}>
+          {stats.porcentajeOcupacionHoy >= stats.porcentajeOcupacionAyer ? <MdTrendingUp className="w-3.5 h-3.5" /> : <MdTrendingDown className="w-3.5 h-3.5" />}
+          Ayer: {stats.porcentajeOcupacionAyer}%
+        </span>
+      ),
+    },
+    {
+      label: "Check-in hoy",
+      icon: MdLogin,
+      color: "from-emerald-500 to-emerald-600",
+      main: String(stats.checkInHoy),
+      sub: "Reservas confirmadas",
+      extra: <span className="text-xs text-text-muted">Entradas programadas para hoy</span>,
+    },
+    {
+      label: "Check-out hoy",
+      icon: MdLogout,
+      color: "from-amber-500 to-amber-600",
+      main: String(stats.checkOutHoy),
+      sub: "Salidas confirmadas",
+      extra: <span className="text-xs text-text-muted">Estancias que finalizan hoy</span>,
+    },
+    {
+      label: "Ingresos del mes",
+      icon: MdAttachMoney,
+      color: "from-violet-500 to-violet-600",
+      main: `${stats.moneda} ${fmt(stats.ingresosMes)}`,
+      sub: mesLabel,
+      extra: (
+        <span className={cn("text-xs font-medium flex items-center gap-0.5", ingresoDelta >= 0 ? "text-emerald-600" : "text-red-500")}>
+          {ingresoDelta >= 0 ? <MdTrendingUp className="w-3.5 h-3.5" /> : <MdTrendingDown className="w-3.5 h-3.5" />}
+          {mesAnteriorLabel}: {stats.moneda} {fmt(stats.ingresosMesAnterior)}
+        </span>
+      ),
+    },
   ];
 
   return (
@@ -45,13 +93,15 @@ export default function DashboardPage() {
           return (
             <Card key={stat.label} hoverable>
               <CardBody>
-                <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center justify-between mb-3">
                   <div className={`p-2.5 rounded-lg bg-gradient-to-br ${stat.color}`}>
                     <Icon className="w-5 h-5 text-white" />
                   </div>
+                  <span className="text-xs text-text-muted font-medium">{stat.label}</span>
                 </div>
-                <p className="text-2xl font-bold text-text-primary mb-1">{stat.value}</p>
-                <p className="text-sm text-text-muted">{stat.label}</p>
+                <p className="text-2xl font-bold text-text-primary mb-0.5">{stat.main}</p>
+                <p className="text-sm text-text-muted mb-3">{stat.sub}</p>
+                <div className="pt-2 border-t border-border/50">{stat.extra}</div>
               </CardBody>
             </Card>
           );

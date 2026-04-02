@@ -3,12 +3,14 @@ import { useHabitaciones } from "../hooks/useRooms";
 import { RoomCard } from "./RoomCard";
 import { RoomModal } from "./RoomModal";
 import { ImageCarousel } from "./ImageCarousel";
+import { RoomCalendar } from "./RoomCalendar";
 import { PanelHeader, Button, Modal } from "@/components";
 import { cn } from "@/utils/cn";
 import { sileo } from "sileo";
 import { isHandledError } from "@/utils/error.utils";
 import { MdSearch } from "react-icons/md";
-import type { Habitacion } from "../types";
+import type { Habitacion, FechaReserva } from "../types";
+import { roomsApi } from "../api";
 
 export default function RoomsPage() {
   const {
@@ -24,6 +26,24 @@ export default function RoomsPage() {
   const [carouselOpen, setCarouselOpen] = useState(false);
   const [carouselIndex, setCarouselIndex] = useState(0);
   const [tipoSearch, setTipoSearch] = useState("");
+  const [fechasReserva, setFechasReserva] = useState<FechaReserva[]>([]);
+  const [loadingFechas, setLoadingFechas] = useState(false);
+  const [calendarOpen, setCalendarOpen] = useState(false);
+
+  const handleSelectHabitacion = async (hab: Habitacion) => {
+    setSelectedHabitacion(hab);
+    setFechasReserva([]);
+    setCalendarOpen(false);
+    setLoadingFechas(true);
+    try {
+      const detail = await roomsApi.getById(hab.id, ["TENTATIVA", "CONFIRMADA", "EN_CASA"]);
+      setFechasReserva(detail.fechas_reserva ?? []);
+    } catch {
+      setFechasReserva([]);
+    } finally {
+      setLoadingFechas(false);
+    }
+  };
 
   const handleDelete = async () => {
     if (!selectedHabitacion) return;
@@ -99,7 +119,7 @@ export default function RoomsPage() {
           <>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 px-4 sm:px-6 pb-4">
               {habitaciones.map((habitacion) => (
-                <RoomCard key={habitacion.id} room={habitacion} onClick={() => setSelectedHabitacion(habitacion)} />
+                <RoomCard key={habitacion.id} room={habitacion} onClick={() => handleSelectHabitacion(habitacion)} />
               ))}
             </div>
 
@@ -126,9 +146,11 @@ export default function RoomsPage() {
 
       {selectedHabitacion && (
         <Modal isOpen={!!selectedHabitacion} onClose={() => setSelectedHabitacion(null)} title={`Habitación ${selectedHabitacion.nro_habitacion}`}>
+          <div className="max-h-[70vh] overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+
           <div className="space-y-4">
             <div className="flex items-center gap-4">
-              <div className={cn("w-14 h-14 rounded-xl flex items-center justify-center text-xl font-bold", selectedHabitacion.estado ? "bg-emerald-100 text-emerald-700" : "bg-red-100 text-red-700")}>
+              <div className={cn("w-14 h-14 rounded-xl flex items-center justify-center text-xl font-bold", selectedHabitacion.estado ? "bg-emerald-500 text-emerald-100" : "bg-red-500 text-red-100")}>
                 {selectedHabitacion.nro_habitacion}
               </div>
               <div>
@@ -140,8 +162,8 @@ export default function RoomsPage() {
             <div className="grid grid-cols-2 gap-3">
               <div className="bg-paper-medium/20 rounded-xl p-3">
                 <p className="text-text-muted text-xs">Estado</p>
-                <span className={cn("inline-block px-3 py-1 text-sm font-semibold rounded-full mt-1", selectedHabitacion.estado ? "bg-emerald-100 text-emerald-700" : "bg-red-100 text-red-700")}>
-                  {selectedHabitacion.estado ? "Disponible" : "No disponible"}
+                <span className={cn("inline-block px-3 py-1 text-sm font-semibold rounded-full mt-1", selectedHabitacion.estado ? "bg-emerald-500 text-emerald-100" : "bg-red-500 text-red-100")}>
+                  {selectedHabitacion.estado ? "Disponible" : "Ocupada"}
                 </span>
               </div>
               <div className="bg-paper-medium/20 rounded-xl p-3">
@@ -156,6 +178,26 @@ export default function RoomsPage() {
                 <p className="text-sm mt-1">{selectedHabitacion.descripcion}</p>
               </div>
             )}
+
+            {/* Calendario de disponibilidad */}
+            <div className="bg-paper-medium/10 rounded-xl overflow-hidden">
+              <button
+                onClick={() => setCalendarOpen((o) => !o)}
+                className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-paper-medium/20 transition-colors"
+              >
+                <p className="text-text-muted text-xs font-semibold uppercase tracking-wide">Disponibilidad</p>
+                <span className="text-text-muted text-xs">{calendarOpen ? "▲ Ocultar" : "▼ Ver calendario"}</span>
+              </button>
+              {calendarOpen && (
+                <div className="px-4 pb-4">
+                  {loadingFechas ? (
+                    <p className="text-xs text-text-muted text-center py-4">Cargando fechas...</p>
+                  ) : (
+                    <RoomCalendar fechasReserva={fechasReserva} />
+                  )}
+                </div>
+              )}
+            </div>
 
             {selectedHabitacion.url_imagen && selectedHabitacion.url_imagen.length > 0 && (
               <div>
@@ -175,6 +217,7 @@ export default function RoomsPage() {
               <Button onClick={handleDelete} variant="danger" className="flex-1" disabled={deleting}>{deleting ? "Eliminando..." : "Eliminar"}</Button>
               <Button onClick={() => setSelectedHabitacion(null)} variant="secondary" className="flex-1">Cerrar</Button>
             </div>
+          </div>
           </div>
         </Modal>
       )}

@@ -36,7 +36,7 @@ export function RoomCard({ room, onClick }: RoomCardProps) {
         <div className="p-4 pt-3">
           <div className="flex justify-between items-start mb-3">
             <div className="flex items-center gap-3">
-              <div className={cn("w-11 h-11 rounded-xl flex items-center justify-center text-base font-bold transition-all duration-300 group-hover:scale-110", disponible ? "bg-emerald-100 text-emerald-700" : "bg-red-100 text-red-700")}>
+              <div className={cn("w-11 h-11 rounded-xl flex items-center justify-center text-base font-bold transition-all duration-300 group-hover:scale-110", disponible ? "bg-emerald-500 text-emerald-100" : "bg-red-500 text-red-100")}>
                 {room.nro_habitacion}
               </div>
               <div>
@@ -45,8 +45,8 @@ export function RoomCard({ room, onClick }: RoomCardProps) {
                 <p className="text-xs text-text-muted">{room.tipo_habitacion?.nombre ?? "Sin tipo"}</p>
               </div>
             </div>
-            <span className={cn("px-2.5 py-1 text-[10px] font-semibold rounded-full uppercase tracking-wide", disponible ? "bg-emerald-100 text-emerald-700" : "bg-red-100 text-red-700")}>
-              {disponible ? "Disponible" : "No disponible"}
+            <span className={cn("px-2.5 py-1 text-[10px] font-semibold rounded-full uppercase tracking-wide", disponible ? "bg-emerald-500 text-emerald-100" : "bg-red-500 text-red-100")}>
+              {disponible ? "Disponible" : "Ocupada"}
             </span>
           </div>
 
@@ -55,8 +55,8 @@ export function RoomCard({ room, onClick }: RoomCardProps) {
           )}
 
           <div className="flex gap-2 pt-2 border-t border-border/50">
-            <span className={cn("px-2 py-0.5 text-[10px] font-semibold rounded-full", room.tiene_ducha ? "bg-emerald-100 text-emerald-700" : "bg-stone-100 text-stone-500")}>Ducha</span>
-            <span className={cn("px-2 py-0.5 text-[10px] font-semibold rounded-full", room.tiene_banio ? "bg-emerald-100 text-emerald-700" : "bg-stone-100 text-stone-500")}>Baño</span>
+            <span className={cn("px-2 py-0.5 text-[10px] font-semibold rounded-full", room.tiene_ducha ? "bg-emerald-500 text-emerald-100" : "bg-stone-500 text-stone-100")}>Ducha</span>
+            <span className={cn("px-2 py-0.5 text-[10px] font-semibold rounded-full", room.tiene_banio ? "bg-emerald-500 text-emerald-100" : "bg-stone-500 text-stone-100")}>Baño</span>
           </div>
         </div>
       </div>
