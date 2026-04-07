@@ -1,7 +1,10 @@
-import { useState } from "react";
-import type { Habitacion } from "../types";
+import { useState, useRef, useEffect } from "react";
+import { createPortal } from "react-dom";
+import type { Habitacion, FechaReserva } from "../types";
 import { cn } from "@/utils/cn";
-import { ImageCarousel } from "./ImageCarousel";
+import { RoomCalendar } from "./RoomCalendar";
+import { roomsApi } from "../api";
+import { MdCalendarMonth } from "react-icons/md";
 
 type RoomCardProps = {
   room: Habitacion;
@@ -17,10 +20,67 @@ export const STATUS_LABELS: Record<string, string> = {
 };
 
 export function RoomCard({ room, onClick }: RoomCardProps) {
-  const [carouselOpen, setCarouselOpen] = useState(false);
-  const [carouselIndex, setCarouselIndex] = useState(0);
-  const images = room.url_imagen ?? [];
+  const [calendarOpen, setCalendarOpen] = useState(false);
+  const [fechasReserva, setFechasReserva] = useState<FechaReserva[]>([]);
+  const [loadingFechas, setLoadingFechas] = useState(false);
+  const [dropdownPos, setDropdownPos] = useState({ top: 0, left: 0 });
+  const btnRef = useRef<HTMLButtonElement>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
   const disponible = room.estado === true;
+
+  // Cerrar al hacer clic fuera
+  useEffect(() => {
+    if (!calendarOpen) return;
+    const handler = (e: MouseEvent) => {
+      if (
+        dropdownRef.current && !dropdownRef.current.contains(e.target as Node) &&
+        btnRef.current && !btnRef.current.contains(e.target as Node)
+      ) {
+        setCalendarOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [calendarOpen]);
+
+  const handleCalendarClick = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (calendarOpen) { setCalendarOpen(false); return; }
+
+    // Calcular posición del dropdown relativa al viewport
+    if (btnRef.current) {
+      const rect = btnRef.current.getBoundingClientRect();
+      const dropdownWidth = 288; // w-72
+      const dropdownHeight = 320;
+      const spaceAbove = rect.top;
+      const spaceBelow = window.innerHeight - rect.bottom;
+
+      const top = spaceAbove > dropdownHeight || spaceAbove > spaceBelow
+        ? rect.top + window.scrollY - dropdownHeight - 8
+        : rect.bottom + window.scrollY + 8;
+
+      const left = Math.min(
+        rect.right + window.scrollX - dropdownWidth,
+        window.innerWidth - dropdownWidth - 8
+      );
+
+      setDropdownPos({ top, left: Math.max(8, left) });
+    }
+
+    setCalendarOpen(true);
+    if (fechasReserva.length === 0) {
+      setLoadingFechas(true);
+      try {
+        const detail = await roomsApi.getById(room.id, ["TENTATIVA", "CONFIRMADA", "EN_CASA"]);
+        setFechasReserva(detail.fechas_reserva ?? []);
+      } catch {
+        setFechasReserva([]);
+      } finally {
+        setLoadingFechas(false);
+      }
+    }
+  };
 
   return (
     <>
@@ -28,10 +88,7 @@ export function RoomCard({ room, onClick }: RoomCardProps) {
         onClick={onClick}
         className="group relative overflow-hidden cursor-pointer transition-all duration-300 hover:-translate-y-1 hover:shadow-xl bg-bg-card rounded-2xl border border-border hover:border-accent/50"
       >
-        {/* Status bar */}
         <div className={cn("absolute top-0 left-0 w-full h-1", disponible ? "bg-gradient-to-r from-emerald-400 to-emerald-600" : "bg-gradient-to-r from-red-400 to-red-600")} />
-
-
 
         <div className="p-4 pt-3">
           <div className="flex justify-between items-start mb-3">
@@ -50,18 +107,44 @@ export function RoomCard({ room, onClick }: RoomCardProps) {
             </span>
           </div>
 
-          {room.descripcion && (
-            <p className="text-xs text-text-muted mb-2 line-clamp-1">{room.descripcion}</p>
-          )}
+          {room.descripcion && <p className="text-xs text-text-muted mb-2 line-clamp-1">{room.descripcion}</p>}
 
-          <div className="flex gap-2 pt-2 border-t border-border/50">
-            <span className={cn("px-2 py-0.5 text-[10px] font-semibold rounded-full", room.tiene_ducha ? "bg-emerald-500 text-emerald-100" : "bg-stone-500 text-stone-100")}>Ducha</span>
-            <span className={cn("px-2 py-0.5 text-[10px] font-semibold rounded-full", room.tiene_banio ? "bg-emerald-500 text-emerald-100" : "bg-stone-500 text-stone-100")}>Baño</span>
+          <div className="flex items-center justify-between pt-2 border-t border-border/50">
+            <div className="flex gap-2">
+              <span className={cn("px-2 py-0.5 text-[10px] font-semibold rounded-full", room.tiene_ducha ? "bg-emerald-100 text-emerald-700" : "bg-stone-100 text-stone-500")}>Ducha</span>
+              <span className={cn("px-2 py-0.5 text-[10px] font-semibold rounded-full", room.tiene_banio ? "bg-emerald-100 text-emerald-700" : "bg-stone-100 text-stone-500")}>Baño</span>
+            </div>
+            <button
+              ref={btnRef}
+              onClick={handleCalendarClick}
+              title="Ver disponibilidad"
+              className={cn("p-1.5 rounded-lg transition-all", calendarOpen ? "bg-primary/15 text-primary" : "text-text-muted hover:text-primary hover:bg-primary/10")}
+            >
+              <MdCalendarMonth className="w-4 h-4" />
+            </button>
           </div>
         </div>
       </div>
 
-      <ImageCarousel images={images} isOpen={carouselOpen} onClose={() => setCarouselOpen(false)} initialIndex={carouselIndex} />
+      {/* Dropdown via portal — escapa del overflow-hidden */}
+      {calendarOpen && createPortal(
+        <div
+          ref={dropdownRef}
+          style={{ position: "absolute", top: dropdownPos.top, left: dropdownPos.left, zIndex: 9998 }}
+          className="w-72 bg-bg-card border border-border rounded-2xl shadow-2xl p-4"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <p className="text-xs font-semibold text-text-muted uppercase tracking-wide mb-3">
+            Disponibilidad · Hab. {room.nro_habitacion}
+          </p>
+          {loadingFechas ? (
+            <p className="text-xs text-text-muted text-center py-6">Cargando...</p>
+          ) : (
+            <RoomCalendar fechasReserva={fechasReserva} />
+          )}
+        </div>,
+        document.body
+      )}
     </>
   );
 }
