@@ -1,10 +1,11 @@
 import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { authClient } from "@/config/authClient";
 import {
-  MdDashboard, MdEventNote, MdPeople, MdInventory, MdMenu, MdClose,
+  MdDashboard, MdEventNote, MdPeople, MdMenu, MdClose,
   MdPayment, MdLocalOffer, MdHub, MdBedroomParent,
   MdChair, MdCategory, MdHotel, MdExpandMore, MdExpandLess,
   MdLogout, MdPerson, MdSettings, MdKeyboardArrowUp,
+  MdShoppingCart, MdReceipt, MdLocalBar, MdKitchen,
 } from "react-icons/md";
 import { cn } from "@/utils/cn";
 import { useState, useRef, useEffect, type ComponentType } from "react";
@@ -29,10 +30,14 @@ interface MenuGroup {
 
 type NavItem =
   | { kind: "link"; item: MenuItem }
-  | { kind: "group"; group: MenuGroup };
+  | { kind: "group"; group: MenuGroup }
+  | { kind: "separator"; label: string };
 
 const navItems: NavItem[] = [
+  { kind: "separator", label: "Principal" },
   { kind: "link", item: { id: "dashboard", icon: MdDashboard, label: "Dashboard", path: "/dashboard" } },
+
+  { kind: "separator", label: "Operación" },
   { kind: "link", item: { id: "booking", icon: MdEventNote, label: "Reservas", path: "/bookings" } },
   {
     kind: "group",
@@ -42,14 +47,15 @@ const navItems: NavItem[] = [
       label: "Habitaciones",
       paths: ["/rooms", "/room-types"],
       children: [
-        { id: "room", icon: MdHotel, label: "Habitaciones", path: "/rooms" },
-        { id: "room-types", icon: MdHotel, label: "Tipos de Habitación", path: "/room-types" },
+        { id: "room", icon: MdHotel, label: "Habitaciones", path: "/rooms", roles: ["ADMIN", "RECEPCIONISTA"] },
+        { id: "room-types", icon: MdHotel, label: "Tipos de Habitación", path: "/room-types", roles: ["ADMIN", "RECEPCIONISTA"] },
       ],
     },
   },
-  { kind: "link", item: { id: "client", icon: MdPeople, label: "Huéspedes", path: "/clients", roles: ["ADMIN"] } },
-  // { kind: "link", item: { id: "stock", icon: MdInventory, label: "Inventario", path: "/stock", roles: ["ADMIN"] } },
-  { kind: "link", item: { id: "stays", icon: MdBedroomParent, label: "Estancias", path: "/stays", roles: ["ADMIN"] } },
+  { kind: "link", item: { id: "client", icon: MdPeople, label: "Huéspedes", path: "/clients", roles: ["ADMIN", "RECEPCIONISTA"] } },
+  { kind: "link", item: { id: "stays", icon: MdBedroomParent, label: "Estancias", path: "/stays", roles: ["ADMIN", "RECEPCIONISTA"] } },
+
+  { kind: "separator", label: "Gestión" },
   {
     kind: "group",
     group: {
@@ -57,11 +63,11 @@ const navItems: NavItem[] = [
       icon: MdPayment,
       label: "Pagos",
       paths: ["/payments", "/rates", "/channels"],
-      roles: ["ADMIN"],
+      roles: ["ADMIN", "RECEPCIONISTA"],
       children: [
         { id: "payments", icon: MdPayment, label: "Pagos", path: "/payments" },
         { id: "rates", icon: MdLocalOffer, label: "Tarifas", path: "/rates" },
-        { id: "channels", icon: MdHub, label: "Canales", path: "/channels" },
+        { id: "channels", icon: MdHub, label: "Canales", path: "/channels", roles: ["ADMIN", "RECEPCIONISTA"] },
       ],
     },
   },
@@ -72,13 +78,31 @@ const navItems: NavItem[] = [
       icon: MdChair,
       label: "Muebles",
       paths: ["/furniture", "/furniture-categories"],
-      roles: ["ADMIN"],
+      roles: ["ADMIN", "RECEPCIONISTA"],
       children: [
-        { id: "furniture", icon: MdChair, label: "Muebles", path: "/furniture" },
-        { id: "furniture-categories", icon: MdCategory, label: "Categorías", path: "/furniture-categories" },
+        { id: "furniture", icon: MdChair, label: "Muebles", path: "/furniture", roles: ["ADMIN", "RECEPCIONISTA"] },
+        { id: "furniture-categories", icon: MdCategory, label: "Categorías", path: "/furniture-categories", roles: ["ADMIN", "RECEPCIONISTA"] },
       ],
     },
   },
+  { kind: "link", item: { id: "products", icon: MdShoppingCart, label: "Productos", path: "/products", roles: ["ADMIN", "RECEPCIONISTA"] } },
+  { kind: "link", item: { id: "folios", icon: MdReceipt, label: "Folios", path: "/folios", roles: ["ADMIN", "RECEPCIONISTA"] } },
+  { kind: "link", item: { id: "promotions", icon: MdLocalOffer, label: "Promociones", path: "/promotions", roles: ["ADMIN", "RECEPCIONISTA"] } },
+  {
+    kind: "group",
+    group: {
+      id: "insumos-group",
+      icon: MdLocalBar,
+      label: "Insumos",
+      paths: ["/bar-supplies", "/kitchen-supplies"],
+      roles: ["ADMIN", "RECEPCIONISTA"],
+      children: [
+        { id: "bar-supplies", icon: MdLocalBar, label: "Insumos Bar", path: "/bar-supplies", roles: ["ADMIN", "RECEPCIONISTA"] },
+        { id: "kitchen-supplies", icon: MdKitchen, label: "Insumos Cocina", path: "/kitchen-supplies" },
+      ],
+    },
+  },
+
 ];
 
 function GroupItem({ group, userRole, onNavClick }: { group: MenuGroup; userRole: string; onNavClick: () => void }) {
@@ -200,8 +224,14 @@ export default function Sidebar() {
         </div>
 
         <nav className="flex-1 py-4 overflow-y-auto">
-          <div className="text-[10px] font-semibold tracking-wider uppercase text-text-muted px-4 py-2">Principal</div>
-          {navItems.map((navItem) => {
+          {navItems.map((navItem, idx) => {
+            if (navItem.kind === "separator") {
+              return (
+                <div key={`sep-${idx}`} className="px-4 pt-4 pb-1">
+                  <p className="text-[10px] font-semibold tracking-wider uppercase text-text-muted">{navItem.label}</p>
+                </div>
+              );
+            }
             if (navItem.kind === "link") {
               const { item } = navItem;
               if (item.roles && !item.roles.includes(userRole)) return null;

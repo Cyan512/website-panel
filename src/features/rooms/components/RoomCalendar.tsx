@@ -10,6 +10,12 @@ interface Props {
 const DAYS = ["Lu", "Ma", "Mi", "Ju", "Vi", "Sa", "Do"];
 const MONTHS_ES = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
 
+// Parse UTC date string to Date object (handles timezone offset)
+function parseUTC(dateString: string): Date {
+  const date = new Date(dateString);
+  return new Date(date.getTime() + date.getTimezoneOffset() * 60000);
+}
+
 function toYMD(date: Date) {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
 }
@@ -31,8 +37,8 @@ export function RoomCalendar({ fechasReserva }: Props) {
   // Build set of occupied dates
   const occupiedDates = new Set<string>();
   fechasReserva.forEach((r) => {
-    const start = new Date(r.fecha_inicio);
-    const end = new Date(r.fecha_fin);
+    const start = parseUTC(r.fecha_inicio);
+    const end = parseUTC(r.fecha_fin);
     const cur = new Date(start);
     while (cur <= end) {
       occupiedDates.add(toYMD(cur));

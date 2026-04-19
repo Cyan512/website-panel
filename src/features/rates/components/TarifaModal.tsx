@@ -19,9 +19,10 @@ interface Props {
 const defaultForm = {
   tipo_habitacion_id: "",
   canal_id: "",
-  precio_noche: "",
-  iva: "",
-  cargo_servicios: "",
+  precio: "",
+  unidad: "noche",
+  iva: "0",
+  cargo_servicios: "0",
   moneda: "USD",
 };
 
@@ -36,9 +37,10 @@ export function TarifaModal({ isOpen, onClose, onSuccess, tarifa, tiposHabitacio
       setForm({
         tipo_habitacion_id: tarifa.tipo_habitacion.id,
         canal_id: tarifa.canal.id,
-        precio_noche: String(tarifa.precio_noche),
-        iva: tarifa.iva != null ? String(tarifa.iva) : "",
-        cargo_servicios: tarifa.cargo_servicios != null ? String(tarifa.cargo_servicios) : "",
+        precio: String(tarifa.precio),
+        unidad: tarifa.unidad ?? "noche",
+        iva: tarifa.iva != null ? String(tarifa.iva) : "0",
+        cargo_servicios: tarifa.cargo_servicios != null ? String(tarifa.cargo_servicios) : "0",
         moneda: tarifa.moneda,
       });
     } else {
@@ -52,7 +54,7 @@ export function TarifaModal({ isOpen, onClose, onSuccess, tarifa, tiposHabitacio
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const precio = parseFloat(form.precio_noche);
+    const precio = parseFloat(form.precio);
     if (!form.tipo_habitacion_id) return sileo.error({ title: "Error", description: "Selecciona un tipo de habitación" });
     if (!form.canal_id) return sileo.error({ title: "Error", description: "Selecciona un canal" });
     if (!precio || precio <= 0) return sileo.error({ title: "Error", description: "El precio debe ser mayor a 0" });
@@ -60,10 +62,11 @@ export function TarifaModal({ isOpen, onClose, onSuccess, tarifa, tiposHabitacio
     const payload: CreateTarifa = {
       tipo_habitacion_id: form.tipo_habitacion_id,
       canal_id: form.canal_id,
-      precio_noche: precio,
+      precio,
+      unidad: form.unidad.trim() || undefined,
       moneda: form.moneda,
-      ...(form.iva !== "" && { iva: parseFloat(form.iva) }),
-      ...(form.cargo_servicios !== "" && { cargo_servicios: parseFloat(form.cargo_servicios) }),
+      iva: form.iva !== "" ? parseFloat(form.iva) : 0,
+      cargo_servicios: form.cargo_servicios !== "" ? parseFloat(form.cargo_servicios) : 0,
     };
 
     setSaving(true);
@@ -102,16 +105,23 @@ export function TarifaModal({ isOpen, onClose, onSuccess, tarifa, tiposHabitacio
           </div>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <InputField
-            label="Precio por noche"
+            label="Precio *"
             type="number"
             min={0}
             step={0.01}
-            value={form.precio_noche}
-            onChange={(e) => setForm((f) => ({ ...f, precio_noche: e.target.value }))}
+            value={form.precio}
+            onChange={(e) => setForm((f) => ({ ...f, precio: e.target.value }))}
             placeholder="0.00"
             required
+          />
+          <InputField
+            label="Unidad"
+            type="text"
+            value={form.unidad}
+            onChange={(e) => setForm((f) => ({ ...f, unidad: e.target.value }))}
+            placeholder="noche"
           />
           <div>
             <label className={labelClass}>Moneda</label>

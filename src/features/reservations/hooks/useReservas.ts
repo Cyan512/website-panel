@@ -1,7 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { authClient } from "@/config/authClient";
 import { reservasApi } from "../api";
-import { roomsApi } from "@/features/rooms/api";
 import type { Reserva, CreateReserva, UpdateReserva, CancelReserva, UpdateEstadoReserva, PaginationMeta } from "../types";
 
 export function useReservas(initialPage = 1, initialLimit = 10) {
@@ -41,38 +40,26 @@ export function useReservas(initialPage = 1, initialLimit = 10) {
   const changeSearch = (q: string) => { setSearch(q); setPage(1); };
   const changeTipo = (t: string) => { setTipo(t); setPage(1); };
 
-  const syncHabitacionEstado = async (reserva: Reserva) => {
-    const ocupada = reserva.estado === "CONFIRMADA" || reserva.estado === "EN_CASA" || reserva.estado === "TENTATIVA";
-    const libre = reserva.estado === "CANCELADA" || reserva.estado === "NO_LLEGO" || reserva.estado === "COMPLETADA";
-    if (ocupada || libre) {
-      await roomsApi.updateEstado(reserva.habitacionId, { estado: libre ? true : false }).catch(() => {});
-    }
-  };
-
   const createReserva = async (data: CreateReserva): Promise<Reserva> => {
     const r = await reservasApi.create(data);
-    await syncHabitacionEstado(r);
     await fetchReservas(page, limit, search, tipo);
     return r;
   };
 
   const updateReserva = async (id: string, data: UpdateReserva): Promise<Reserva> => {
     const r = await reservasApi.update(id, data);
-    await syncHabitacionEstado(r);
     setReservas((prev) => prev.map((x) => (x.id === id ? r : x)));
     return r;
   };
 
   const updateEstadoReserva = async (id: string, data: UpdateEstadoReserva): Promise<Reserva> => {
     const r = await reservasApi.updateEstado(id, data);
-    await syncHabitacionEstado(r);
     setReservas((prev) => prev.map((x) => (x.id === id ? r : x)));
     return r;
   };
 
   const cancelReserva = async (id: string, data: CancelReserva): Promise<Reserva> => {
     const r = await reservasApi.cancel(id, data);
-    await syncHabitacionEstado(r);
     setReservas((prev) => prev.map((x) => (x.id === id ? r : x)));
     return r;
   };

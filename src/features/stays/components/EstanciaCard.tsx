@@ -1,6 +1,7 @@
 import { cn } from "@/utils/cn";
 import { estadoEstadiaLabels, estadoEstadiaColors } from "../types";
 import type { Estancia } from "../types";
+import { formatUTCDate } from "@/utils/format.utils";
 
 interface Props {
   estancia: Estancia;
@@ -28,9 +29,9 @@ export function EstanciaCard({ estancia, onClick }: Props) {
       </div>
 
       <div className="space-y-1 text-xs text-text-muted">
-        <p>Entrada: <span className="text-text-primary font-medium">{new Date(estancia.fecha_entrada).toLocaleDateString("es-ES")}</span></p>
+        <p>Entrada: <span className="text-text-primary font-medium">{formatUTCDate(estancia.fecha_entrada)}</span></p>
         {estancia.fecha_salida && (
-          <p>Salida: <span className="text-text-primary font-medium">{new Date(estancia.fecha_salida).toLocaleDateString("es-ES")}</span></p>
+          <p>Salida: <span className="text-text-primary font-medium">{formatUTCDate(estancia.fecha_salida)}</span></p>
         )}
         {noches != null && <p>{noches} {noches === 1 ? "noche" : "noches"}</p>}
       </div>

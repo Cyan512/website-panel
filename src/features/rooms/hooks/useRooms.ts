@@ -3,7 +3,7 @@ import { authClient } from "@/config/authClient";
 import { roomsApi, tiposHabitacionApi } from "../api";
 import type { Habitacion, TipoHabitacion, CreateHabitacion, UpdateEstadoHabitacion, PaginatedHabitaciones } from "../types";
 
-export function useHabitaciones(initialPage = 1, initialLimit = 10) {
+export function useHabitaciones(initialPage = 1, initialLimit = 12) {
   const { data: session } = authClient.useSession();
   const [habitaciones, setHabitaciones] = useState<Habitacion[]>([]);
   const [pagination, setPagination] = useState<PaginatedHabitaciones["pagination"]>({

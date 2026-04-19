@@ -9,8 +9,12 @@ import { isHandledError } from "@/utils/error.utils";
 import { MdHotel, MdEdit, MdDelete, MdSearch, MdLogout } from "react-icons/md";
 import { cn } from "@/utils/cn";
 import { useEstancias } from "../hooks/useEstancias";
+import { authClient } from "@/config/authClient";
+import { formatUTCDate, formatUTCDateLong } from "@/utils/format.utils";
 
 export default function EstanciasPage() {
+  const { data: session } = authClient.useSession();
+  const isAdmin = session?.user?.role === "ADMIN";
   const { estancias, loading, error, fetchEstancias, createEstancia, updateEstancia, checkoutEstancia, deleteEstancia } = useEstancias();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -81,14 +85,14 @@ export default function EstanciasPage() {
       <PanelHeader
         title="Estancias"
         subtitle="Gestión de estancias y check-outs"
-        action={<Button onClick={openCreate}>+ Nueva Estancia</Button>}
+        action={isAdmin ? <Button onClick={openCreate}>+ Nueva Estancia</Button> : undefined}
       >
         {estancias.length === 0 ? (
           <EmptyState
             icon={<MdHotel className="w-10 h-10 text-text-muted/50" />}
             title="Sin estancias"
             description="Registra la primera estancia"
-            action={{ label: "Nueva Estancia", onClick: openCreate }}
+            action={isAdmin ? { label: "Nueva Estancia", onClick: openCreate } : undefined}
           />
         ) : (
           <>
@@ -166,8 +170,8 @@ export default function EstanciasPage() {
                         <p className="text-xs text-text-muted hidden sm:block">{e.huesped.email}</p>
                       </td>
                       <td className="py-3 px-2 text-text-muted hidden sm:table-cell">Hab. {e.habitacion.nro_habitacion} — P{e.habitacion.piso}</td>
-                      <td className="py-3 px-2 text-text-muted hidden md:table-cell">{new Date(e.fecha_entrada).toLocaleDateString("es-ES")}</td>
-                      <td className="py-3 px-2 text-text-muted hidden md:table-cell">{e.fecha_salida ? new Date(e.fecha_salida).toLocaleDateString("es-ES") : "—"}</td>
+                      <td className="py-3 px-2 text-text-muted hidden md:table-cell">{formatUTCDate(e.fecha_entrada)}</td>
+                      <td className="py-3 px-2 text-text-muted hidden md:table-cell">{e.fecha_salida ? formatUTCDate(e.fecha_salida) : "—"}</td>
                       <td className="py-3 px-2">
                         <span className={cn("text-xs font-medium px-2 py-0.5 rounded-full", estadoEstadiaColors[e.estado])}>
                           {estadoEstadiaLabels[e.estado]}
@@ -175,11 +179,15 @@ export default function EstanciasPage() {
                       </td>
                       <td className="py-3 px-2" onClick={(ev) => ev.stopPropagation()}>
                         <div className="flex items-center justify-end gap-1">
-                          {e.estado === "EN_CASA" && (
+                          {isAdmin && e.estado === "EN_CASA" && (
                             <button onClick={() => openCheckout(e)} title="Check-out" className="p-1.5 rounded-lg text-text-muted hover:text-blue-600 hover:bg-blue-50 transition-all"><MdLogout className="w-4 h-4" /></button>
                           )}
-                          <button onClick={() => openEdit(e)} title="Editar" className="p-1.5 rounded-lg text-text-muted hover:text-primary hover:bg-primary/10 transition-all"><MdEdit className="w-4 h-4" /></button>
-                          <button onClick={() => handleDelete(e)} disabled={deleting} title="Eliminar" className="p-1.5 rounded-lg text-text-muted hover:text-danger hover:bg-danger/10 transition-all disabled:opacity-40"><MdDelete className="w-4 h-4" /></button>
+                          {isAdmin && (
+                            <>
+                              <button onClick={() => openEdit(e)} title="Editar" className="p-1.5 rounded-lg text-text-muted hover:text-primary hover:bg-primary/10 transition-all"><MdEdit className="w-4 h-4" /></button>
+                              <button onClick={() => handleDelete(e)} disabled={deleting} title="Eliminar" className="p-1.5 rounded-lg text-text-muted hover:text-danger hover:bg-danger/10 transition-all disabled:opacity-40"><MdDelete className="w-4 h-4" /></button>
+                            </>
+                          )}
                         </div>
                       </td>
                     </tr>
@@ -207,15 +215,17 @@ export default function EstanciasPage() {
         )}
       </PanelHeader>
 
-      <EstanciaModal
-        isOpen={isModalOpen}
-        onClose={() => { setIsModalOpen(false); setEditingEstancia(null); }}
-        onSuccess={fetchEstancias}
-        estancia={editingEstancia}
-        onSave={handleSave}
-      />
+      {isAdmin && (
+        <EstanciaModal
+          isOpen={isModalOpen}
+          onClose={() => { setIsModalOpen(false); setEditingEstancia(null); }}
+          onSuccess={fetchEstancias}
+          estancia={editingEstancia}
+          onSave={handleSave}
+        />
+      )}
 
-      {editingEstancia && (
+      {isAdmin && editingEstancia && (
         <CheckoutModal
           isOpen={isCheckoutOpen}
           onClose={() => { setIsCheckoutOpen(false); setEditingEstancia(null); }}
@@ -238,11 +248,11 @@ export default function EstanciasPage() {
             <div className="grid grid-cols-2 gap-3">
               <div className="bg-paper-medium/20 rounded-xl p-3">
                 <p className="text-text-muted text-xs">Entrada</p>
-                <p className="text-sm font-medium">{new Date(selectedEstancia.fecha_entrada).toLocaleDateString("es-ES", { day: "numeric", month: "short", year: "numeric" })}</p>
+                <p className="text-sm font-medium">{formatUTCDateLong(selectedEstancia.fecha_entrada)}</p>
               </div>
               <div className="bg-paper-medium/20 rounded-xl p-3">
                 <p className="text-text-muted text-xs">Salida</p>
-                <p className="text-sm font-medium">{selectedEstancia.fecha_salida ? new Date(selectedEstancia.fecha_salida).toLocaleDateString("es-ES", { day: "numeric", month: "short", year: "numeric" }) : "—"}</p>
+                <p className="text-sm font-medium">{selectedEstancia.fecha_salida ? formatUTCDateLong(selectedEstancia.fecha_salida) : "—"}</p>
               </div>
             </div>
             {selectedEstancia.notas && (
@@ -252,11 +262,16 @@ export default function EstanciasPage() {
               </div>
             )}
             <div className="flex gap-3 pt-2">
-              {selectedEstancia.estado === "EN_CASA" && (
+              {isAdmin && selectedEstancia.estado === "EN_CASA" && (
                 <button onClick={() => openCheckout(selectedEstancia)} className="flex-1 py-3 bg-blue-50 text-blue-700 font-medium rounded-xl hover:bg-blue-100 transition-all border border-blue-200">Check-out</button>
               )}
-              <button onClick={() => openEdit(selectedEstancia)} className="flex-1 py-3 bg-accent-primary/10 text-accent-primary font-medium rounded-xl hover:bg-accent-primary/20 transition-all border border-accent-primary/20">Editar</button>
-              <button onClick={() => handleDelete(selectedEstancia)} disabled={deleting} className="flex-1 py-3 bg-red-50 text-danger font-medium rounded-xl hover:bg-red-100 transition-all border border-red-200 disabled:opacity-50">{deleting ? "..." : "Eliminar"}</button>
+              {isAdmin && (
+                <>
+                  <button onClick={() => openEdit(selectedEstancia)} className="flex-1 py-3 bg-accent-primary/10 text-accent-primary font-medium rounded-xl hover:bg-accent-primary/20 transition-all border border-accent-primary/20">Editar</button>
+                  <button onClick={() => handleDelete(selectedEstancia)} disabled={deleting} className="flex-1 py-3 bg-red-50 text-danger font-medium rounded-xl hover:bg-red-100 transition-all border border-red-200 disabled:opacity-50">{deleting ? "..." : "Eliminar"}</button>
+                </>
+              )}
+              <button onClick={() => setSelectedEstancia(null)} className="flex-1 py-3 bg-paper-medium/20 text-text-muted font-medium rounded-xl hover:bg-paper-medium/30 transition-all border border-border">Cerrar</button>
             </div>
           </div>
         </Modal>

@@ -8,8 +8,11 @@ import type { Tarifa, CreateTarifa } from "../types";
 import { sileo } from "sileo";
 import { isHandledError } from "@/utils/error.utils";
 import { MdLocalOffer } from "react-icons/md";
+import { authClient } from "@/config/authClient";
 
 export default function TarifasPage() {
+  const { data: session } = authClient.useSession();
+  const isAdmin = session?.user?.role === "ADMIN";
   const { tarifas, canales, loading, error, fetchTarifas, createTarifa, updateTarifa, deleteTarifa } = useTarifas();
   const { tipos: tiposHabitacion } = useTiposHabitacion();
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -49,14 +52,14 @@ export default function TarifasPage() {
       <PanelHeader
         title="Tarifas"
         subtitle="Gestión de tarifas por canal y tipo de habitación"
-        action={<Button onClick={openCreate}>+ Nueva Tarifa</Button>}
+        action={isAdmin ? <Button onClick={openCreate}>+ Nueva Tarifa</Button> : undefined}
       >
         {tarifas.length === 0 ? (
           <EmptyState
             icon={<MdLocalOffer className="w-10 h-10 text-text-muted/50" />}
             title="Sin tarifas"
             description="Crea tu primera tarifa"
-            action={{ label: "Crear Tarifa", onClick: openCreate }}
+            action={isAdmin ? { label: "Crear Tarifa", onClick: openCreate } : undefined}
           />
         ) : (
           <>
@@ -84,24 +87,26 @@ export default function TarifasPage() {
         )}
       </PanelHeader>
 
-      <TarifaModal
-        isOpen={isModalOpen}
-        onClose={() => { setIsModalOpen(false); setEditingTarifa(null); }}
-        onSuccess={fetchTarifas}
-        tarifa={editingTarifa}
-        tiposHabitacion={tiposHabitacion}
-        canales={canales}
-        onSave={handleSave}
-      />
+      {isAdmin && (
+        <TarifaModal
+          isOpen={isModalOpen}
+          onClose={() => { setIsModalOpen(false); setEditingTarifa(null); }}
+          onSuccess={fetchTarifas}
+          tarifa={editingTarifa}
+          tiposHabitacion={tiposHabitacion}
+          canales={canales}
+          onSave={handleSave}
+        />
+      )}
 
       {selectedTarifa && (
         <Modal isOpen={!!selectedTarifa} onClose={() => setSelectedTarifa(null)} title="Detalle de Tarifa">
           <div className="space-y-4">
               <div className="text-center py-4 bg-paper-medium/20 rounded-2xl">
                 <p className="text-4xl font-bold font-playfair text-accent-primary">
-                  {selectedTarifa.moneda} {selectedTarifa.precio_noche.toFixed(2)}
+                  {selectedTarifa.moneda} {selectedTarifa.precio.toFixed(2)}
                 </p>
-                <p className="text-text-muted mt-1 text-sm">por noche</p>
+                <p className="text-text-muted mt-1 text-sm">por {selectedTarifa.unidad}</p>
               </div>
 
               <div className="grid grid-cols-2 gap-3">
@@ -131,8 +136,13 @@ export default function TarifasPage() {
               </div>
 
               <div className="flex gap-3 pt-2">
-                <button onClick={() => openEdit(selectedTarifa)} className="flex-1 py-3 bg-accent-primary/10 text-accent-primary font-medium rounded-xl hover:bg-accent-primary/20 transition-all border border-accent-primary/20">Editar</button>
-                <button onClick={handleDelete} disabled={deleting} className="flex-1 py-3 bg-red-50 text-danger font-medium rounded-xl hover:bg-red-100 transition-all border border-red-200 disabled:opacity-50">{deleting ? "Eliminando..." : "Eliminar"}</button>
+                {isAdmin && (
+                  <>
+                    <button onClick={() => openEdit(selectedTarifa)} className="flex-1 py-3 bg-accent-primary/10 text-accent-primary font-medium rounded-xl hover:bg-accent-primary/20 transition-all border border-accent-primary/20">Editar</button>
+                    <button onClick={handleDelete} disabled={deleting} className="flex-1 py-3 bg-red-50 text-danger font-medium rounded-xl hover:bg-red-100 transition-all border border-red-200 disabled:opacity-50">{deleting ? "Eliminando..." : "Eliminar"}</button>
+                  </>
+                )}
+                <button onClick={() => setSelectedTarifa(null)} className="flex-1 py-3 bg-paper-medium/20 text-text-muted font-medium rounded-xl hover:bg-paper-medium/30 transition-all border border-border">Cerrar</button>
               </div>
           </div>
         </Modal>

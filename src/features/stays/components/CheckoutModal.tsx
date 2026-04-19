@@ -3,6 +3,7 @@ import { Modal, Button, InputField } from "@/components";
 import { sileo } from "sileo";
 import { isHandledError } from "@/utils/error.utils";
 import type { Estancia, CheckoutEstancia } from "../types";
+import { formatUTCDateLong } from "@/utils/format.utils";
 
 interface Props {
   isOpen: boolean;
@@ -39,7 +40,7 @@ export function CheckoutModal({ isOpen, onClose, onSuccess, estancia, onCheckout
         <div className="bg-paper-medium/20 rounded-xl p-4 text-sm space-y-1">
           <p><span className="text-text-muted">Huésped:</span> <span className="font-medium">{estancia.huesped.nombres} {estancia.huesped.apellidos}</span></p>
           <p><span className="text-text-muted">Habitación:</span> <span className="font-medium">Nro. {estancia.habitacion.nro_habitacion}</span></p>
-          <p><span className="text-text-muted">Entrada:</span> <span className="font-medium">{new Date(estancia.fecha_entrada).toLocaleString("es-ES")}</span></p>
+          <p><span className="text-text-muted">Entrada:</span> <span className="font-medium">{formatUTCDateLong(estancia.fecha_entrada)}</span></p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">

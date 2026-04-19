@@ -10,6 +10,7 @@ import type { Pago, EstadoPago } from "../types";
 import { MdPayment, MdEdit, MdDelete, MdSearch } from "react-icons/md";
 import { utils, writeFile } from "xlsx";
 import { usePagos } from "../hooks/usePagos";
+import { formatUTCDate, formatUTCDateLong } from "@/utils/format.utils";
 
 const estadoColors: Record<string, string> = {
   CONFIRMADO: "bg-emerald-100 text-emerald-700",
@@ -20,6 +21,7 @@ const estadoColors: Record<string, string> = {
 
 export default function PagosPage() {
   const { data: session } = authClient.useSession();
+  const isAdmin = session?.user?.role === "ADMIN";
   const { pagos, loading, error, fetchPagos, deletePago } = usePagos();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -39,7 +41,7 @@ export default function PagosPage() {
     if (pagos.length === 0) { sileo.warning({ title: "Sin datos", description: "No hay pagos para exportar" }); return; }
     const exportData = pagos.map((p) => ({
       concepto: p.concepto, estado: p.estado,
-      fecha_pago: new Date(p.fecha_pago).toLocaleDateString(),
+      fecha_pago: formatUTCDate(p.fecha_pago),
       monto: p.monto, moneda: p.moneda, metodo: p.metodo,
       receptor: p.recibido_por?.name ?? "",
       observacion: p.observacion || "",
@@ -98,12 +100,12 @@ export default function PagosPage() {
         action={
           <div className="flex gap-2">
             <Button variant="secondary" onClick={handleExport}>Exportar</Button>
-            <Button onClick={() => setIsModalOpen(true)}>+ Nuevo Pago</Button>
+            {isAdmin && <Button onClick={() => setIsModalOpen(true)}>+ Nuevo Pago</Button>}
           </div>
         }
       >
         {pagos.length === 0 ? (
-          <EmptyState icon={<MdPayment className="w-10 h-10 text-text-muted/50" />} title="Sin pagos" description="Registra tu primer pago" action={{ label: "Registrar Pago", onClick: () => setIsModalOpen(true) }} />
+          <EmptyState icon={<MdPayment className="w-10 h-10 text-text-muted/50" />} title="Sin pagos" description="Registra tu primer pago" action={isAdmin ? { label: "Registrar Pago", onClick: () => setIsModalOpen(true) } : undefined} />
         ) : (
           <>
             {/* Stats */}
@@ -169,7 +171,7 @@ export default function PagosPage() {
                     <tr><td colSpan={7} className="text-center py-10 text-text-muted">Sin resultados</td></tr>
                   ) : paginated.map((p) => (
                     <tr key={p.id} onClick={() => setSelectedPago(p)} className="border-b border-border/50 last:border-0 hover:bg-accent-primary/5 cursor-pointer transition-colors">
-                      <td className="py-3 px-2 text-text-muted text-xs">{new Date(p.fecha_pago).toLocaleDateString("es-ES")}</td>
+                      <td className="py-3 px-2 text-text-muted text-xs">{formatUTCDate(p.fecha_pago)}</td>
                       <td className="py-3 px-2">
                         <p className="font-medium text-text-primary text-xs">{p.concepto}</p>
                       </td>
@@ -183,8 +185,12 @@ export default function PagosPage() {
                       </td>
                       <td className="py-3 px-2" onClick={(e) => e.stopPropagation()}>
                         <div className="flex items-center justify-end gap-1">
-                          <button onClick={() => handleEdit(p)} title="Editar" className="p-1.5 rounded-lg text-text-muted hover:text-primary hover:bg-primary/10 transition-all"><MdEdit className="w-4 h-4" /></button>
-                          <button onClick={() => handleDelete(p)} disabled={deleting} title="Eliminar" className="p-1.5 rounded-lg text-text-muted hover:text-danger hover:bg-danger/10 transition-all disabled:opacity-40"><MdDelete className="w-4 h-4" /></button>
+                          {isAdmin && (
+                            <>
+                              <button onClick={() => handleEdit(p)} title="Editar" className="p-1.5 rounded-lg text-text-muted hover:text-primary hover:bg-primary/10 transition-all"><MdEdit className="w-4 h-4" /></button>
+                              <button onClick={() => handleDelete(p)} disabled={deleting} title="Eliminar" className="p-1.5 rounded-lg text-text-muted hover:text-danger hover:bg-danger/10 transition-all disabled:opacity-40"><MdDelete className="w-4 h-4" /></button>
+                            </>
+                          )}
                         </div>
                       </td>
                     </tr>
@@ -212,8 +218,8 @@ export default function PagosPage() {
         )}
       </PanelHeader>
 
-      <PagoModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} onSuccess={fetchPagos} />
-      <PagoModal isOpen={isEditModalOpen} onClose={() => { setIsEditModalOpen(false); setEditingPago(null); }} onSuccess={fetchPagos} pago={editingPago} />
+      {isAdmin && <PagoModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} onSuccess={fetchPagos} />}
+      {isAdmin && <PagoModal isOpen={isEditModalOpen} onClose={() => { setIsEditModalOpen(false); setEditingPago(null); }} onSuccess={fetchPagos} pago={editingPago} />}
 
       {selectedPago && (
         <Modal isOpen={!!selectedPago} onClose={() => setSelectedPago(null)} title="Detalle del Pago">
@@ -231,7 +237,7 @@ export default function PagosPage() {
             </div>
             <div className="bg-paper-medium/10 rounded-xl p-3">
               <p className="text-text-muted text-xs">Fecha de Pago</p>
-              <p className="text-sm font-medium">{new Date(selectedPago.fecha_pago).toLocaleDateString("es-ES", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}</p>
+              <p className="text-sm font-medium">{formatUTCDateLong(selectedPago.fecha_pago)}</p>
             </div>
             {selectedPago.recibido_por && (
               <div className="bg-paper-medium/10 rounded-xl p-3">
@@ -246,8 +252,13 @@ export default function PagosPage() {
               </div>
             )}
             <div className="flex gap-3 pt-2">
-              <button onClick={() => handleEdit(selectedPago)} className="flex-1 py-3 bg-accent-primary/10 text-accent-primary font-medium rounded-xl hover:bg-accent-primary/20 transition-all border border-accent-primary/20">Editar</button>
-              <button onClick={() => handleDelete(selectedPago)} disabled={deleting} className="flex-1 py-3 bg-red-50 text-danger font-medium rounded-xl hover:bg-red-100 transition-all border border-red-200 disabled:opacity-50">{deleting ? "Eliminando..." : "Eliminar"}</button>
+              {isAdmin && (
+                <>
+                  <button onClick={() => handleEdit(selectedPago)} className="flex-1 py-3 bg-accent-primary/10 text-accent-primary font-medium rounded-xl hover:bg-accent-primary/20 transition-all border border-accent-primary/20">Editar</button>
+                  <button onClick={() => handleDelete(selectedPago)} disabled={deleting} className="flex-1 py-3 bg-red-50 text-danger font-medium rounded-xl hover:bg-red-100 transition-all border border-red-200 disabled:opacity-50">{deleting ? "Eliminando..." : "Eliminar"}</button>
+                </>
+              )}
+              <button onClick={() => setSelectedPago(null)} className="flex-1 py-3 bg-paper-medium/20 text-text-muted font-medium rounded-xl hover:bg-paper-medium/30 transition-all border border-border">Cerrar</button>
             </div>
           </div>
         </Modal>

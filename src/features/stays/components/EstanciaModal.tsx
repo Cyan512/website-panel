@@ -6,6 +6,7 @@ import type { Estancia, CreateEstancia, EstadoEstadia } from "../types";
 import type { Reserva } from "@/features/reservations/types";
 import { cn } from "@/utils/cn";
 import { isHandledError } from "@/utils/error.utils";
+import { formatUTCDate } from "@/utils/format.utils";
 
 interface Props {
   isOpen: boolean;
@@ -162,7 +163,7 @@ export function EstanciaModal({ isOpen, onClose, onSuccess, estancia, onSave }: 
                     </div>
                     <p className="text-sm text-text-primary mt-0.5">{r.nombre_huesped}</p>
                     <p className="text-xs text-text-muted">
-                      Hab. {r.nro_habitacion} · {new Date(r.fecha_inicio).toLocaleDateString("es-ES")} → {new Date(r.fecha_fin).toLocaleDateString("es-ES")}
+                      Hab. {r.nro_habitacion} · {formatUTCDate(r.fecha_inicio)} → {formatUTCDate(r.fecha_fin)}
                     </p>
                   </div>
                 </button>

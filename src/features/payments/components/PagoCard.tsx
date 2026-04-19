@@ -2,6 +2,7 @@ import type { Pago } from "../types";
 import { estadoPagoLabels, metodoPagoLabels } from "../types";
 import { cn } from "@/utils/cn";
 import { MdPayment, MdCalendarToday, MdPerson } from "react-icons/md";
+import { formatUTCDate } from "@/utils/format.utils";
 
 interface PagoCardProps {
   pago: Pago;
@@ -15,10 +16,6 @@ export function PagoCard({ pago, onClick }: PagoCardProps) {
     RETENIDO: "bg-orange-100 text-orange-700",
     ANULADO: "bg-red-100 text-red-700",
   };
-
-  const fechaPago = pago.fecha_pago instanceof Date 
-    ? pago.fecha_pago 
-    : new Date(pago.fecha_pago);
 
   return (
     <div onClick={onClick} className="bg-paper-lightest rounded-2xl p-5 cursor-pointer hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 border border-border-light/30">
@@ -46,7 +43,7 @@ export function PagoCard({ pago, onClick }: PagoCardProps) {
       <div className="mt-3 pt-3 border-t border-border-light/30 space-y-1.5">
         <div className="flex items-center gap-2 text-sm text-text-muted">
           <MdCalendarToday className="w-4 h-4 flex-shrink-0" />
-          <span>{fechaPago.toLocaleDateString("es-ES", { year: "numeric", month: "short", day: "numeric" })}</span>
+          <span>{formatUTCDate(pago.fecha_pago)}</span>
         </div>
         {pago.recibido_por && (
           <div className="flex items-center gap-2 text-sm text-text-muted">

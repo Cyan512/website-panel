@@ -5,6 +5,9 @@ import { Navigate } from "react-router-dom";
 import Sidebar from "@/layout/Sidebar";
 import MueblesPage from "@/features/furniture/components/MueblesPage";
 import CategoriasMueblePage from "@/features/furniture-categories/components/CategoriasMueblePage";
+import InsumosBarPage from "@/features/bar-supplies/components/InsumosBarPage";
+import InsumosCocinaPage from "@/features/kitchen-supplies/components/InsumosCocinaPage";
+import PromocionesPage from "@/features/promotions/components/PromocionesPage";
 
 
 /* eslint-disable react-refresh/only-export-components */
@@ -27,6 +30,8 @@ const CanalesPage = lazy(() => import("@/features/channels/components/CanalesPag
 const EstanciasPage = lazy(() => import("@/features/stays/components/EstanciasPage")) as ComponentType;
 const ProfilePage = lazy(() => import("@/features/profile/components/ProfilePage")) as ComponentType;
 const SettingsPage = lazy(() => import("@/features/settings/components/SettingsPage")) as ComponentType;
+const ProductosPage = lazy(() => import("@/features/products/components/ProductosPage")) as ComponentType;
+const FoliosPage = lazy(() => import("@/features/folios/components/FoliosPage")) as ComponentType;
 
 const protectedRoutes: RouteConfig[] = [
     { path: "dashboard", element: <DashboardPage /> },
@@ -43,6 +48,11 @@ const protectedRoutes: RouteConfig[] = [
     { path: "furniture-categories", element: <CategoriasMueblePage />},
     { path: "profile", element: <ProfilePage /> },
     { path: "settings", element: <SettingsPage /> },
+    { path: "products", element: <ProductosPage /> },
+    { path: "folios", element: <FoliosPage /> },
+    { path: "bar-supplies", element: <InsumosBarPage /> },
+    { path: "kitchen-supplies", element: <InsumosCocinaPage /> },
+    { path: "promotions", element: <PromocionesPage /> },
 ];
 
 export const routes: RouteConfig[] = [

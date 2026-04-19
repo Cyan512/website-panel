@@ -5,9 +5,11 @@ import type { Mueble } from "../types";
 interface Props {
   mueble: Mueble;
   onClick: () => void;
+  categoriaNombre?: string;
+  habitacionNro?: string;
 }
 
-export function MuebleCard({ mueble, onClick }: Props) {
+export function MuebleCard({ mueble, onClick, categoriaNombre, habitacionNro }: Props) {
   const condicion = mueble.condicion as keyof typeof muebleConditionColors;
 
   return (
@@ -29,8 +31,12 @@ export function MuebleCard({ mueble, onClick }: Props) {
       </div>
 
       <div className="space-y-0.5 text-xs text-text-muted">
-        {mueble.categoria_id && <p>Cat ID: <span className="text-text-primary font-mono">{mueble.categoria_id.slice(0, 8)}…</span></p>}
-        {mueble.habitacion_id && <p>Hab ID: <span className="text-text-primary font-mono">{mueble.habitacion_id.slice(0, 8)}…</span></p>}
+        {(categoriaNombre || mueble.categoria_id) && (
+          <p>Categoría: <span className="text-text-primary font-medium">{categoriaNombre ?? mueble.categoria_id.slice(0, 8) + "…"}</span></p>
+        )}
+        {(habitacionNro || mueble.habitacion_id) && (
+          <p>Habitación: <span className="text-text-primary font-medium">{habitacionNro ? `Nro. ${habitacionNro}` : mueble.habitacion_id!.slice(0, 8) + "…"}</span></p>
+        )}
       </div>
     </div>
   );

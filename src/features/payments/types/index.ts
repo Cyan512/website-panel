@@ -42,21 +42,22 @@ export interface Pago {
 export interface CreatePago {
   concepto: ConceptoPago;
   estado?: EstadoPago;
-  fecha_pago?: string | null;
+  fecha_pago?: Date;
   monto: number;
   moneda?: string;
   metodo: MetodoPago;
-  recibido_por_id?: string | null;
-  observacion?: string | null;
+  recibido_por_id?: string;
+  observacion?: string;
+  reserva_id?: string;
+  folio_id?: string;
 }
 
 export interface UpdatePago {
   concepto?: ConceptoPago;
   estado?: EstadoPago;
-  fecha_pago?: string | null;
+  fecha_pago?: Date;
   monto?: number;
   moneda?: string;
   metodo?: MetodoPago;
-  recibido_por_id?: string | null;
-  observacion?: string | null;
+  observacion?: string;
 }

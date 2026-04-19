@@ -9,8 +9,11 @@ import { isHandledError } from "@/utils/error.utils";
 import { MdHub } from "react-icons/md";
 import { cn } from "@/utils/cn";
 import { useCanales } from "../hooks/useCanales";
+import { authClient } from "@/config/authClient";
 
 export default function CanalesPage() {
+  const { data: session } = authClient.useSession();
+  const isAdmin = session?.user?.role === "ADMIN";
   const { canales, loading, error, fetchCanales, createCanal, updateCanal, deleteCanal } = useCanales();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingCanal, setEditingCanal] = useState<Canal | null>(null);
@@ -51,14 +54,14 @@ export default function CanalesPage() {
       <PanelHeader
         title="Canales"
         subtitle="Gestión de canales de distribución"
-        action={<Button onClick={openCreate}>+ Nuevo Canal</Button>}
+        action={isAdmin ? <Button onClick={openCreate}>+ Nuevo Canal</Button> : undefined}
       >
         {canales.length === 0 ? (
           <EmptyState
             icon={<MdHub className="w-10 h-10 text-text-muted/50" />}
             title="Sin canales"
             description="Crea tu primer canal de distribución"
-            action={{ label: "Crear Canal", onClick: openCreate }}
+            action={isAdmin ? { label: "Crear Canal", onClick: openCreate } : undefined}
           />
         ) : (
           <>
@@ -95,13 +98,15 @@ export default function CanalesPage() {
         )}
       </PanelHeader>
 
-      <CanalModal
-        isOpen={isModalOpen}
-        onClose={() => { setIsModalOpen(false); setEditingCanal(null); }}
-        onSuccess={fetchCanales}
-        canal={editingCanal}
-        onSave={handleSave}
-      />
+      {isAdmin && (
+        <CanalModal
+          isOpen={isModalOpen}
+          onClose={() => { setIsModalOpen(false); setEditingCanal(null); }}
+          onSuccess={fetchCanales}
+          canal={editingCanal}
+          onSave={handleSave}
+        />
+      )}
 
       {selectedCanal && (
         <Modal isOpen={!!selectedCanal} onClose={() => setSelectedCanal(null)} title="Detalle del Canal">
@@ -125,8 +130,13 @@ export default function CanalesPage() {
                 </div>
               )}
               <div className="flex gap-3 pt-2">
-                <button onClick={() => openEdit(selectedCanal)} className="flex-1 py-3 bg-accent-primary/10 text-accent-primary font-medium rounded-xl hover:bg-accent-primary/20 transition-all border border-accent-primary/20">Editar</button>
-                <button onClick={handleDelete} disabled={deleting} className="flex-1 py-3 bg-red-50 text-danger font-medium rounded-xl hover:bg-red-100 transition-all border border-red-200 disabled:opacity-50">{deleting ? "Eliminando..." : "Eliminar"}</button>
+                {isAdmin && (
+                  <>
+                    <button onClick={() => openEdit(selectedCanal)} className="flex-1 py-3 bg-accent-primary/10 text-accent-primary font-medium rounded-xl hover:bg-accent-primary/20 transition-all border border-accent-primary/20">Editar</button>
+                    <button onClick={handleDelete} disabled={deleting} className="flex-1 py-3 bg-red-50 text-danger font-medium rounded-xl hover:bg-red-100 transition-all border border-red-200 disabled:opacity-50">{deleting ? "Eliminando..." : "Eliminar"}</button>
+                  </>
+                )}
+                <button onClick={() => setSelectedCanal(null)} className="flex-1 py-3 bg-paper-medium/20 text-text-muted font-medium rounded-xl hover:bg-paper-medium/30 transition-all border border-border">Cerrar</button>
               </div>
           </div>
         </Modal>

@@ -12,6 +12,7 @@ import { isHandledError } from "@/utils/error.utils";
 import { MdEventNote, MdEdit, MdDelete, MdCancel, MdSearch } from "react-icons/md";
 import { cn } from "@/utils/cn";
 import { useReservas } from "../hooks/useReservas";
+import { formatUTCDate, formatUTCDateLong } from "@/utils/format.utils";
 
 export default function ReservationsPage() {
   const {
@@ -171,8 +172,8 @@ export default function ReservationsPage() {
                       <td className="py-3 px-2 font-medium text-text-primary">{r.nombre_huesped}</td>
                       <td className="py-3 px-2 text-text-muted hidden sm:table-cell">Hab. {r.nro_habitacion}</td>
                       <td className="py-3 px-2 hidden md:table-cell">
-                        <p className="text-text-primary text-xs">{new Date(r.fecha_inicio).toLocaleDateString("es-ES")}</p>
-                        <p className="text-text-muted text-xs">{new Date(r.fecha_fin).toLocaleDateString("es-ES")} · {noches(r)}n</p>
+                        <p className="text-text-primary text-xs">{formatUTCDate(r.fecha_inicio)}</p>
+                        <p className="text-text-muted text-xs">{formatUTCDate(r.fecha_fin)} · {noches(r)}n</p>
                       </td>
                       <td className="py-3 px-2 text-text-muted hidden lg:table-cell">{r.adultos}A{r.ninos > 0 ? ` ${r.ninos}N` : ""}</td>
                       <td className="py-3 px-2">
@@ -250,8 +251,8 @@ export default function ReservationsPage() {
               { label: "Habitación", value: `Nro. ${selectedReserva.nro_habitacion}` },
               { label: "Tipo hab.", value: selectedReserva.nombre_tipo_hab },
               { label: "Canal", value: selectedReserva.nombre_canal },
-              { label: "Entrada", value: new Date(selectedReserva.fecha_inicio).toLocaleDateString("es-ES", { weekday: "short", day: "numeric", month: "short", year: "numeric" }) },
-              { label: "Salida", value: new Date(selectedReserva.fecha_fin).toLocaleDateString("es-ES", { weekday: "short", day: "numeric", month: "short", year: "numeric" }) },
+              { label: "Entrada", value: formatUTCDateLong(selectedReserva.fecha_inicio) },
+              { label: "Salida", value: formatUTCDateLong(selectedReserva.fecha_fin) },
               { label: "Noches", value: String(selectedReserva.cantidad_noches) },
               { label: "Huéspedes", value: `${selectedReserva.adultos}A${selectedReserva.ninos > 0 ? ` · ${selectedReserva.ninos}N` : ""}` },
               { label: "Total", value: `S/ ${selectedReserva.monto_total.toFixed(2)}` },

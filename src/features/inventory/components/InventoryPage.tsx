@@ -9,6 +9,7 @@ import { cn } from "@/utils/cn";
 import { sileo } from "sileo";
 import { utils, writeFile } from "xlsx";
 import type { Mueble } from "../types";
+import { formatUTCDate } from "@/utils/format.utils";
 
 export default function InventoryPage() {
   const { muebles, loading, error, fetchMuebles, deleteMueble } = useInventory();
@@ -175,7 +176,7 @@ export default function InventoryPage() {
 
               <div className="grid grid-cols-2 gap-3">
                 <div className="bg-paper-medium/20 rounded-xl p-3"><p className="text-text-muted text-xs">Condición</p><span className={`inline-block px-2 py-1 text-xs font-semibold rounded-full ${selectedMueble.condicion === "BUENO" ? "bg-emerald-100 text-emerald-700" : selectedMueble.condicion === "REGULAR" ? "bg-amber-100 text-amber-700" : selectedMueble.condicion === "DANADO" ? "bg-red-100 text-red-700" : "bg-stone-100 text-stone-600"}`}>{CONDICION_LABELS[selectedMueble.condicion]}</span></div>
-                <div className="bg-paper-medium/20 rounded-xl p-3"><p className="text-text-muted text-xs">Adquisición</p><p className="text-sm font-medium">{selectedMueble.fecha_adquisicion ? new Date(selectedMueble.fecha_adquisicion).toLocaleDateString() : "-"}</p></div>
+                <div className="bg-paper-medium/20 rounded-xl p-3"><p className="text-text-muted text-xs">Adquisición</p><p className="text-sm font-medium">{selectedMueble.fecha_adquisicion ? formatUTCDate(selectedMueble.fecha_adquisicion) : "-"}</p></div>
               </div>
 
               {selectedMueble.descripcion && <div className="bg-paper-medium/10 rounded-xl p-3"><p className="text-text-muted text-xs">Descripción</p><p className="text-sm">{selectedMueble.descripcion}</p></div>}

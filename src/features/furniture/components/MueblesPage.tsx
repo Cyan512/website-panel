@@ -10,6 +10,7 @@ import { isHandledError } from "@/utils/error.utils";
 import { MdChair } from "react-icons/md";
 import { cn } from "@/utils/cn";
 import { useMuebles } from "../hooks/useMuebles";
+import { formatUTCDate } from "@/utils/format.utils";
 
 export default function MueblesPage() {
   const { muebles, categorias, loading, error, fetchMuebles, createMueble, updateMueble, deleteMueble } = useMuebles();
@@ -48,6 +49,11 @@ export default function MueblesPage() {
 
   const filtered = filterCondicion ? muebles.filter((m) => m.condicion === filterCondicion) : muebles;
 
+  const getCategoryName = (id: string) => categorias.find((c) => c.id === id)?.nombre;
+  const getRoomNro = (id: string | null) => id ? habitaciones.find((h) => h.id === id)?.nro_habitacion : undefined;
+
+  const conditionKeys: MuebleCondition[] = ["BUENO", "REGULAR", "DANADO", "FALTANTE"];
+
   return (
     <>
       <PanelHeader
@@ -64,12 +70,12 @@ export default function MueblesPage() {
           />
         ) : (
           <>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 p-4 sm:p-6">
+            <div className="grid grid-cols-2 sm:grid-cols-5 gap-4 p-4 sm:p-6">
               <div className="bg-gradient-to-br from-accent-primary/10 to-accent-light/10 rounded-2xl p-4 border border-accent-primary/20">
                 <p className="text-text-muted text-xs">Total</p>
                 <p className="text-2xl font-bold font-playfair mt-1">{muebles.length}</p>
               </div>
-              {(["NUEVO", "BUENO", "MALO"] as MuebleCondition[]).map((c) => (
+              {conditionKeys.map((c) => (
                 <div key={c} className="bg-gradient-to-br from-paper-medium/20 to-paper-medium/10 rounded-2xl p-4 border border-border-light/50">
                   <p className="text-text-muted text-xs">{muebleConditionLabels[c]}</p>
                   <p className="text-2xl font-bold font-playfair mt-1">{muebles.filter((m) => m.condicion === c).length}</p>
@@ -81,24 +87,30 @@ export default function MueblesPage() {
               <button onClick={() => setFilterCondicion("")} className={cn("text-xs px-3 py-1.5 rounded-full border transition-all", filterCondicion === "" ? "bg-accent-primary text-white border-accent-primary" : "border-border text-text-muted hover:border-accent-primary/50")}>
                 Todos
               </button>
-              {Object.entries(muebleConditionLabels).map(([key, label]) => (
-                <button key={key} onClick={() => setFilterCondicion(key as MuebleCondition)} className={cn("text-xs px-3 py-1.5 rounded-full border transition-all", filterCondicion === key ? "bg-accent-primary text-white border-accent-primary" : "border-border text-text-muted hover:border-accent-primary/50")}>
-                  {label}
+              {conditionKeys.map((key) => (
+                <button key={key} onClick={() => setFilterCondicion(key)} className={cn("text-xs px-3 py-1.5 rounded-full border transition-all", filterCondicion === key ? "bg-accent-primary text-white border-accent-primary" : "border-border text-text-muted hover:border-accent-primary/50")}>
+                  {muebleConditionLabels[key]}
                 </button>
               ))}
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 px-4 sm:px-6 pb-6">
               {filtered.map((mueble) => (
-                <MuebleCard key={mueble.id} mueble={mueble} onClick={() => setSelectedMueble(mueble)} />
+                <MuebleCard
+                  key={mueble.id}
+                  mueble={mueble}
+                  onClick={() => setSelectedMueble(mueble)}
+                  categoriaNombre={getCategoryName(mueble.categoria_id)}
+                  habitacionNro={getRoomNro(mueble.habitacion_id)}
+                />
               ))}
             </div>
 
             <div className="px-6 py-4 border-t border-border-light/30 flex gap-4 flex-wrap">
-              {Object.entries(muebleConditionLabels).map(([key, label]) => (
+              {conditionKeys.map((key) => (
                 <div key={key} className="flex items-center gap-2 text-xs">
-                  <div className={cn("w-2.5 h-2.5 rounded-full", muebleConditionColors[key as MuebleCondition].split(" ")[0])} />
-                  <span className="text-text-muted font-medium">{label}</span>
+                  <div className={cn("w-2.5 h-2.5 rounded-full", muebleConditionColors[key].split(" ")[0])} />
+                  <span className="text-text-muted font-medium">{muebleConditionLabels[key]}</span>
                 </div>
               ))}
             </div>
@@ -118,6 +130,7 @@ export default function MueblesPage() {
 
       {selectedMueble && (
         <Modal isOpen={!!selectedMueble} onClose={() => setSelectedMueble(null)} title="Detalle del Mueble">
+          <div className="max-h-[70vh] overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
           <div className="space-y-4">
               {selectedMueble.imagen_url && (
                 <div className="w-full h-40 rounded-xl overflow-hidden bg-paper-medium/20">
@@ -132,16 +145,18 @@ export default function MueblesPage() {
                 </span>
               </div>
               <div className="grid grid-cols-2 gap-3">
-                {selectedMueble.categoria_id && (
-                  <div className="bg-paper-medium/20 rounded-xl p-3">
-                    <p className="text-text-muted text-xs">Categoría ID</p>
-                    <p className="text-sm font-medium font-mono">{selectedMueble.categoria_id.slice(0, 8)}…</p>
-                  </div>
-                )}
+                <div className="bg-paper-medium/20 rounded-xl p-3">
+                  <p className="text-text-muted text-xs">Categoría</p>
+                  <p className="text-sm font-medium">{getCategoryName(selectedMueble.categoria_id) ?? selectedMueble.categoria_id.slice(0, 8) + "…"}</p>
+                </div>
                 {selectedMueble.habitacion_id && (
                   <div className="bg-paper-medium/20 rounded-xl p-3">
-                    <p className="text-text-muted text-xs">Habitación ID</p>
-                    <p className="text-sm font-medium font-mono">{selectedMueble.habitacion_id.slice(0, 8)}…</p>
+                    <p className="text-text-muted text-xs">Habitación</p>
+                    <p className="text-sm font-medium">
+                      {getRoomNro(selectedMueble.habitacion_id)
+                        ? `Nro. ${getRoomNro(selectedMueble.habitacion_id)}`
+                        : selectedMueble.habitacion_id.slice(0, 8) + "…"}
+                    </p>
                   </div>
                 )}
               </div>
@@ -150,13 +165,13 @@ export default function MueblesPage() {
                   {selectedMueble.fecha_adquisicion && (
                     <div className="bg-paper-medium/10 rounded-xl p-3">
                       <p className="text-text-muted text-xs">Adquisición</p>
-                      <p className="text-sm font-medium">{new Date(selectedMueble.fecha_adquisicion).toLocaleDateString("es-ES")}</p>
+                      <p className="text-sm font-medium">{formatUTCDate(selectedMueble.fecha_adquisicion)}</p>
                     </div>
                   )}
                   {selectedMueble.ultima_revision && (
                     <div className="bg-paper-medium/10 rounded-xl p-3">
                       <p className="text-text-muted text-xs">Última revisión</p>
-                      <p className="text-sm font-medium">{new Date(selectedMueble.ultima_revision).toLocaleDateString("es-ES")}</p>
+                      <p className="text-sm font-medium">{formatUTCDate(selectedMueble.ultima_revision)}</p>
                     </div>
                   )}
                 </div>
@@ -171,6 +186,7 @@ export default function MueblesPage() {
                 <button onClick={() => openEdit(selectedMueble)} className="flex-1 py-3 bg-accent-primary/10 text-accent-primary font-medium rounded-xl hover:bg-accent-primary/20 transition-all border border-accent-primary/20">Editar</button>
                 <button onClick={handleDelete} disabled={deleting} className="flex-1 py-3 bg-red-50 text-danger font-medium rounded-xl hover:bg-red-100 transition-all border border-red-200 disabled:opacity-50">{deleting ? "..." : "Eliminar"}</button>
               </div>
+          </div>
           </div>
         </Modal>
       )}

@@ -6,7 +6,7 @@ import type {
 } from "./types";
 
 export const roomsApi = {
-  getAll: async (page = 1, limit = 10, tipo?: string): Promise<PaginatedHabitaciones> => {
+  getAll: async (page = 1, limit = 12, tipo?: string): Promise<PaginatedHabitaciones> => {
     const params = new URLSearchParams({ page: String(page), limit: String(limit) });
     if (tipo) params.set("tipo", tipo);
     const response = await axiosInstance.get<{ success: boolean; data: PaginatedHabitaciones }>(
@@ -19,10 +19,11 @@ export const roomsApi = {
     const params = new URLSearchParams();
     if (tipoReserva?.length) params.set("tipo_reserva", tipoReserva.join(","));
     const query = params.toString() ? `?${params.toString()}` : "";
-    const response = await axiosInstance.get<{ success: boolean; data: Habitacion }>(
+    const response = await axiosInstance.get<{ success: boolean; data: { habitacion: Habitacion; fechas_reserva: import("./types").FechaReserva[] } }>(
       `/api/private/habitaciones/${id}${query}`
     );
-    return response.data.data;
+    const { habitacion, fechas_reserva } = response.data.data;
+    return { ...habitacion, fechas_reserva };
   },
 
   create: async (data: CreateHabitacion): Promise<Habitacion> => {

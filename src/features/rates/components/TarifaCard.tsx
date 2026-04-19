@@ -7,9 +7,9 @@ interface Props {
 
 export function TarifaCard({ tarifa, onClick }: Props) {
   const precioTotal =
-    tarifa.precio_noche +
-    (tarifa.iva != null ? (tarifa.precio_noche * tarifa.iva) / 100 : 0) +
-    (tarifa.cargo_servicios != null ? (tarifa.precio_noche * tarifa.cargo_servicios) / 100 : 0);
+    tarifa.precio +
+    (tarifa.iva != null ? (tarifa.precio * tarifa.iva) / 100 : 0) +
+    (tarifa.cargo_servicios != null ? (tarifa.precio * tarifa.cargo_servicios) / 100 : 0);
 
   return (
     <div
@@ -27,8 +27,8 @@ export function TarifaCard({ tarifa, onClick }: Props) {
       </div>
 
       <p className="text-2xl font-bold font-playfair text-accent-primary">
-        {tarifa.precio_noche.toFixed(2)}
-        <span className="text-xs font-normal text-text-muted ml-1">/ noche</span>
+        {tarifa.precio.toFixed(2)}
+        <span className="text-xs font-normal text-text-muted ml-1">/ {tarifa.unidad}</span>
       </p>
 
       {(tarifa.iva != null || tarifa.cargo_servicios != null) && (

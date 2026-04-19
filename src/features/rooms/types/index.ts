@@ -6,6 +6,24 @@ export interface FechaReserva {
   estado: string;
 }
 
+export interface HabitacionMueble {
+  id: string;
+  codigo: string;
+  nombre: string;
+  descripcion: string | null;
+  categoria: {
+    id: string;
+    nombre: string;
+    descripcion: string | null;
+    activo: boolean;
+  } | null;
+  url_imagen: string | null;
+  condicion: string;
+  fecha_adquisicion: string | null;
+  ultima_revision: string | null;
+  habitacion_id: string;
+}
+
 export interface Habitacion {
   id: string;
   nro_habitacion: string;
@@ -17,9 +35,16 @@ export interface Habitacion {
   url_imagen: string[] | null;
   estado: boolean;
   descripcion: string | null;
+  promociones: string[];
+  muebles?: HabitacionMueble[];
   fechas_reserva?: FechaReserva[];
   created_at: string;
   updated_at: string;
+}
+
+export interface HabitacionDetalle {
+  habitacion: Habitacion;
+  fechas_reserva: FechaReserva[];
 }
 
 export interface PaginatedHabitaciones {

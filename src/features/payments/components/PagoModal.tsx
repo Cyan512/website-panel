@@ -5,8 +5,9 @@ import { Modal, Button } from "@/components";
 import { InputField } from "@/components";
 import { sileo } from "sileo";
 import type { Reserva } from "@/features/reservations/types";
+import type { Folio, FolioWithConsumos } from "@/features/folios/types";
 import { cn } from "@/utils/cn";
-import { MdSearch } from "react-icons/md";
+import { MdSearch, MdShoppingCart, MdRoomService } from "react-icons/md";
 import { authClient } from "@/config/authClient";
 
 const defaultFormData = {
@@ -39,7 +40,7 @@ const METODO_OPTIONS = [
   { value: "TRANSFERENCIA", label: "Transferencia" },
 ];
 
-const MONEDAS = ["USD", "EUR", "PEN", "GBP"];
+const MONEDAS = ["USD", "EUR", "PEN", "SOL", "GBP"];
 const selectClass = "field-input w-full rounded-xl py-3.5 text-sm px-3.5 focus:outline-none focus:ring-2 focus:ring-accent-primary/30 focus:border-accent-primary border border-border-light/50";
 const labelClass = "field-label block mb-2 text-text-secondary font-medium";
 
@@ -66,6 +67,15 @@ export function PagoModal({ isOpen, onClose, onSuccess, pago }: PagoModalProps) 
   const searchRef = useRef<HTMLInputElement>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  // Folio selection
+  const [foliosDisponibles, setFoliosDisponibles] = useState<Folio[]>([]);
+  const [loadingFolios, setLoadingFolios] = useState(false);
+  const [folioSeleccionado, setFolioSeleccionado] = useState<Folio | null>(null);
+
+  // Folio consumos
+  const [consumos, setConsumos] = useState<FolioWithConsumos | null>(null);
+  const [loadingConsumos, setLoadingConsumos] = useState(false);
+
   const searchReservas = async (q: string) => {
     if (!q.trim()) { setSuggestions([]); return; }
     setSearching(true);
@@ -88,6 +98,17 @@ export function PagoModal({ isOpen, onClose, onSuccess, pago }: PagoModalProps) 
     debounceRef.current = setTimeout(() => searchReservas(q), 300);
   };
 
+  // Load available folios on mount
+  useEffect(() => {
+    if (!isOpen || isEditing) return;
+    setLoadingFolios(true);
+    import("@/features/folios/api").then(({ foliosApi }) =>
+      foliosApi.getAll({ page: 1, limit: 50, estado: true }).then((data) => {
+        setFoliosDisponibles(data.list);
+      }).catch(() => setFoliosDisponibles([]))
+    ).finally(() => setLoadingFolios(false));
+  }, [isOpen, isEditing]);
+
   useEffect(() => {
     if (!isOpen) return;
     if (pago) {
@@ -102,10 +123,14 @@ export function PagoModal({ isOpen, onClose, onSuccess, pago }: PagoModalProps) 
       });
       setReservaQuery("");
       setReservaSeleccionada(null);
+      setFolioSeleccionado(null);
+      setConsumos(null);
     } else {
       setFormData({ ...defaultFormData, fecha_pago: new Date().toISOString().split("T")[0] });
       setReservaQuery("");
       setReservaSeleccionada(null);
+      setFolioSeleccionado(null);
+      setConsumos(null);
     }
   }, [pago, isOpen]);
 
@@ -115,11 +140,45 @@ export function PagoModal({ isOpen, onClose, onSuccess, pago }: PagoModalProps) 
     setReservaSeleccionada(r);
     setReservaQuery(`${r.codigo} — ${r.nombre_huesped}`);
     setShowSuggestions(false);
+    setFolioSeleccionado(null);
+    setConsumos(null);
     setFormData((prev) => ({
       ...prev,
       concepto: "RESERVA",
       monto: r.monto_total != null ? Number(r.monto_total).toFixed(2) : "",
     }));
+  };
+
+  const handleSelectFolio = async (folioId: string) => {
+    const f = foliosDisponibles.find(folio => folio.id === folioId);
+    if (!f) return;
+    
+    setFolioSeleccionado(f);
+    setReservaSeleccionada(null);
+    setReservaQuery("");
+    setFormData((prev) => ({
+      ...prev,
+      concepto: "CONSUMO",
+    }));
+
+    // Load consumos
+    setLoadingConsumos(true);
+    try {
+      const { foliosApi } = await import("@/features/folios/api");
+      const data = await foliosApi.getConsumos(f.id);
+      setConsumos(data);
+      // Auto-fill monto with total
+      if (data.total != null) {
+        setFormData((prev) => ({
+          ...prev,
+          monto: Number(data.total).toFixed(2),
+        }));
+      }
+    } catch {
+      setConsumos(null);
+    } finally {
+      setLoadingConsumos(false);
+    }
   };
 
   const getMontoNumerico = () => parseFloat(formData.monto.replace(",", ".")) || 0;
@@ -137,7 +196,7 @@ export function PagoModal({ isOpen, onClose, onSuccess, pago }: PagoModalProps) 
         const updateData: UpdatePago = {
           concepto: formData.concepto,
           estado: formData.estado,
-          fecha_pago: formData.fecha_pago,
+          fecha_pago: formData.fecha_pago ? new Date(formData.fecha_pago) : undefined,
           monto: montoNumerico,
           moneda: formData.moneda,
           metodo: formData.metodo,
@@ -148,12 +207,14 @@ export function PagoModal({ isOpen, onClose, onSuccess, pago }: PagoModalProps) 
         const createData: CreatePago = {
           concepto: formData.concepto,
           estado: formData.estado,
-          fecha_pago: formData.fecha_pago,
+          fecha_pago: formData.fecha_pago ? new Date(formData.fecha_pago) : undefined,
           monto: montoNumerico,
           moneda: formData.moneda,
           metodo: formData.metodo,
-          recibido_por_id: session?.user?.id ?? null,
+          recibido_por_id: session?.user?.id ?? undefined,
           observacion: formData.notas.trim() || undefined,
+          ...(reservaSeleccionada && { reserva_id: reservaSeleccionada.id }),
+          ...(folioSeleccionado && { folio_id: folioSeleccionado.id }),
         };
         await createPago(createData);
       }
@@ -185,61 +246,139 @@ export function PagoModal({ isOpen, onClose, onSuccess, pago }: PagoModalProps) 
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title={isEditing ? "Editar Pago" : "Nuevo Pago"} size="lg">
+      <div className="max-h-[70vh] overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
       <form onSubmit={handleSubmit} className="space-y-4">
 
         {/* Buscador de reserva — solo al crear */}
         {!isEditing && (
-          <div className="relative">
-            <label className={labelClass}>Reserva (opcional)</label>
+          <div className="space-y-4">
             <div className="relative">
-              <MdSearch className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
-              <input
-                ref={searchRef}
-                type="text"
-                value={reservaQuery}
-                onChange={(e) => handleQueryChange(e.target.value)}
-                onFocus={() => setShowSuggestions(true)}
-                onBlur={() => setTimeout(() => setShowSuggestions(false), 150)}
-                placeholder="Buscar por código o nombre de huésped..."
-                className={cn(selectClass, "pl-9", reservaSeleccionada ? "border-emerald-500/50 bg-emerald-500/5" : "")}
-              />
+              <label className={labelClass}>Reserva (opcional)</label>
+              <div className="relative">
+                <MdSearch className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
+                <input
+                  ref={searchRef}
+                  type="text"
+                  value={reservaQuery}
+                  onChange={(e) => handleQueryChange(e.target.value)}
+                  onFocus={() => setShowSuggestions(true)}
+                  onBlur={() => setTimeout(() => setShowSuggestions(false), 150)}
+                  placeholder="Buscar por código o nombre de huésped..."
+                  className={cn(selectClass, "pl-9", reservaSeleccionada ? "border-emerald-500/50 bg-emerald-500/5" : "")}
+                  disabled={!!folioSeleccionado}
+                />
+              </div>
+
+              {showSuggestions && (searching || suggestions_filtered.length > 0) && (
+                <div className="absolute z-50 top-full left-0 right-0 mt-1 bg-bg-card border border-border rounded-xl shadow-xl overflow-hidden">
+                  {searching ? (
+                    <div className="px-4 py-3 text-sm text-text-muted">Buscando...</div>
+                  ) : suggestions_filtered.map((r) => (
+                    <button
+                      key={r.id}
+                      type="button"
+                      onMouseDown={() => handleSelectReserva(r)}
+                      className="w-full flex items-start gap-3 px-4 py-3 hover:bg-bg-hover transition-colors text-left border-b border-border/50 last:border-0"
+                    >
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <span className="font-mono text-xs font-semibold text-primary">{r.codigo}</span>
+                          <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-paper-medium/30 text-text-muted">{r.estado}</span>
+                        </div>
+                        <p className="text-sm text-text-primary mt-0.5">{r.nombre_huesped}</p>
+                        <p className="text-xs text-text-muted">
+                          Hab. {r.nro_habitacion} {r.monto_total != null ? `· S/ ${Number(r.monto_total).toFixed(2)}` : ""}
+                        </p>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              )}
+              {reservaSeleccionada && (
+                <div className="mt-2 bg-primary/5 border border-primary/20 rounded-xl px-4 py-3 text-xs grid grid-cols-2 gap-x-4 gap-y-1">
+                  <span className="text-text-muted">Huésped</span>
+                  <span className="text-text-primary font-medium">{reservaSeleccionada.nombre_huesped}</span>
+                  <span className="text-text-muted">Habitación</span>
+                  <span className="text-text-primary font-medium">Nro. {reservaSeleccionada.nro_habitacion}</span>
+                  <span className="text-text-muted">Total reserva</span>
+                  <span className="text-text-primary font-medium">S/ {reservaSeleccionada.monto_total != null ? Number(reservaSeleccionada.monto_total).toFixed(2) : "—"}</span>
+                </div>
+              )}
             </div>
 
-            {showSuggestions && (searching || suggestions_filtered.length > 0) && (
-              <div className="absolute z-50 top-full left-0 right-0 mt-1 bg-bg-card border border-border rounded-xl shadow-xl overflow-hidden">
-                {searching ? (
-                  <div className="px-4 py-3 text-sm text-text-muted">Buscando...</div>
-                ) : suggestions_filtered.map((r) => (
-                  <button
-                    key={r.id}
-                    type="button"
-                    onMouseDown={() => handleSelectReserva(r)}
-                    className="w-full flex items-start gap-3 px-4 py-3 hover:bg-bg-hover transition-colors text-left border-b border-border/50 last:border-0"
-                  >
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
-                        <span className="font-mono text-xs font-semibold text-primary">{r.codigo}</span>
-                        <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-paper-medium/30 text-text-muted">{r.estado}</span>
-                      </div>
-                      <p className="text-sm text-text-primary mt-0.5">{r.nombre_huesped}</p>
-                      <p className="text-xs text-text-muted">
-                        Hab. {r.nro_habitacion} {r.monto_total != null ? `· S/ ${Number(r.monto_total).toFixed(2)}` : ""}
-                      </p>
-                    </div>
-                  </button>
+            {/* Selector de Folio */}
+            <div>
+              <label className={labelClass}>Folio (opcional)</label>
+              <select
+                value={folioSeleccionado?.id || ""}
+                onChange={(e) => {
+                  if (e.target.value) {
+                    handleSelectFolio(e.target.value);
+                  } else {
+                    setFolioSeleccionado(null);
+                    setConsumos(null);
+                    setFormData((prev) => ({ ...prev, monto: "" }));
+                  }
+                }}
+                className={cn(selectClass, folioSeleccionado ? "border-emerald-500/50 bg-emerald-500/5" : "")}
+                disabled={!!reservaSeleccionada || loadingFolios}
+              >
+                <option value="">{loadingFolios ? "Cargando folios..." : "Seleccionar folio"}</option>
+                {foliosDisponibles.map((f) => (
+                  <option key={f.id} value={f.id}>
+                    {f.codigo} — {f.estado ? "Abierto" : "Cerrado"}
+                  </option>
                 ))}
-              </div>
-            )}
-            {reservaSeleccionada && (
-              <div className="mt-2 bg-primary/5 border border-primary/20 rounded-xl px-4 py-3 text-xs grid grid-cols-2 gap-x-4 gap-y-1">
-                <span className="text-text-muted">Huésped</span>
-                <span className="text-text-primary font-medium">{reservaSeleccionada.nombre_huesped}</span>
-                <span className="text-text-muted">Habitación</span>
-                <span className="text-text-primary font-medium">Nro. {reservaSeleccionada.nro_habitacion}</span>
-                <span className="text-text-muted">Total reserva</span>
-                <span className="text-text-primary font-medium">S/ {reservaSeleccionada.monto_total != null ? Number(reservaSeleccionada.monto_total).toFixed(2) : "—"}</span>
-              </div>
-            )}
+              </select>
+
+              {folioSeleccionado && (
+                <div className="mt-2 bg-primary/5 border border-primary/20 rounded-xl px-4 py-3 text-xs grid grid-cols-2 gap-x-4 gap-y-1">
+                  <span className="text-text-muted">Código</span>
+                  <span className="text-text-primary font-medium">{folioSeleccionado.codigo}</span>
+                  <span className="text-text-muted">Estado</span>
+                  <span className="text-text-primary font-medium">{folioSeleccionado.estado ? "Abierto" : "Cerrado"}</span>
+                </div>
+              )}
+
+              {/* Consumos del folio */}
+              {loadingConsumos && (
+                <div className="mt-2 text-center py-3 text-text-muted text-xs">Cargando consumos...</div>
+              )}
+              {consumos && (consumos.productos.length > 0 || consumos.servicios.length > 0) && (
+                <div className="mt-2 border border-border rounded-xl overflow-hidden">
+                  <div className="bg-bg-card px-3 py-2 text-xs font-semibold text-text-muted uppercase border-b border-border">
+                    Consumos del Folio
+                  </div>
+                  <div className="max-h-40 overflow-y-auto">
+                    {consumos.productos.map((p) => (
+                      <div key={p.id} className="flex items-center justify-between px-3 py-2 text-xs border-b border-border/50 last:border-0">
+                        <div className="flex items-center gap-2">
+                          <MdShoppingCart className="w-3 h-3 text-text-muted" />
+                          <span className="text-text-primary">Producto</span>
+                        </div>
+                        <span className="text-text-muted">x{p.cantidad}</span>
+                        <span className="text-text-primary font-medium">S/ {Number(p.total).toFixed(2)}</span>
+                      </div>
+                    ))}
+                    {consumos.servicios.map((s) => (
+                      <div key={s.id} className="flex items-center justify-between px-3 py-2 text-xs border-b border-border/50 last:border-0">
+                        <div className="flex items-center gap-2">
+                          <MdRoomService className="w-3 h-3 text-text-muted" />
+                          <span className="text-text-primary">{s.concepto}</span>
+                        </div>
+                        <span className="text-text-muted">S/ {Number(s.total).toFixed(2)}</span>
+                      </div>
+                    ))}
+                  </div>
+                  {consumos.total != null && (
+                    <div className="flex items-center justify-between px-3 py-2 bg-primary/5 border-t border-primary/20">
+                      <span className="text-xs font-semibold text-text-primary">Total</span>
+                      <span className="text-xs font-bold text-primary">S/ {Number(consumos.total).toFixed(2)}</span>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
           </div>
         )}
 
@@ -286,6 +425,7 @@ export function PagoModal({ isOpen, onClose, onSuccess, pago }: PagoModalProps) 
           <Button type="submit" isLoading={loading} className="flex-1">{loading ? (isEditing ? "Guardando..." : "Creando...") : (isEditing ? "Guardar" : "Crear")}</Button>
         </div>
       </form>
+      </div>
     </Modal>
   );
 }

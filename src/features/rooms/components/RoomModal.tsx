@@ -33,6 +33,7 @@ export function RoomModal({ isOpen, onClose, onSuccess, habitacion }: RoomModalP
         estado: true,
         descripcion: "",
     });
+    const [promocionesInput, setPromocionesInput] = useState("");
 
     useEffect(() => {
         if (!isOpen) return;
@@ -48,6 +49,7 @@ export function RoomModal({ isOpen, onClose, onSuccess, habitacion }: RoomModalP
                 estado: habitacion.estado,
                 descripcion: habitacion.descripcion ?? "",
             });
+            setPromocionesInput((habitacion.promociones ?? []).join(", "));
         } else {
             setExistingImages([]);
             setFormData({
@@ -59,6 +61,7 @@ export function RoomModal({ isOpen, onClose, onSuccess, habitacion }: RoomModalP
                 estado: true,
                 descripcion: "",
             });
+            setPromocionesInput("");
         }
     }, [isOpen, habitacion, tipos]);
 
@@ -94,7 +97,10 @@ export function RoomModal({ isOpen, onClose, onSuccess, habitacion }: RoomModalP
                 };
                 await updateHabitacion(habitacion.id, updateData);
             } else {
-                await createHabitacion({ ...formData, imagenes: files.length > 0 ? files : undefined });
+                await createHabitacion({
+                    ...formData,
+                    imagenes: files.length > 0 ? files : undefined,
+                });
             }
             onSuccess();
             onClose();
@@ -137,7 +143,7 @@ export function RoomModal({ isOpen, onClose, onSuccess, habitacion }: RoomModalP
                                 className={selectClass}
                             >
                                 <option value="true">Disponible</option>
-                                <option value="false">Ocupada</option>
+                                <option value="false">No Disponible</option>
                             </select>
                         </div>
                     </div>

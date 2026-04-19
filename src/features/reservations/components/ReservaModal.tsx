@@ -7,6 +7,7 @@ import { estadoReservaLabels } from "../types";
 import type { Huesped } from "@/features/clients/types";
 import type { Habitacion } from "@/features/rooms/types";
 import type { Tarifa } from "@/features/rates/types";
+import { authClient } from "@/config/authClient";
 
 interface Props {
   isOpen: boolean;
@@ -25,6 +26,8 @@ const labelClass = "field-label block mb-2 text-text-secondary font-medium";
 const toDateInput = (d?: string | Date | null) => d ? new Date(d).toISOString().slice(0, 10) : "";
 
 export function ReservaModal({ isOpen, onClose, onSuccess, reserva, huespedes, habitaciones, tarifas, onCreate, onUpdate }: Props) {
+  const { data: session } = authClient.useSession();
+  const isAdmin = session?.user?.role === "ADMIN";
   const [form, setForm] = useState({
     huespedId: "", habitacionId: "", tarifaId: "",
     fecha_inicio: "", fecha_fin: "", adultos: "1", ninos: "0",
@@ -69,7 +72,7 @@ export function ReservaModal({ isOpen, onClose, onSuccess, reserva, huespedes, h
           fechaFin: new Date(form.fecha_fin).toISOString().split('T')[0],
           adultos: parseInt(form.adultos) || 1,
           ninos: parseInt(form.ninos) || 0,
-          estado: form.estado,
+          ...(isAdmin && { estado: form.estado }),
         };
         await onUpdate(updatePayload);
       } else {
@@ -99,7 +102,7 @@ export function ReservaModal({ isOpen, onClose, onSuccess, reserva, huespedes, h
     : 0;
 
   const tarifaSeleccionada = tarifas.find((t) => t.id === form.tarifaId);
-  const montoBase = tarifaSeleccionada ? tarifaSeleccionada.precio_noche * noches : 0;
+  const montoBase = tarifaSeleccionada ? tarifaSeleccionada.precio * noches : 0;
   const total = Math.max(0, montoBase);
 
   return (
@@ -107,7 +110,7 @@ export function ReservaModal({ isOpen, onClose, onSuccess, reserva, huespedes, h
       <div className="max-h-[70vh] overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          {reserva && (
+          {reserva && isAdmin && (
             <div>
               <label className={labelClass}>Estado</label>
               <select value={form.estado} onChange={(e) => setForm((f) => ({ ...f, estado: e.target.value as EstadoReserva }))} className={selectClass}>
@@ -138,7 +141,7 @@ export function ReservaModal({ isOpen, onClose, onSuccess, reserva, huespedes, h
           <label className={labelClass}>Tarifa</label>
           <select value={form.tarifaId} onChange={(e) => setForm((f) => ({ ...f, tarifaId: e.target.value }))} className={selectClass} required>
             <option value="">Seleccionar...</option>
-            {tarifas.map((t) => <option key={t.id} value={t.id}>{t.tipo_habitacion.nombre} — {t.canal.nombre} ({t.moneda} {t.precio_noche}/noche)</option>)}
+            {tarifas.map((t) => <option key={t.id} value={t.id}>{t.tipo_habitacion.nombre} — {t.canal.nombre} ({t.moneda} {t.precio}/{t.unidad})</option>)}
           </select>
         </div>
 
@@ -155,7 +158,7 @@ export function ReservaModal({ isOpen, onClose, onSuccess, reserva, huespedes, h
         {noches > 0 && tarifaSeleccionada && (
           <div className="bg-accent-primary/5 border border-accent-primary/20 rounded-xl p-4 text-sm space-y-1">
             <div className="flex justify-between text-text-muted">
-              <span>{noches} noche{noches !== 1 ? "s" : ""} × {tarifaSeleccionada.moneda} {tarifaSeleccionada.precio_noche}</span>
+              <span>{noches} noche{noches !== 1 ? "s" : ""} × {tarifaSeleccionada.moneda} {tarifaSeleccionada.precio}</span>
               <span>{tarifaSeleccionada.moneda} {montoBase.toFixed(2)}</span>
             </div>
             <div className="flex justify-between font-semibold text-text-primary border-t border-accent-primary/20 pt-1 mt-1">

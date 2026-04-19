@@ -9,8 +9,11 @@ import { cn } from "@/utils/cn";
 import { sileo } from "sileo";
 import { isHandledError } from "@/utils/error.utils";
 import { MdSearch } from "react-icons/md";
+import { obtenerEstadoHabitacion, estadoHabitacionColors } from "@/utils/habitacion.utils";
 import type { Habitacion, FechaReserva } from "../types";
 import { roomsApi } from "../api";
+import { usePromociones } from "@/features/promotions/hooks/usePromociones";
+import { formatUTCDate } from "@/utils/format.utils";
 
 export default function RoomsPage() {
   const {
@@ -18,6 +21,8 @@ export default function RoomsPage() {
     fetchHabitaciones, goToPage, changeLimit, changeTipo,
     deleteHabitacion,
   } = useHabitaciones();
+
+  const { promociones } = usePromociones();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedHabitacion, setSelectedHabitacion] = useState<Habitacion | null>(null);
@@ -27,19 +32,23 @@ export default function RoomsPage() {
   const [carouselIndex, setCarouselIndex] = useState(0);
   const [tipoSearch, setTipoSearch] = useState("");
   const [fechasReserva, setFechasReserva] = useState<FechaReserva[]>([]);
+  const [muebles, setMuebles] = useState<import("../types").HabitacionMueble[]>([]);
   const [loadingFechas, setLoadingFechas] = useState(false);
   const [calendarOpen, setCalendarOpen] = useState(false);
 
   const handleSelectHabitacion = async (hab: Habitacion) => {
     setSelectedHabitacion(hab);
     setFechasReserva([]);
+    setMuebles([]);
     setCalendarOpen(false);
     setLoadingFechas(true);
     try {
       const detail = await roomsApi.getById(hab.id, ["TENTATIVA", "CONFIRMADA", "EN_CASA"]);
       setFechasReserva(detail.fechas_reserva ?? []);
+      setMuebles(detail.muebles ?? []);
     } catch {
       setFechasReserva([]);
+      setMuebles([]);
     } finally {
       setLoadingFechas(false);
     }
@@ -100,7 +109,7 @@ export default function RoomsPage() {
           <div className="flex items-center gap-2 shrink-0">
             <span className="text-xs text-text-muted hidden sm:block">Mostrar</span>
             <select value={limit} onChange={(e) => changeLimit(Number(e.target.value))} className="text-sm rounded-xl border border-border bg-bg-card text-text-primary px-2 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary/30">
-              {[6, 12, 24, 48].map((n) => <option key={n} value={n}>{n}</option>)}
+              {[12, 24, 48].map((n) => <option key={n} value={n}>{n}</option>)}
             </select>
             <span className="text-xs text-text-muted hidden sm:block">hab.</span>
           </div>
@@ -150,7 +159,7 @@ export default function RoomsPage() {
 
           <div className="space-y-4">
             <div className="flex items-center gap-4">
-              <div className={cn("w-14 h-14 rounded-xl flex items-center justify-center text-xl font-bold", selectedHabitacion.estado ? "bg-emerald-500 text-emerald-100" : "bg-red-500 text-red-100")}>
+              <div className={cn("w-14 h-14 rounded-xl flex items-center justify-center text-xl font-bold", estadoHabitacionColors[obtenerEstadoHabitacion(selectedHabitacion.estado, fechasReserva)])}>
                 {selectedHabitacion.nro_habitacion}
               </div>
               <div>
@@ -161,9 +170,9 @@ export default function RoomsPage() {
 
             <div className="grid grid-cols-2 gap-3">
               <div className="bg-paper-medium/20 rounded-xl p-3">
-                <p className="text-text-muted text-xs">Estado</p>
-                <span className={cn("inline-block px-3 py-1 text-sm font-semibold rounded-full mt-1", selectedHabitacion.estado ? "bg-emerald-500 text-emerald-100" : "bg-red-500 text-red-100")}>
-                  {selectedHabitacion.estado ? "Disponible" : "Ocupada"}
+                <p className="text-text-muted text-xs">Estado físico</p>
+                <span className={cn("inline-block px-2 py-0.5 text-xs font-semibold rounded-full mt-1", selectedHabitacion.estado ? "bg-emerald-600 text-emerald-100" : "bg-gray-600 text-gray-100")}>
+                  {selectedHabitacion.estado ? "Disponible" : "No disponible"}
                 </span>
               </div>
               <div className="bg-paper-medium/20 rounded-xl p-3">
@@ -172,10 +181,93 @@ export default function RoomsPage() {
               </div>
             </div>
 
+            {/* Reservas vinculadas */}
+            {fechasReserva.length > 0 && (
+              <div>
+                <p className="text-text-muted text-xs font-semibold uppercase tracking-wide mb-2">Reservas vinculadas</p>
+                <div className="space-y-2">
+                  {fechasReserva.map((r, i) => {
+                    const colorMap: Record<string, string> = {
+                      CONFIRMADA:  "bg-emerald-500 text-emerald-100 border-emerald-200",
+                      EN_CASA:     "bg-blue-500 text-blue-100 border-blue-200",
+                      TENTATIVA:   "bg-amber-500 text-amber-100 border-amber-200",
+                      COMPLETADA:  "bg-indigo-500 text-indigo-100 border-indigo-200",
+                      CANCELADA:   "bg-red-500 text-red-100 border-red-200",
+                      NO_LLEGO:    "bg-gray-500 text-gray-100 border-gray-200",
+                    };
+                    const labelMap: Record<string, string> = {
+                      CONFIRMADA: "Confirmada", EN_CASA: "En Casa", TENTATIVA: "Tentativa",
+                      COMPLETADA: "Completada", CANCELADA: "Cancelada", NO_LLEGO: "No Llegó",
+                    };
+                    const color = colorMap[r.estado] ?? "bg-gray-100 text-gray-600 border-gray-200";
+                    return (
+                      <div key={i} className={cn("flex items-center justify-between rounded-xl px-3 py-2.5 border text-xs", color)}>
+                        <span className="font-medium">
+                          {formatUTCDate(r.fecha_inicio)}
+                          {" → "}
+                          {formatUTCDate(r.fecha_fin)}
+                        </span>
+                        <span className="font-semibold uppercase tracking-wide">{labelMap[r.estado] ?? r.estado}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {loadingFechas && (
+              <p className="text-xs text-text-muted text-center py-2">Cargando reservas...</p>
+            )}
+
+            {/* Muebles */}
+            {muebles.length > 0 && (
+              <div>
+                <p className="text-text-muted text-xs font-semibold uppercase tracking-wide mb-2">
+                  Muebles ({muebles.length})
+                </p>
+                <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
+                  {muebles.map((m) => (
+                    <div key={m.id} className="flex items-center gap-3 bg-paper-medium/10 rounded-xl px-3 py-2.5">
+                      {m.url_imagen ? (
+                        <img src={m.url_imagen} alt={m.nombre} className="w-10 h-10 rounded-lg object-cover shrink-0 border border-border" />
+                      ) : (
+                        <div className="w-10 h-10 rounded-lg bg-bg-tertiary/50 flex items-center justify-center shrink-0 text-text-muted text-xs font-bold">
+                          {m.codigo.slice(0, 3)}
+                        </div>
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-text-primary truncate">{m.nombre}</p>
+                        <p className="text-xs text-text-muted">{m.categoria?.nombre ?? "—"} · {m.condicion}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {selectedHabitacion.descripcion && (
               <div className="bg-paper-medium/10 rounded-xl p-3">
                 <p className="text-text-muted text-xs">Descripción</p>
                 <p className="text-sm mt-1">{selectedHabitacion.descripcion}</p>
+              </div>
+            )}
+
+            {/* Promociones */}
+            {selectedHabitacion.promociones && selectedHabitacion.promociones.length > 0 && (
+              <div className="bg-paper-medium/10 rounded-xl p-3">
+                <p className="text-text-muted text-xs font-semibold uppercase tracking-wide mb-2">
+                  Promociones ({selectedHabitacion.promociones.length})
+                </p>
+                <div className="flex flex-wrap gap-1.5">
+                  {selectedHabitacion.promociones.map((id) => {
+                    const promo = promociones.find((p) => p.id === id);
+                    return (
+                      <span key={id} className="text-xs font-mono px-2 py-0.5 rounded-full bg-accent/10 text-accent border border-accent/20">
+                        {promo ? promo.codigo : id.slice(0, 8) + "…"}
+                      </span>
+                    );
+                  })}
+                </div>
               </div>
             )}
 

@@ -34,7 +34,7 @@ export interface CreateMueble {
   nombre: string;
   descripcion?: string;
   categoria_id: string;
-  imagen_url?: string;
+  imagen?: File[];
   condicion?: MuebleCondition;
   fecha_adquisicion?: string;
   ultima_revision?: string;
@@ -46,7 +46,7 @@ export interface UpdateMueble {
   nombre?: string;
   descripcion?: string;
   categoria_id?: string;
-  imagen_url?: string;
+  imagen?: File[];
   condicion?: MuebleCondition;
   fecha_adquisicion?: string;
   ultima_revision?: string;

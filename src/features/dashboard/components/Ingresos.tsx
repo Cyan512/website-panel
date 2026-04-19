@@ -247,25 +247,37 @@ export default function Ingresos() {
   };
 
   return (
-    <div className="p-6">
-      <div className="flex items-center justify-between mb-6">
+    <div className="p-4 sm:p-6">
+      {/* Header */}
+      <div className="flex flex-col gap-3 mb-6 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <h3 className="text-base font-semibold text-text-primary">Ingresos</h3>
-          <p className="text-sm text-text-muted mt-0.5">Resumen de ingresos - Scroll para hacer zoom</p>
+          <p className="text-sm text-text-muted mt-0.5">Resumen de ingresos · Scroll para hacer zoom</p>
         </div>
-        <div className="flex items-center gap-4">
-          <select
-            value={filter}
-            onChange={(e) => setFilter(e.target.value as FilterType)}
-            className="bg-bg-secondary text-text-primary text-sm rounded-lg px-3 py-2 border border-border focus:outline-none focus:ring-2 focus:ring-emerald-500"
-          >
-            <option value="day">Día</option>
-            <option value="week">Semana</option>
-            <option value="month">Mes</option>
-            <option value="year">Año</option>
-            <option value="custom">Personalizado</option>
-          </select>
-          <div className="flex items-center gap-2">
+
+        <div className="flex flex-col gap-2 sm:items-end">
+          {/* Total */}
+          <div className="sm:text-right">
+            <p className="text-2xl font-bold text-emerald-500">
+              ${totalIngresos.toLocaleString('es-ES', { minimumFractionDigits: 2 })}
+            </p>
+            <p className="text-xs text-text-muted">{getDateLabel()}</p>
+          </div>
+
+          {/* Controls */}
+          <div className="flex flex-wrap items-center gap-2">
+            <select
+              value={filter}
+              onChange={(e) => setFilter(e.target.value as FilterType)}
+              className="bg-bg-secondary text-text-primary text-sm rounded-lg px-3 py-2 border border-border focus:outline-none focus:ring-2 focus:ring-emerald-500"
+            >
+              <option value="day">Día</option>
+              <option value="week">Semana</option>
+              <option value="month">Mes</option>
+              <option value="year">Año</option>
+              <option value="custom">Personalizado</option>
+            </select>
+
             {filter === 'day' && (
               <input
                 type="date"
@@ -323,7 +335,7 @@ export default function Ingresos() {
                   onChange={(e) => setCustomStart(e.target.value)}
                   className="bg-bg-secondary text-text-primary text-sm rounded-lg px-3 py-2 border border-border focus:outline-none focus:ring-2 focus:ring-emerald-500"
                 />
-                <span className="text-text-muted">-</span>
+                <span className="text-text-muted text-sm">—</span>
                 <input
                   type="date"
                   value={customEnd}
@@ -333,23 +345,16 @@ export default function Ingresos() {
               </>
             )}
           </div>
-          <div className="text-right">
-            <p className="text-2xl font-bold text-emerald-500">
-              ${totalIngresos.toLocaleString('es-ES', { minimumFractionDigits: 2 })}
-            </p>
-            <p className="text-xs text-text-muted">{getDateLabel()}</p>
-          </div>
         </div>
       </div>
+
+      {/* Chart */}
       <div className="relative">
         <div ref={chartContainerRef} className="w-full" />
         {tooltip && (
-          <div 
+          <div
             className="absolute pointer-events-none bg-card px-3 py-2 rounded-lg shadow-lg border border-border z-10"
-            style={{ 
-              left: tooltip.x + 10, 
-              top: tooltip.y - 40,
-            }}
+            style={{ left: tooltip.x + 10, top: tooltip.y - 40 }}
           >
             <p className="text-xs text-text-muted">{tooltip.date}</p>
             <p className="text-lg font-bold text-emerald-500">${tooltip.value.toLocaleString('es-ES')}</p>
