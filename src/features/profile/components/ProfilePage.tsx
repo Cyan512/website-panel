@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { authClient } from "@/config/authClient";
-import { PanelHeader, Button } from "@/components";
+import { PanelHeader } from "@/components";
 import { sileo } from "sileo";
 import { MdPerson, MdEmail, MdBadge, MdEdit, MdCheck, MdClose } from "react-icons/md";
 

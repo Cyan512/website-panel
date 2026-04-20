@@ -11,7 +11,6 @@ createRoot(document.getElementById('root')!).render(
   options={{
     fill: "#171717",
     roundness: 16,
-    zIndex: 9999,
     styles: {
       title: "text-white!",
       description: "text-white/75!",

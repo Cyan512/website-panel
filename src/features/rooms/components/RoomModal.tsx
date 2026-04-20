@@ -33,7 +33,6 @@ export function RoomModal({ isOpen, onClose, onSuccess, habitacion }: RoomModalP
         estado: true,
         descripcion: "",
     });
-    const [promocionesInput, setPromocionesInput] = useState("");
 
     useEffect(() => {
         if (!isOpen) return;
@@ -49,7 +48,6 @@ export function RoomModal({ isOpen, onClose, onSuccess, habitacion }: RoomModalP
                 estado: habitacion.estado,
                 descripcion: habitacion.descripcion ?? "",
             });
-            setPromocionesInput((habitacion.promociones ?? []).join(", "));
         } else {
             setExistingImages([]);
             setFormData({
@@ -61,7 +59,6 @@ export function RoomModal({ isOpen, onClose, onSuccess, habitacion }: RoomModalP
                 estado: true,
                 descripcion: "",
             });
-            setPromocionesInput("");
         }
     }, [isOpen, habitacion, tipos]);
 

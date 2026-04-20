@@ -1,35 +1,43 @@
-export enum UnidadInsumo {
-  Unidad = "UNIDAD",
-  Litro = "LITRO",
-  Kg = "KG",
-  Gr = "GR",
-  Botella = "BOTELLA",
-  Caja = "CAJA",
-  Fco = "FCO",
-  Saco = "SACO",
-  Tubo = "TUBO",
-  Blister = "BLISTER",
-  Paquete = "PAQUETE",
-}
+export const UnidadInsumo = {
+  Unidad: "UNIDAD",
+  Litro: "LITRO",
+  Kg: "KG",
+  Gr: "GR",
+  Botella: "BOTELLA",
+  Caja: "CAJA",
+  Fco: "FCO",
+  Saco: "SACO",
+  Tubo: "TUBO",
+  Blister: "BLISTER",
+  Paquete: "PAQUETE",
+} as const;
 
-export enum TipoMovimiento {
-  Entrada = "ENTRADA",
-  Salida = "SALIDA",
-}
+export type UnidadInsumo = typeof UnidadInsumo[keyof typeof UnidadInsumo];
 
-export enum MotivoEntrada {
-  Compra = "COMPRA",
-  Donacion = "DONACION",
-  Ajuste = "AJUSTE",
-  Reposicion = "REPOSICION",
-}
+export const TipoMovimiento = {
+  Entrada: "ENTRADA",
+  Salida: "SALIDA",
+} as const;
 
-export enum MotivoSalida {
-  Consumo = "CONSUMO",
-  Deshecho = "DESECHO",
-  Ajuste = "AJUSTE",
-  StockMinimo = "STOCK_MINIMO",
-}
+export type TipoMovimiento = typeof TipoMovimiento[keyof typeof TipoMovimiento];
+
+export const MotivoEntrada = {
+  Compra: "COMPRA",
+  Donacion: "DONACION",
+  Ajuste: "AJUSTE",
+  Reposicion: "REPOSICION",
+} as const;
+
+export type MotivoEntrada = typeof MotivoEntrada[keyof typeof MotivoEntrada];
+
+export const MotivoSalida = {
+  Consumo: "CONSUMO",
+  Deshecho: "DESECHO",
+  Ajuste: "AJUSTE",
+  StockMinimo: "STOCK_MINIMO",
+} as const;
+
+export type MotivoSalida = typeof MotivoSalida[keyof typeof MotivoSalida];
 
 export interface InsumoBar {
   id: string;

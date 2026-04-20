@@ -147,7 +147,7 @@ export default function MueblesPage() {
               <div className="grid grid-cols-2 gap-3">
                 <div className="bg-paper-medium/20 rounded-xl p-3">
                   <p className="text-text-muted text-xs">Categoría</p>
-                  <p className="text-sm font-medium">{getCategoryName(selectedMueble.categoria_id) ?? selectedMueble.categoria_id.slice(0, 8) + "…"}</p>
+                  <p className="text-sm font-medium">{getCategoryName(selectedMueble.categoria_id) ?? (selectedMueble.categoria_id?.slice(0, 8) + "…")}</p>
                 </div>
                 {selectedMueble.habitacion_id && (
                   <div className="bg-paper-medium/20 rounded-xl p-3">
@@ -155,7 +155,7 @@ export default function MueblesPage() {
                     <p className="text-sm font-medium">
                       {getRoomNro(selectedMueble.habitacion_id)
                         ? `Nro. ${getRoomNro(selectedMueble.habitacion_id)}`
-                        : selectedMueble.habitacion_id.slice(0, 8) + "…"}
+                        : selectedMueble.habitacion_id?.slice(0, 8) + "…"}
                     </p>
                   </div>
                 )}

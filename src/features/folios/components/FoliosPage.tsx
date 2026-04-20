@@ -77,7 +77,6 @@ export default function FoliosPage() {
   // Add product modal
   const [isProductModalOpen, setIsProductModalOpen] = useState(false);
   const [selectedFolioForProduct, setSelectedFolioForProduct] = useState<Folio | null>(null);
-  const [productos, setProductos] = useState<Producto[]>([]);
   const [productoQuery, setProductoQuery] = useState("");
   const [productoSuggestions, setProductoSuggestions] = useState<Producto[]>([]);
   const [productoSelected, setProductoSelected] = useState<Producto | null>(null);

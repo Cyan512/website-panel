@@ -48,7 +48,7 @@ export function PagoCard({ pago, onClick }: PagoCardProps) {
         {pago.recibido_por && (
           <div className="flex items-center gap-2 text-sm text-text-muted">
             <MdPerson className="w-4 h-4 flex-shrink-0" />
-            <span>{pago.recibido_por.nombres} {pago.recibido_por.apellidos}</span>
+            <span>{pago.recibido_por.name}</span>
           </div>
         )}
       </div>

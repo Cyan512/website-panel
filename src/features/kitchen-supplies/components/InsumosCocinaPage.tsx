@@ -3,7 +3,7 @@ import { PanelHeader, Button, Modal, InputField } from "@/components";
 import { sileo } from "sileo";
 import { isHandledError } from "@/utils/error.utils";
 import { cn } from "@/utils/cn";
-import { MdKitchen, MdEdit, MdDelete, MdSearch, MdAdd, MdSwapVert } from "react-icons/md";
+import { MdEdit, MdDelete, MdSearch, MdAdd, MdSwapVert } from "react-icons/md";
 import { useInsumosCocina } from "../hooks/useInsumosCocina";
 import { authClient } from "@/config/authClient";
 import { UnidadInsumo, TipoMovimiento, MotivoEntrada, MotivoSalida } from "../types";

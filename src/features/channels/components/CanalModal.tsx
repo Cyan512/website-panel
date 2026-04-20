@@ -3,14 +3,14 @@ import { Modal, Button, InputField } from "@/components";
 import { sileo } from "sileo";
 import { isHandledError } from "@/utils/error.utils";
 import { tipoCanalLabels } from "../types";
-import type { CanalOutput, CreateCanalInput, TipoCanal } from "../types";
+import type { Canal, CreateCanal, TipoCanal } from "../types";
 
 interface Props {
   isOpen: boolean;
   onClose: () => void;
   onSuccess: () => void;
-  canal?: CanalOutput | null;
-  onSave: (data: CreateCanalInput) => Promise<CanalOutput>;
+  canal?: Canal | null;
+  onSave: (data: CreateCanal) => Promise<Canal>;
 }
 
 const defaultForm = {
@@ -39,7 +39,7 @@ export function CanalModal({ isOpen, onClose, onSuccess, canal, onSave }: Props)
     e.preventDefault();
     if (!form.nombre.trim()) return sileo.error({ title: "Error", description: "El nombre es requerido" });
 
-    const payload: CreateCanalInput = {
+    const payload: CreateCanal = {
       nombre: form.nombre.trim(),
       tipo: form.tipo,
       activo: form.activo,

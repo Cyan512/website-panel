@@ -1,9 +1,9 @@
 import { cn } from "@/utils/cn";
 import { tipoCanalLabels, tipoCanalColors } from "../types";
-import type { CanalOutput } from "../types";
+import type { Canal } from "../types";
 
 interface Props {
-  canal: CanalOutput;
+  canal: Canal;
   onClick: () => void;
 }
 
