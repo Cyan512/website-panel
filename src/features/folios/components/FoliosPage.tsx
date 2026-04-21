@@ -96,20 +96,36 @@ export default function FoliosPage() {
   useEffect(() => {
     if (!session) return;
     import("@/features/stays/api").then(({ estanciasApi }) =>
-      estanciasApi.getAll().then((data) => {
-        const map = new Map<string, string>();
-        data.forEach((e) => map.set(e.id, `${e.huesped.nombres} ${e.huesped.apellidos}`));
-        setEstanciaMap(map);
-      }).catch(() => {})
+      estanciasApi
+        .getAll()
+        .then((data) => {
+          const map = new Map<string, string>();
+          data.forEach((e) => map.set(e.id, `${e.huesped.nombres} ${e.huesped.apellidos}`));
+          setEstanciaMap(map);
+        })
+        .catch(() => {}),
     );
     import("@/features/promotions/api").then(({ promocionesApi }) =>
-      promocionesApi.getAll().then(setPromociones).catch(() => {})
+      promocionesApi
+        .getAll()
+        .then(setPromociones)
+        .catch(() => {}),
     );
   }, [session]);
 
   if (!session) return <Loading text="Verificando sesión..." />;
-  if (loading) return <div className="flex items-center justify-center min-h-[60vh]"><Loading text="Cargando folios..." /></div>;
-  if (error) return <div className="flex items-center justify-center min-h-[60vh]"><div className="text-danger">{error}</div></div>;
+  if (loading)
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <Loading text="Cargando folios..." />
+      </div>
+    );
+  if (error)
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="text-danger">{error}</div>
+      </div>
+    );
 
   const { total, totalPages, hasNextPage } = pagination;
   const from = total === 0 ? 0 : (page - 1) * limit + 1;
@@ -145,7 +161,10 @@ export default function FoliosPage() {
     setForm((f) => ({ ...f, estancia_id: "" }));
     setShowSuggestions(true);
     if (debounceRef.current) clearTimeout(debounceRef.current);
-    if (!q.trim()) { setEstanciaSuggestions([]); return; }
+    if (!q.trim()) {
+      setEstanciaSuggestions([]);
+      return;
+    }
     debounceRef.current = setTimeout(async () => {
       setSearchingEstancia(true);
       try {
@@ -153,12 +172,15 @@ export default function FoliosPage() {
         const data = await estanciasApi.getAll();
         const q2 = q.toLowerCase();
         setEstanciaSuggestions(
-          data.filter((e) =>
-            e.huesped.nombres.toLowerCase().includes(q2) ||
-            e.huesped.apellidos.toLowerCase().includes(q2) ||
-            e.habitacion.nro_habitacion.toLowerCase().includes(q2) ||
-            e.id.toLowerCase().includes(q2)
-          ).slice(0, 8)
+          data
+            .filter(
+              (e) =>
+                e.huesped.nombres.toLowerCase().includes(q2) ||
+                e.huesped.apellidos.toLowerCase().includes(q2) ||
+                e.habitacion.nro_habitacion.toLowerCase().includes(q2) ||
+                e.id.toLowerCase().includes(q2),
+            )
+            .slice(0, 8),
         );
       } catch {
         setEstanciaSuggestions([]);
@@ -179,9 +201,7 @@ export default function FoliosPage() {
   const togglePromocion = (id: string) => {
     setForm((f) => ({
       ...f,
-      promocion_ids: f.promocion_ids.includes(id)
-        ? f.promocion_ids.filter((p) => p !== id)
-        : [...f.promocion_ids, id],
+      promocion_ids: f.promocion_ids.includes(id) ? f.promocion_ids.filter((p) => p !== id) : [...f.promocion_ids, id],
     }));
   };
 
@@ -254,17 +274,15 @@ export default function FoliosPage() {
   const handleProductoQuery = async (q: string) => {
     setProductoQuery(q);
     setProductoSelected(null);
-    if (!q.trim()) { setProductoSuggestions([]); return; }
+    if (!q.trim()) {
+      setProductoSuggestions([]);
+      return;
+    }
     try {
       const { productosApi } = await import("@/features/products/api");
       const data = await productosApi.getAll(1, 20);
       const q2 = q.toLowerCase();
-      setProductoSuggestions(
-        data.list.filter((p) =>
-          p.nombre.toLowerCase().includes(q2) ||
-          p.codigo.toLowerCase().includes(q2)
-        )
-      );
+      setProductoSuggestions(data.list.filter((p) => p.nombre.toLowerCase().includes(q2) || p.codigo.toLowerCase().includes(q2)));
     } catch {
       setProductoSuggestions([]);
     }
@@ -303,7 +321,7 @@ export default function FoliosPage() {
     }
   };
 
-  const labelClass = "block text-sm font-medium text-text-primary mb-1";
+  const labelClass = "block font-medium text-text-primary mb-1";
 
   return (
     <>
@@ -322,7 +340,7 @@ export default function FoliosPage() {
             icon={<MdReceipt className="w-10 h-10 text-text-muted/50" />}
             title="Sin folios"
             description="Crea el primer folio de estancia"
-            action={<Button onClick={openCreate }>Nuevo Folio</Button>}
+            action={<Button onClick={openCreate}>Nuevo Folio</Button>}
           />
         ) : (
           <>
@@ -352,73 +370,97 @@ export default function FoliosPage() {
 
             {/* Table */}
             <div className="overflow-x-auto px-4 sm:px-6">
-              <table className="w-full text-base">
+              <table className="w-full">
                 <thead>
                   <tr className="border-b border-border">
                     <th className="text-left py-3 px-2 text-sm font-semibold text-text-muted uppercase tracking-wide">Código</th>
                     <th className="text-left py-3 px-2 text-sm font-semibold text-text-muted uppercase tracking-wide">Huésped</th>
                     <th className="text-left py-3 px-2 text-sm font-semibold text-text-muted uppercase tracking-wide">Estado</th>
-                    <th className="text-left py-3 px-2 text-sm font-semibold text-text-muted uppercase tracking-wide hidden md:table-cell">Observación</th>
-                    <th className="text-left py-3 px-2 text-sm font-semibold text-text-muted uppercase tracking-wide hidden lg:table-cell">Cerrado en</th>
-                    <th className="text-center py-3 px-2 text-sm font-semibold text-text-muted uppercase tracking-wide hidden sm:table-cell">Promociones</th>
+                    <th className="text-left py-3 px-2 text-sm font-semibold text-text-muted uppercase tracking-wide hidden md:table-cell">
+                      Observación
+                    </th>
+                    <th className="text-left py-3 px-2 text-sm font-semibold text-text-muted uppercase tracking-wide hidden lg:table-cell">
+                      Cerrado en
+                    </th>
+                    <th className="text-center py-3 px-2 text-sm font-semibold text-text-muted uppercase tracking-wide hidden sm:table-cell">
+                      Promociones
+                    </th>
                     <th className="py-3 px-2 text-right text-sm font-semibold text-text-muted uppercase tracking-wide">Acciones</th>
                   </tr>
                 </thead>
                 <tbody>
                   {filtered.length === 0 ? (
-                    <tr><td colSpan={7} className="text-center py-10 text-text-muted">Sin resultados</td></tr>
-                  ) : filtered.map((f) => (
-                    <tr key={f.id} className="border-b border-border/50 last:border-0 hover:bg-accent-primary/5 transition-colors">
-                      <td className="py-3 px-2 text-sm font-mono text-text-primary font-medium">{f.codigo}</td>
-                      <td className="py-3 px-2 text-sm text-text-primary font-medium">
-                        {estanciaMap.get(f.estanciaId) ?? (
-                          <span className="text-xs text-text-muted font-mono" title={f.estanciaId}>
-                            {f.estanciaId.slice(0, 8)}…
-                          </span>
-                        )}
-                      </td>
-                      <td className="py-3 px-2">
-                        <span className={cn("text-xs font-medium px-2 py-0.5 rounded-full",
-                          f.estado ? "bg-success-bg text-success" : "bg-bg-tertiary text-text-muted"
-                        )}>
-                          {f.estado ? "Abierto" : "Cerrado"}
-                        </span>
-                      </td>
-                      <td className="py-3 px-2 text-text-muted text-xs hidden md:table-cell max-w-xs truncate">
-                        {f.observacion ?? "—"}
-                      </td>
-                      <td className="py-3 px-2 text-text-muted text-xs hidden lg:table-cell">
-                        {f.cerradoEn ? formatUTCDate(f.cerradoEn) : "—"}
-                      </td>
-                      <td className="py-3 px-2 text-center hidden sm:table-cell">
-                        <span className="text-xs font-medium text-text-muted">{f.promociones.length}</span>
-                      </td>
-                      <td className="py-3 px-2">
-                        <div className="flex items-center justify-end gap-1">
-                          {f.estado && (
-                            <>
-                              <button onClick={() => openAddProduct(f)} title="Agregar producto"
-                                className="p-1.5 rounded-lg text-text-muted hover:text-primary hover:bg-primary/10 transition-all">
-                                <MdShoppingCart className="w-4 h-4" />
-                              </button>
-                              <button onClick={() => openAddService(f)} title="Agregar servicio"
-                                className="p-1.5 rounded-lg text-text-muted hover:text-primary hover:bg-primary/10 transition-all">
-                                <MdRoomService className="w-4 h-4" />
-                              </button>
-                            </>
-                          )}
-                          <button onClick={() => openEdit(f)} title="Editar"
-                            className="p-1.5 rounded-lg text-text-muted hover:text-primary hover:bg-primary/10 transition-all">
-                            <MdEdit className="w-4 h-4" />
-                          </button>
-                          <button onClick={() => setDeleteTarget(f)} disabled={deleting} title="Eliminar"
-                            className="p-1.5 rounded-lg text-text-muted hover:text-danger hover:bg-danger/10 transition-all disabled:opacity-40">
-                            <MdDelete className="w-4 h-4" />
-                          </button>
-                        </div>
+                    <tr>
+                      <td colSpan={7} className="text-center py-10 text-text-muted">
+                        Sin resultados
                       </td>
                     </tr>
-                  ))}
+                  ) : (
+                    filtered.map((f) => (
+                      <tr key={f.id} className="border-b border-border/50 last:border-0 hover:bg-accent-primary/5 transition-colors">
+                        <td className="py-3 px-2 text-sm font-mono text-text-primary font-medium">{f.codigo}</td>
+                        <td className="py-3 px-2 text-sm text-text-primary font-medium">
+                          {estanciaMap.get(f.estanciaId) ?? (
+                            <span className="text-text-muted font-mono" title={f.estanciaId}>
+                              {f.estanciaId.slice(0, 8)}…
+                            </span>
+                          )}
+                        </td>
+                        <td className="py-3 px-2">
+                          <span
+                            className={cn(
+                              "text-xs font-medium px-2 py-0.5 rounded-full",
+                              f.estado ? "bg-success-bg text-success" : "bg-bg-tertiary text-text-muted",
+                            )}
+                          >
+                            {f.estado ? "Abierto" : "Cerrado"}
+                          </span>
+                        </td>
+                        <td className="py-3 px-2 text-text-muted text-xs hidden md:table-cell max-w-xs truncate">{f.observacion ?? "—"}</td>
+                        <td className="py-3 px-2 text-text-muted text-xs hidden lg:table-cell">{f.cerradoEn ? formatUTCDate(f.cerradoEn) : "—"}</td>
+                        <td className="py-3 px-2 text-center hidden sm:table-cell">
+                          <span className="font-medium text-text-muted">{f.promociones.length}</span>
+                        </td>
+                        <td className="py-3 px-2">
+                          <div className="flex items-center justify-end gap-1">
+                            {f.estado && (
+                              <>
+                                <button
+                                  onClick={() => openAddProduct(f)}
+                                  title="Agregar producto"
+                                  className="p-1.5 rounded-lg text-text-muted hover:text-primary hover:bg-primary/10 transition-all"
+                                >
+                                  <MdShoppingCart className="w-4 h-4" />
+                                </button>
+                                <button
+                                  onClick={() => openAddService(f)}
+                                  title="Agregar servicio"
+                                  className="p-1.5 rounded-lg text-text-muted hover:text-primary hover:bg-primary/10 transition-all"
+                                >
+                                  <MdRoomService className="w-4 h-4" />
+                                </button>
+                              </>
+                            )}
+                            <button
+                              onClick={() => openEdit(f)}
+                              title="Editar"
+                              className="p-1.5 rounded-lg text-text-muted hover:text-primary hover:bg-primary/10 transition-all"
+                            >
+                              <MdEdit className="w-4 h-4" />
+                            </button>
+                            <button
+                              onClick={() => setDeleteTarget(f)}
+                              disabled={deleting}
+                              title="Eliminar"
+                              className="p-1.5 rounded-lg text-text-muted hover:text-danger hover:bg-danger/10 transition-all disabled:opacity-40"
+                            >
+                              <MdDelete className="w-4 h-4" />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))
+                  )}
                 </tbody>
               </table>
             </div>
@@ -438,139 +480,161 @@ export default function FoliosPage() {
       {/* Modal */}
       <Modal isOpen={isModalOpen} onClose={closeModal} title={modalMode === "create" ? "Nuevo Folio" : "Editar Folio"} size="lg">
         <div className="max-h-[70vh] overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-        <form onSubmit={handleSubmit} className="space-y-4">
-
-          {/* Estancia field */}
-          {modalMode === "create" ? (
-            <div className="relative">
-              <label className={labelClass}>Estancia *</label>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            {/* Estancia field */}
+            {modalMode === "create" ? (
               <div className="relative">
-                <MdSearch className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
-                <input
-                  type="text"
-                  value={estanciaQuery}
-                  onChange={(e) => handleEstanciaQuery(e.target.value)}
-                  onFocus={() => setShowSuggestions(true)}
-                  onBlur={() => setTimeout(() => setShowSuggestions(false), 150)}
-                  placeholder="Buscar por huésped o habitación..."
-                  className={cn(
-                    "w-full pl-9 pr-4 py-3 text-sm rounded-xl border bg-bg-card text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-primary/30",
-                    estanciaSelected ? "border-success/40 bg-success-bg/40" : "border-border"
-                  )}
-                  required
-                />
-              </div>
-              {showSuggestions && (searchingEstancia || estanciaSuggestions.length > 0) && (
-                <div className="absolute z-50 top-full left-0 right-0 mt-1 bg-bg-card border border-border rounded-xl shadow-xl overflow-hidden">
-                  {searchingEstancia ? (
-                    <div className="px-4 py-3 text-sm text-text-muted">Buscando...</div>
-                  ) : estanciaSuggestions.map((e) => (
-                    <button key={e.id} type="button" onMouseDown={() => handleSelectEstancia(e)}
-                      className="w-full flex items-start gap-3 px-4 py-3 hover:bg-bg-hover transition-colors text-left border-b border-border/50 last:border-0">
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2">
-                          <span className="text-sm font-medium text-text-primary">{e.huesped.nombres} {e.huesped.apellidos}</span>
-                          <span className={cn("text-[10px] px-1.5 py-0.5 rounded-full font-medium", estadoEstadiaColors[e.estado])}>{e.estado}</span>
-                        </div>
-                        <p className="text-xs text-text-muted mt-0.5">
-                          Hab. {e.habitacion.nro_habitacion} · Piso {e.habitacion.piso}
-                          {e.fecha_entrada && ` · Entrada: ${formatUTCDate(e.fecha_entrada)}`}
-                        </p>
-                      </div>
-                    </button>
-                  ))}
+                <label className={labelClass}>Estancia *</label>
+                <div className="relative">
+                  <MdSearch className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
+                  <input
+                    type="text"
+                    value={estanciaQuery}
+                    onChange={(e) => handleEstanciaQuery(e.target.value)}
+                    onFocus={() => setShowSuggestions(true)}
+                    onBlur={() => setTimeout(() => setShowSuggestions(false), 150)}
+                    placeholder="Buscar por huésped o habitación..."
+                    className={cn(
+                      "w-full pl-9 pr-4 py-3 rounded-xl border bg-bg-card text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-primary/30",
+                      estanciaSelected ? "border-success/40 bg-success-bg/40" : "border-border",
+                    )}
+                    required
+                  />
                 </div>
-              )}
-              {estanciaSelected && (
-                <div className="mt-2 bg-primary/5 border border-primary/20 rounded-xl px-4 py-2.5 text-xs grid grid-cols-2 gap-x-4 gap-y-1">
-                  <span className="text-text-muted">Huésped</span>
-                  <span className="text-text-primary font-medium">{estanciaSelected.huesped.nombres} {estanciaSelected.huesped.apellidos}</span>
-                  <span className="text-text-muted">Habitación</span>
-                  <span className="text-text-primary font-medium">Nro. {estanciaSelected.habitacion.nro_habitacion}</span>
-                </div>
-              )}
-            </div>
-          ) : (
-            <div>
-              <label className={labelClass}>Huésped</label>
-              <input
-                value={estanciaMap.get(editingFolio?.estanciaId ?? "") ?? editingFolio?.estanciaId ?? ""}
-                disabled
-                className="w-full px-3 py-2.5 text-sm rounded-xl border border-border bg-bg-card/50 text-text-muted cursor-not-allowed"
-              />
-            </div>
-          )}
-
-          {/* Observación */}
-          <div>
-            <label className={labelClass}>Observación</label>
-            <textarea
-              value={form.observacion}
-              onChange={(e) => setForm((f) => ({ ...f, observacion: e.target.value }))}
-              placeholder="Observación opcional..."
-              rows={2}
-              className="w-full px-3 py-2.5 text-sm rounded-xl border border-border bg-bg-card text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-primary/30 resize-none"
-            />
-          </div>
-
-          {/* Promociones picker */}
-          <div>
-            <label className={labelClass}>
-              Promociones
-              <span className="text-text-muted font-normal ml-1">(opcional)</span>
-            </label>
-
-            {/* Selected chips */}
-            {form.promocion_ids.length > 0 && (
-              <div className="flex flex-wrap gap-1.5 mb-2">
-                {form.promocion_ids.map((id) => {
-                  const promo = promociones.find((p) => p.id === id);
-                  return (
-                    <span key={id} className="inline-flex items-center gap-1 text-xs px-2 py-1 rounded-full bg-primary/10 text-primary border border-primary/20">
-                      {promo?.codigo ?? id.slice(0, 8)}
-                      <button type="button" onClick={() => togglePromocion(id)} className="hover:text-danger transition-colors">
-                        <MdClose className="w-3 h-3" />
-                      </button>
+                {showSuggestions && (searchingEstancia || estanciaSuggestions.length > 0) && (
+                  <div className="absolute z-50 top-full left-0 right-0 mt-1 bg-bg-card border border-border rounded-xl shadow-xl overflow-hidden">
+                    {searchingEstancia ? (
+                      <div className="px-4 py-3 text-text-muted">Buscando...</div>
+                    ) : (
+                      estanciaSuggestions.map((e) => (
+                        <button
+                          key={e.id}
+                          type="button"
+                          onMouseDown={() => handleSelectEstancia(e)}
+                          className="w-full flex items-start gap-3 px-4 py-3 hover:bg-bg-hover transition-colors text-left border-b border-border/50 last:border-0"
+                        >
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2">
+                              <span className="text-sm font-medium text-text-primary">
+                                {e.huesped.nombres} {e.huesped.apellidos}
+                              </span>
+                              <span className={cn("text-[10px] px-1.5 py-0.5 rounded-full font-medium", estadoEstadiaColors[e.estado])}>
+                                {e.estado}
+                              </span>
+                            </div>
+                            <p className="text-xs text-text-muted mt-0.5">
+                              Hab. {e.habitacion.nro_habitacion} · Piso {e.habitacion.piso}
+                              {e.fecha_entrada && ` · Entrada: ${formatUTCDate(e.fecha_entrada)}`}
+                            </p>
+                          </div>
+                        </button>
+                      ))
+                    )}
+                  </div>
+                )}
+                {estanciaSelected && (
+                  <div className="mt-2 bg-primary/5 border border-primary/20 rounded-xl px-4 py-2.5 text-xs grid grid-cols-2 gap-x-4 gap-y-1">
+                    <span className="text-text-muted">Huésped</span>
+                    <span className="text-text-primary font-medium">
+                      {estanciaSelected.huesped.nombres} {estanciaSelected.huesped.apellidos}
                     </span>
-                  );
-                })}
+                    <span className="text-text-muted">Habitación</span>
+                    <span className="text-text-primary font-medium">Nro. {estanciaSelected.habitacion.nro_habitacion}</span>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div>
+                <label className={labelClass}>Huésped</label>
+                <input
+                  value={estanciaMap.get(editingFolio?.estanciaId ?? "") ?? editingFolio?.estanciaId ?? ""}
+                  disabled
+                  className="w-full px-3 py-2.5 rounded-xl border border-border bg-bg-card/50 text-text-muted cursor-not-allowed"
+                />
               </div>
             )}
 
-            {/* Promo grid */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5 max-h-36 overflow-y-auto p-1 rounded-xl border border-border bg-bg-card">
-              {promociones.length === 0 ? (
-                <p className="col-span-3 text-xs text-text-muted text-center py-3">Sin promociones disponibles</p>
-              ) : promociones.map((p) => {
-                const selected = form.promocion_ids.includes(p.id);
-                return (
-                  <button key={p.id} type="button" onClick={() => togglePromocion(p.id)}
-                    className={cn(
-                      "rounded-lg px-2 py-2 text-xs font-medium transition-all text-left",
-                      selected ? "bg-primary text-white" : "border border-border text-text-muted hover:border-primary/50 hover:text-primary"
-                    )}>
-                    <span className="block font-semibold truncate">{p.codigo}</span>
-                    <span className="block text-[10px] opacity-70">
-                      {p.tipo_descuento === "PORCENTAJE" ? `${p.valor_descuento}%` : `S/ ${p.valor_descuento}`}
-                    </span>
-                  </button>
-                );
-              })}
+            {/* Observación */}
+            <div>
+              <label className={labelClass}>Observación</label>
+              <textarea
+                value={form.observacion}
+                onChange={(e) => setForm((f) => ({ ...f, observacion: e.target.value }))}
+                placeholder="Observación opcional..."
+                rows={2}
+                className="w-full px-3 py-2.5 text-sm rounded-xl border border-border bg-bg-card text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-primary/30 resize-none"
+              />
             </div>
-            <p className="text-xs text-text-muted mt-1">
-              {form.promocion_ids.length === 0
-                ? "Ninguna seleccionada"
-                : `${form.promocion_ids.length} promoción${form.promocion_ids.length !== 1 ? "es" : ""} seleccionada${form.promocion_ids.length !== 1 ? "s" : ""}`}
-            </p>
-          </div>
 
-          <div className="flex gap-3 pt-2">
-            <Button type="button" variant="secondary" onClick={closeModal} className="flex-1">Cancelar</Button>
-            <Button type="submit" disabled={saving} className="flex-1">
-              {saving ? "Guardando..." : modalMode === "create" ? "Crear Folio" : "Guardar Cambios"}
-            </Button>
-          </div>
-        </form>
+            {/* Promociones picker */}
+            <div>
+              <label className={labelClass}>
+                Promociones
+                <span className="text-text-muted font-normal ml-1">(opcional)</span>
+              </label>
+
+              {/* Selected chips */}
+              {form.promocion_ids.length > 0 && (
+                <div className="flex flex-wrap gap-1.5 mb-2">
+                  {form.promocion_ids.map((id) => {
+                    const promo = promociones.find((p) => p.id === id);
+                    return (
+                      <span
+                        key={id}
+                        className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-primary/10 text-primary border border-primary/20"
+                      >
+                        {promo?.codigo ?? id.slice(0, 8)}
+                        <button type="button" onClick={() => togglePromocion(id)} className="hover:text-danger transition-colors">
+                          <MdClose className="w-3 h-3" />
+                        </button>
+                      </span>
+                    );
+                  })}
+                </div>
+              )}
+
+              {/* Promo grid */}
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5 max-h-36 overflow-y-auto p-1 rounded-xl border border-border bg-bg-card">
+                {promociones.length === 0 ? (
+                  <p className="text-text-muted text-center py-3">Sin promociones disponibles</p>
+                ) : (
+                  promociones.map((p) => {
+                    const selected = form.promocion_ids.includes(p.id);
+                    return (
+                      <button
+                        key={p.id}
+                        type="button"
+                        onClick={() => togglePromocion(p.id)}
+                        className={cn(
+                          "rounded-lg px-2 py-2 text-xs font-medium transition-all text-left",
+                          selected ? "bg-primary text-white" : "border border-border text-text-muted hover:border-primary/50 hover:text-primary",
+                        )}
+                      >
+                        <span className="block font-semibold truncate">{p.codigo}</span>
+                        <span className="block text-[10px] opacity-70">
+                          {p.tipo_descuento === "PORCENTAJE" ? `${p.valor_descuento}%` : `S/ ${p.valor_descuento}`}
+                        </span>
+                      </button>
+                    );
+                  })
+                )}
+              </div>
+              <p className="text-xs text-text-muted mt-1">
+                {form.promocion_ids.length === 0
+                  ? "Ninguna seleccionada"
+                  : `${form.promocion_ids.length} promoción${form.promocion_ids.length !== 1 ? "es" : ""} seleccionada${form.promocion_ids.length !== 1 ? "s" : ""}`}
+              </p>
+            </div>
+
+            <div className="flex gap-3 pt-2">
+              <Button type="button" variant="secondary" onClick={closeModal} className="flex-1">
+                Cancelar
+              </Button>
+              <Button type="submit" disabled={saving} className="flex-1">
+                {saving ? "Guardando..." : modalMode === "create" ? "Crear Folio" : "Guardar Cambios"}
+              </Button>
+            </div>
+          </form>
         </div>
       </Modal>
 
@@ -578,7 +642,7 @@ export default function FoliosPage() {
       <Modal isOpen={isProductModalOpen} onClose={() => setIsProductModalOpen(false)} title="Agregar Producto al Folio" size="md">
         <div className="space-y-4">
           {selectedFolioForProduct && (
-            <div className="bg-primary/5 border border-primary/20 rounded-xl px-4 py-2.5 text-xs">
+            <div className="bg-primary/5 border border-primary/20 rounded-xl px-4 py-2.5">
               <span className="text-text-muted">Folio: </span>
               <span className="text-text-primary font-medium font-mono">{selectedFolioForProduct.codigo}</span>
             </div>
@@ -595,8 +659,8 @@ export default function FoliosPage() {
                 onFocus={() => productoSuggestions.length > 0 && setShowSuggestions(true)}
                 placeholder="Buscar por nombre o código..."
                 className={cn(
-                  "w-full pl-9 pr-4 py-3 text-sm rounded-xl border bg-bg-card text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-primary/30",
-                  productoSelected ? "border-success/40 bg-success-bg/40" : "border-border"
+                  "w-full pl-9 pr-4 py-3 rounded-xl border bg-bg-card text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-primary/30",
+                  productoSelected ? "border-success/40 bg-success-bg/40" : "border-border",
                 )}
               />
             </div>
@@ -606,12 +670,16 @@ export default function FoliosPage() {
                   <button
                     key={p.id}
                     type="button"
-                    onClick={() => { setProductoSelected(p); setProductoQuery(p.nombre); setProductoSuggestions([]); }}
+                    onClick={() => {
+                      setProductoSelected(p);
+                      setProductoQuery(p.nombre);
+                      setProductoSuggestions([]);
+                    }}
                     className="w-full flex items-center justify-between px-4 py-3 hover:bg-bg-hover transition-colors text-left border-b border-border/50 last:border-0"
                   >
                     <div>
                       <span className="text-sm font-medium text-text-primary">{p.nombre}</span>
-                      <span className="text-xs text-text-muted ml-2">{p.codigo}</span>
+                      <span className="text-text-muted ml-2">{p.codigo}</span>
                     </div>
                     <span className="text-xs font-medium text-primary">S/ {Number(p.precio_unitario).toFixed(2)}</span>
                   </button>
@@ -638,12 +706,14 @@ export default function FoliosPage() {
               <span className="text-text-muted">Precio unitario</span>
               <span className="text-text-primary font-medium">S/ {Number(productoSelected.precio_unitario).toFixed(2)}</span>
               <span className="text-text-muted">Total</span>
-              <span className="text-text-primary font-bold text-primary">S/ {(Number(productoSelected.precio_unitario) * cantidad).toFixed(2)}</span>
+              <span className="text-text-primary font-bold">S/ {(Number(productoSelected.precio_unitario) * cantidad).toFixed(2)}</span>
             </div>
           )}
 
           <div className="flex gap-3 pt-2">
-            <Button type="button" variant="secondary" onClick={() => setIsProductModalOpen(false)} className="flex-1">Cancelar</Button>
+            <Button type="button" variant="secondary" onClick={() => setIsProductModalOpen(false)} className="flex-1">
+              Cancelar
+            </Button>
             <Button
               type="button"
               onClick={handleAddProducto}
@@ -661,7 +731,7 @@ export default function FoliosPage() {
       <Modal isOpen={isServiceModalOpen} onClose={() => setIsServiceModalOpen(false)} title="Agregar Servicio al Folio" size="md">
         <div className="space-y-4">
           {selectedFolioForService && (
-            <div className="bg-primary/5 border border-primary/20 rounded-xl px-4 py-2.5 text-xs">
+            <div className="bg-primary/5 border border-primary/20 rounded-xl px-4 py-2.5">
               <span className="text-text-muted">Folio: </span>
               <span className="text-text-primary font-medium font-mono">{selectedFolioForService.codigo}</span>
             </div>
@@ -708,12 +778,16 @@ export default function FoliosPage() {
               <span className="text-text-muted">Precio unitario</span>
               <span className="text-text-primary font-medium">S/ {parseFloat(servicioPrecio.replace(",", ".") || "0").toFixed(2)}</span>
               <span className="text-text-muted">Total</span>
-              <span className="text-text-primary font-bold text-primary">S/ {(parseFloat(servicioPrecio.replace(",", ".") || "0") * servicioCantidad).toFixed(2)}</span>
+              <span className="text-text-primary font-bold">
+                S/ {(parseFloat(servicioPrecio.replace(",", ".") || "0") * servicioCantidad).toFixed(2)}
+              </span>
             </div>
           )}
 
           <div className="flex gap-3 pt-2">
-            <Button type="button" variant="secondary" onClick={() => setIsServiceModalOpen(false)} className="flex-1">Cancelar</Button>
+            <Button type="button" variant="secondary" onClick={() => setIsServiceModalOpen(false)} className="flex-1">
+              Cancelar
+            </Button>
             <Button
               type="button"
               onClick={handleAddServicio}

@@ -21,7 +21,8 @@ const toDateInput = (d?: string | Date | null) => {
   return new Date(d).toISOString().slice(0, 16);
 };
 
-const selectClass = "field-input w-full rounded-xl py-3.5 text-sm px-3.5 focus:outline-none focus:ring-2 focus:ring-accent-primary/30 focus:border-accent-primary border border-border-light/50";
+const selectClass =
+  "field-input w-full rounded-xl py-3.5 px-3.5 focus:outline-none focus:ring-2 focus:ring-accent-primary/30 focus:border-accent-primary border border-border-light/50";
 const labelClass = "field-label block mb-2 text-text-secondary font-medium";
 
 export function EstanciaModal({ isOpen, onClose, onSuccess, estancia, onSave }: Props) {
@@ -41,7 +42,10 @@ export function EstanciaModal({ isOpen, onClose, onSuccess, estancia, onSave }: 
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const searchReservas = async (q: string) => {
-    if (!q.trim()) { setSuggestions([]); return; }
+    if (!q.trim()) {
+      setSuggestions([]);
+      return;
+    }
     setSearching(true);
     try {
       const { reservasApi } = await import("@/features/reservations/api");
@@ -125,7 +129,6 @@ export function EstanciaModal({ isOpen, onClose, onSuccess, estancia, onSave }: 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title={estancia ? "Editar Estancia" : "Nueva Estancia"} size="lg">
       <form onSubmit={handleSubmit} className="space-y-4">
-
         {/* Buscador de reserva */}
         <div className="relative">
           <label className={labelClass}>Reserva</label>
@@ -145,29 +148,38 @@ export function EstanciaModal({ isOpen, onClose, onSuccess, estancia, onSave }: 
             <div className="absolute z-50 top-full left-0 right-0 mt-1 bg-bg-card border border-border rounded-xl shadow-xl overflow-hidden">
               {searching ? (
                 <div className="px-4 py-3 text-sm text-text-muted">Buscando...</div>
-              ) : suggestions.map((r) => (
-                <button
-                  key={r.id}
-                  type="button"
-                  onMouseDown={() => handleSelectReserva(r)}
-                  className="w-full flex items-start gap-3 px-4 py-3 hover:bg-bg-hover transition-colors text-left border-b border-border/50 last:border-0"
-                >
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <span className="font-mono text-xs font-semibold text-primary">{r.codigo}</span>
-                      <span className={cn("text-[10px] px-1.5 py-0.5 rounded-full font-medium",
-                        r.estado === "CONFIRMADA" ? "bg-success-bg text-success" :
-                        r.estado === "TENTATIVA" ? "bg-warning-bg text-warning" :
-                        "bg-bg-tertiary text-text-muted"
-                      )}>{r.estado}</span>
+              ) : (
+                suggestions.map((r) => (
+                  <button
+                    key={r.id}
+                    type="button"
+                    onMouseDown={() => handleSelectReserva(r)}
+                    className="w-full flex items-start gap-3 px-4 py-3 hover:bg-bg-hover transition-colors text-left border-b border-border/50 last:border-0"
+                  >
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <span className="font-mono text-xs font-semibold text-primary">{r.codigo}</span>
+                        <span
+                          className={cn(
+                            "text-[10px] px-1.5 py-0.5 rounded-full font-medium",
+                            r.estado === "CONFIRMADA"
+                              ? "bg-success-bg text-success"
+                              : r.estado === "TENTATIVA"
+                                ? "bg-warning-bg text-warning"
+                                : "bg-bg-tertiary text-text-muted",
+                          )}
+                        >
+                          {r.estado}
+                        </span>
+                      </div>
+                      <p className="text-sm text-text-primary mt-0.5">{r.nombre_huesped}</p>
+                      <p className="text-xs text-text-muted">
+                        Hab. {r.nro_habitacion} · {formatUTCDate(r.fecha_inicio)} → {formatUTCDate(r.fecha_fin)}
+                      </p>
                     </div>
-                    <p className="text-sm text-text-primary mt-0.5">{r.nombre_huesped}</p>
-                    <p className="text-xs text-text-muted">
-                      Hab. {r.nro_habitacion} · {formatUTCDate(r.fecha_inicio)} → {formatUTCDate(r.fecha_fin)}
-                    </p>
-                  </div>
-                </button>
-              ))}
+                  </button>
+                ))
+              )}
             </div>
           )}
         </div>
@@ -175,7 +187,7 @@ export function EstanciaModal({ isOpen, onClose, onSuccess, estancia, onSave }: 
         {/* Preview de datos autocompletados */}
         {reservaSeleccionada && (
           <div className="bg-primary/5 border border-primary/20 rounded-xl p-4 text-sm space-y-1.5">
-            <p className="text-xs font-semibold text-primary uppercase tracking-wide mb-2">Datos autocompletados</p>
+            <p className="font-semibold text-primary uppercase tracking-wide mb-2">Datos autocompletados</p>
             <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs">
               <span className="text-text-muted">Huésped</span>
               <span className="text-text-primary font-medium">{reservaSeleccionada.nombre_huesped}</span>
@@ -208,7 +220,9 @@ export function EstanciaModal({ isOpen, onClose, onSuccess, estancia, onSave }: 
           <label className={labelClass}>Estado</label>
           <select value={form.estado} onChange={(e) => setForm((f) => ({ ...f, estado: e.target.value as EstadoEstadia }))} className={selectClass}>
             {Object.entries(estadoEstadiaLabels).map(([key, label]) => (
-              <option key={key} value={key}>{label}</option>
+              <option key={key} value={key}>
+                {label}
+              </option>
             ))}
           </select>
         </div>
@@ -219,14 +233,18 @@ export function EstanciaModal({ isOpen, onClose, onSuccess, estancia, onSave }: 
             value={form.notas}
             onChange={(e) => setForm((f) => ({ ...f, notas: e.target.value }))}
             rows={2}
-            className="field-input w-full rounded-xl py-3 text-sm px-3.5 focus:outline-none focus:ring-2 focus:ring-accent-primary/30 focus:border-accent-primary border border-border-light/50 resize-none"
+            className="field-input w-full rounded-xl py-3 px-3.5 focus:outline-none focus:ring-2 focus:ring-accent-primary/30 focus:border-accent-primary border border-border-light/50 resize-none"
             placeholder="Observaciones..."
           />
         </div>
 
         <div className="flex gap-3 pt-2">
-          <Button type="button" variant="secondary" onClick={onClose} className="flex-1">Cancelar</Button>
-          <Button type="submit" isLoading={saving} className="flex-1">{saving ? "Guardando..." : estancia ? "Actualizar" : "Crear"}</Button>
+          <Button type="button" variant="secondary" onClick={onClose} className="flex-1">
+            Cancelar
+          </Button>
+          <Button type="submit" isLoading={saving} className="flex-1">
+            {saving ? "Guardando..." : estancia ? "Actualizar" : "Crear"}
+          </Button>
         </div>
       </form>
     </Modal>

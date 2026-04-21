@@ -86,12 +86,14 @@ Objetivo: que **todas** las páginas CRUD se vean y se sientan consistentes (má
   - Soporta `indeterminate` (select-all), `disabled`, `sm/md`.
   - Apariencia consistente (focus ring, border, tokens del theme).
 
-### Tipografía (bump +1 en CRUD)
+### Tipografía
 
-- En páginas CRUD, subir 1 step:
-  - Toolbars: texto e inputs/selects en `text-base` (donde antes era `text-sm`).
-  - Labels pequeños: `text-sm` (donde antes era `text-xs`).
-- Sidebar y títulos principales no se modifican por defecto.
+- **Regla general**: Usar el tamaño de texto normal del navegador (sin `text-xs`, `text-sm`, `text-base` explícitos en CSS).
+- **Excepciones donde SÍ usar tamaños explícitos**:
+  - `text-2xl` / `text-4xl`: Números grandes en stats y métricas destacadas.
+  - `text-xs`: Badges de estado, labels metadata (códigos, fechas pequeñas), texto de sección "Datos autocompletados".
+  - `text-sm` + uppercase: Encabezados de tabla (`<th>`) para mantener convención de UI.
+- **Sidebar y títulos principales** (`PanelHeader`, `h1-h3`): Sin modificaciones, mantienen jerarquía visual.
 
 ### Paleta / prohibiciones (refuerzo)
 

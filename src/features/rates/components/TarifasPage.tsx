@@ -21,8 +21,18 @@ export default function TarifasPage() {
   const [deleting, setDeleting] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
 
-  if (loading) return <div className="flex items-center justify-center min-h-[60vh]"><Loading text="Cargando tarifas..." /></div>;
-  if (error) return <div className="flex items-center justify-center min-h-[60vh]"><div className="text-danger">{error}</div></div>;
+  if (loading)
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <Loading text="Cargando tarifas..." />
+      </div>
+    );
+  if (error)
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="text-danger">{error}</div>
+      </div>
+    );
 
   const handleSave = async (data: CreateTarifa) => {
     if (editingTarifa) return updateTarifa(editingTarifa.id, data);
@@ -37,14 +47,23 @@ export default function TarifasPage() {
       await deleteTarifa(selectedTarifa.id);
       setSelectedTarifa(null);
     } catch (err) {
-      if (!isHandledError(err)) { sileo.error({ title: "Error", description: "No se pudo eliminar la tarifa" }); }
+      if (!isHandledError(err)) {
+        sileo.error({ title: "Error", description: "No se pudo eliminar la tarifa" });
+      }
     } finally {
       setDeleting(false);
     }
   };
 
-  const openCreate = () => { setEditingTarifa(null); setIsModalOpen(true); };
-  const openEdit = (tarifa: Tarifa) => { setEditingTarifa(tarifa); setSelectedTarifa(null); setIsModalOpen(true); };
+  const openCreate = () => {
+    setEditingTarifa(null);
+    setIsModalOpen(true);
+  };
+  const openEdit = (tarifa: Tarifa) => {
+    setEditingTarifa(tarifa);
+    setSelectedTarifa(null);
+    setIsModalOpen(true);
+  };
 
   return (
     <>
@@ -63,15 +82,15 @@ export default function TarifasPage() {
         ) : (
           <>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 p-4 sm:p-6">
-              <div className="bg-gradient-to-br from-accent-primary/10 to-accent-light/10 rounded-2xl p-5 border border-accent-primary/20">
+              <div className="bg-linear-to-br from-accent-primary/10 to-accent-light/10 rounded-2xl p-5 border border-accent-primary/20">
                 <p className="text-text-muted text-sm">Total Tarifas</p>
                 <p className="text-2xl font-bold font-display mt-1">{tarifas.length}</p>
               </div>
-              <div className="bg-gradient-to-br from-success/30 to-success-bg rounded-2xl p-5 border border-success/20">
-                <p className="text-text-muted text-sm">Canales</p>
+              <div className="bg-linear-to-br from-success/30 to-success-bg rounded-2xl p-5 border border-success/20">
+                <p className="text-text-muted">Canales</p>
                 <p className="text-2xl font-bold font-display mt-1 text-success">{canales.length}</p>
               </div>
-              <div className="bg-gradient-to-br from-paper-medium/20 to-paper-medium/10 rounded-2xl p-5 border border-border-light/50">
+              <div className="bg-linear-to-br from-paper-medium/20 to-paper-medium/10 rounded-2xl p-5 border border-border-light/50">
                 <p className="text-text-muted text-sm">Tipos de Habitación</p>
                 <p className="text-2xl font-bold font-display mt-1">{tiposHabitacion.length}</p>
               </div>
@@ -89,7 +108,10 @@ export default function TarifasPage() {
       {isAdmin && (
         <TarifaModal
           isOpen={isModalOpen}
-          onClose={() => { setIsModalOpen(false); setEditingTarifa(null); }}
+          onClose={() => {
+            setIsModalOpen(false);
+            setEditingTarifa(null);
+          }}
           onSuccess={fetchTarifas}
           tarifa={editingTarifa}
           tiposHabitacion={tiposHabitacion}
@@ -101,48 +123,64 @@ export default function TarifasPage() {
       {selectedTarifa && (
         <Modal isOpen={!!selectedTarifa} onClose={() => setSelectedTarifa(null)} title="Detalle de Tarifa">
           <div className="space-y-4">
-              <div className="text-center py-4 bg-paper-medium/20 rounded-2xl">
-                <p className="text-4xl font-bold font-display text-accent-primary">
-                  {selectedTarifa.moneda} {selectedTarifa.precio.toFixed(2)}
-                </p>
-                <p className="text-text-muted mt-1 text-sm">por {selectedTarifa.unidad}</p>
-              </div>
+            <div className="text-center py-4 bg-paper-medium/20 rounded-2xl">
+              <p className="text-4xl font-bold font-display text-accent-primary">
+                {selectedTarifa.moneda} {selectedTarifa.precio.toFixed(2)}
+              </p>
+              <p className="text-text-muted mt-1">por {selectedTarifa.unidad}</p>
+            </div>
 
-              <div className="grid grid-cols-2 gap-3">
-                <div className="bg-paper-medium/20 rounded-xl p-3">
-                  <p className="text-text-muted text-xs">Tipo de Habitación</p>
-                  <p className="text-sm font-medium">{selectedTarifa.tipo_habitacion.nombre}</p>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="bg-paper-medium/20 rounded-xl p-3">
+                <p className="text-text-muted text-xs">Tipo de Habitación</p>
+                <p className="text-sm font-medium">{selectedTarifa.tipo_habitacion.nombre}</p>
+              </div>
+              <div className="bg-paper-medium/20 rounded-xl p-3">
+                <p className="text-text-muted text-xs">Canal</p>
+                <p className="text-sm font-medium">{selectedTarifa.canal.nombre}</p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              {selectedTarifa.iva != null && (
+                <div className="bg-paper-medium/10 rounded-xl p-3">
+                  <p className="text-text-muted text-xs">IVA</p>
+                  <p className="text-sm font-medium">{selectedTarifa.iva}%</p>
                 </div>
-                <div className="bg-paper-medium/20 rounded-xl p-3">
-                  <p className="text-text-muted text-xs">Canal</p>
-                  <p className="text-sm font-medium">{selectedTarifa.canal.nombre}</p>
+              )}
+              {selectedTarifa.cargo_servicios != null && (
+                <div className="bg-paper-medium/10 rounded-xl p-3">
+                  <p className="text-text-muted text-xs">Cargo Servicios</p>
+                  <p className="font-medium">{selectedTarifa.cargo_servicios}%</p>
                 </div>
-              </div>
+              )}
+            </div>
 
-              <div className="grid grid-cols-2 gap-3">
-                {selectedTarifa.iva != null && (
-                  <div className="bg-paper-medium/10 rounded-xl p-3">
-                    <p className="text-text-muted text-xs">IVA</p>
-                    <p className="text-sm font-medium">{selectedTarifa.iva}%</p>
-                  </div>
-                )}
-                {selectedTarifa.cargo_servicios != null && (
-                  <div className="bg-paper-medium/10 rounded-xl p-3">
-                    <p className="text-text-muted text-xs">Cargo Servicios</p>
-                    <p className="text-sm font-medium">{selectedTarifa.cargo_servicios}%</p>
-                  </div>
-                )}
-              </div>
-
-              <div className="flex gap-3 pt-2">
-                {isAdmin && (
-                  <>
-                    <button onClick={() => openEdit(selectedTarifa)} className="flex-1 py-3 bg-accent-primary/10 text-accent-primary font-medium rounded-xl hover:bg-accent-primary/20 transition-all border border-accent-primary/20">Editar</button>
-                    <button onClick={() => setDeleteOpen(true)} disabled={deleting} className="flex-1 py-3 bg-danger-bg text-danger font-medium rounded-xl hover:bg-danger/15 transition-all border border-danger/25 disabled:opacity-50">{deleting ? "Eliminando..." : "Eliminar"}</button>
-                  </>
-                )}
-                <button onClick={() => setSelectedTarifa(null)} className="flex-1 py-3 bg-paper-medium/20 text-text-muted font-medium rounded-xl hover:bg-paper-medium/30 transition-all border border-border">Cerrar</button>
-              </div>
+            <div className="flex gap-3 pt-2">
+              {isAdmin && (
+                <>
+                  <button
+                    onClick={() => openEdit(selectedTarifa)}
+                    className="flex-1 py-3 bg-accent-primary/10 text-accent-primary font-medium rounded-xl hover:bg-accent-primary/20 transition-all border border-accent-primary/20"
+                  >
+                    Editar
+                  </button>
+                  <button
+                    onClick={() => setDeleteOpen(true)}
+                    disabled={deleting}
+                    className="flex-1 py-3 bg-danger-bg text-danger font-medium rounded-xl hover:bg-danger/15 transition-all border border-danger/25 disabled:opacity-50"
+                  >
+                    {deleting ? "Eliminando..." : "Eliminar"}
+                  </button>
+                </>
+              )}
+              <button
+                onClick={() => setSelectedTarifa(null)}
+                className="flex-1 py-3 bg-paper-medium/20 text-text-muted font-medium rounded-xl hover:bg-paper-medium/30 transition-all border border-border"
+              >
+                Cerrar
+              </button>
+            </div>
           </div>
         </Modal>
       )}
@@ -152,9 +190,7 @@ export default function TarifasPage() {
         onClose={() => setDeleteOpen(false)}
         title="Eliminar tarifa"
         description={
-          selectedTarifa
-            ? `¿Eliminar la tarifa de "${selectedTarifa.tipo_habitacion.nombre} - ${selectedTarifa.canal.nombre}"?`
-            : undefined
+          selectedTarifa ? `¿Eliminar la tarifa de "${selectedTarifa.tipo_habitacion.nombre} - ${selectedTarifa.canal.nombre}"?` : undefined
         }
         confirmText="Eliminar"
         cancelText="Cancelar"
