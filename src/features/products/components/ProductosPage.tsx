@@ -227,9 +227,9 @@ export default function ProductosPage() {
                         <td className="py-3 px-2 text-right">
                           <span className={cn(
                             "text-xs font-medium px-2 py-0.5 rounded-full",
-                            p.stock > 10 ? "bg-emerald-100 text-emerald-700" :
-                            p.stock > 0 ? "bg-amber-100 text-amber-700" :
-                            "bg-red-100 text-red-700"
+                            p.stock > 10 ? "bg-success-bg text-success" :
+                            p.stock > 0 ? "bg-warning-bg text-warning" :
+                            "bg-danger-bg text-danger"
                           )}>
                             {p.stock}
                           </span>

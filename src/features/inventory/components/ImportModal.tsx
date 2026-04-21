@@ -178,7 +178,7 @@ export function ImportModal({ isOpen, onClose, onSuccess }: ImportModalProps) {
                 className="border-2 border-dashed border-border rounded-xl p-8 text-center hover:border-primary transition-colors cursor-pointer"
                 onClick={() => fileInputRef.current?.click()}
               >
-                <FaFileExcel className="w-12 h-12 mx-auto text-emerald-500 mb-3" />
+                <FaFileExcel className="w-12 h-12 mx-auto text-success mb-3" />
                 <p className="text-text-primary font-medium mb-1">Arrastra un archivo Excel aquí</p>
                 <p className="text-text-muted text-sm">o haz clic para seleccionar</p>
                 <p className="text-text-muted/60 text-xs mt-3">Formatos: .xlsx, .xls</p>
@@ -203,8 +203,8 @@ export function ImportModal({ isOpen, onClose, onSuccess }: ImportModalProps) {
 
           {step === "preview" && (
             <div className="space-y-4">
-              <div className="flex items-center gap-3 p-4 bg-emerald-500/10 rounded-xl">
-                <FaFileExcel className="w-8 h-8 text-emerald-500" />
+              <div className="flex items-center gap-3 p-4 bg-success/10 rounded-xl">
+                <FaFileExcel className="w-8 h-8 text-success" />
                 <div>
                   <p className="font-medium text-text-primary">{file?.name}</p>
                   <p className="text-sm text-text-muted">{parsedData.length} filas encontradas</p>
@@ -212,19 +212,19 @@ export function ImportModal({ isOpen, onClose, onSuccess }: ImportModalProps) {
               </div>
 
               <div className="flex gap-4">
-                <div className="flex-1 bg-emerald-500/10 rounded-xl p-3 text-center">
-                  <p className="text-2xl font-bold text-emerald-500">{validCount}</p>
+                <div className="flex-1 bg-success/10 rounded-xl p-3 text-center">
+                  <p className="text-2xl font-bold text-success">{validCount}</p>
                   <p className="text-sm text-text-muted">Válidos</p>
                 </div>
-                <div className="flex-1 bg-red-500/10 rounded-xl p-3 text-center">
-                  <p className="text-2xl font-bold text-red-500">{invalidCount}</p>
+                <div className="flex-1 bg-danger/10 rounded-xl p-3 text-center">
+                  <p className="text-2xl font-bold text-danger">{invalidCount}</p>
                   <p className="text-sm text-text-muted">Con errores</p>
                 </div>
               </div>
 
               {invalidCount > 0 && (
-                <div className="max-h-40 overflow-y-auto bg-red-500/5 rounded-xl p-3 space-y-2">
-                  <p className="text-sm font-medium text-red-500">Errores encontrados:</p>
+                <div className="max-h-40 overflow-y-auto bg-danger/5 rounded-xl p-3 space-y-2">
+                  <p className="text-sm font-medium text-danger">Errores encontrados:</p>
                   {parsedData.filter((r) => !r.valid).map((row) => (
                     <div key={row.row} className="text-xs text-text-muted">
                       <span className="font-medium">Fila {row.row}:</span> {row.errors.join(", ")}

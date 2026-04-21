@@ -28,10 +28,10 @@ export const InputField = forwardRef<HTMLInputElement, InputFieldProps>(
             ref={ref}
             id={inputId}
             className={cn(
-              "w-full rounded-lg border bg-bg-secondary text-text-primary text-sm placeholder:text-text-muted transition-colors focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary",
+              "w-full rounded-lg border bg-bg-secondary text-text-primary text-sm placeholder:text-text-muted placeholder:italic transition-all duration-200 focus:outline-none focus:ring-[3px] focus:ring-accent/20 focus:border-accent hover:border-border-light",
               icon ? "pl-9" : "px-3",
               "py-2 pr-3",
-              error ? "border-danger focus:ring-danger/30 focus:border-danger" : "border-border"
+              error ? "border-danger focus:ring-danger/20 focus:border-danger" : "border-border"
             )}
             {...props}
           />

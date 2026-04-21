@@ -112,8 +112,8 @@ export function RoomCard({ room, onClick }: RoomCardProps) {
 
           <div className="flex items-center justify-between pt-2 border-t border-border/50">
             <div className="flex gap-2">
-              <span className={cn("px-2 py-0.5 text-[10px] font-semibold rounded-full", room.tiene_ducha ? "bg-emerald-500 text-emerald-100" : "bg-stone-500 text-stone-100")}>Ducha</span>
-              <span className={cn("px-2 py-0.5 text-[10px] font-semibold rounded-full", room.tiene_banio ? "bg-emerald-500 text-emerald-100" : "bg-stone-500 text-stone-100")}>Baño</span>
+              <span className={cn("px-2 py-0.5 text-[10px] font-semibold rounded-full", room.tiene_ducha ? "bg-success-bg text-success" : "bg-bg-tertiary text-text-muted")}>Ducha</span>
+              <span className={cn("px-2 py-0.5 text-[10px] font-semibold rounded-full", room.tiene_banio ? "bg-success-bg text-success" : "bg-bg-tertiary text-text-muted")}>Baño</span>
             </div>
             <button
               ref={btnRef}

@@ -33,10 +33,10 @@ export function StockCard({ mueble, onClick }: StockCardProps) {
     >
       <div className={cn(
         "absolute top-0 left-0 w-full h-1 transition-all duration-300",
-        mueble.condicion === "BUENO" ? "bg-gradient-to-r from-emerald-400 to-emerald-600" :
-        mueble.condicion === "REGULAR" ? "bg-gradient-to-r from-amber-400 to-amber-600" :
-        mueble.condicion === "DANADO" ? "bg-gradient-to-r from-red-400 to-red-600" :
-        "bg-gradient-to-r from-stone-400 to-stone-600"
+        mueble.condicion === "BUENO" ? "bg-gradient-to-r from-success/60 to-success" :
+        mueble.condicion === "REGULAR" ? "bg-gradient-to-r from-warning/60 to-warning" :
+        mueble.condicion === "DANADO" ? "bg-gradient-to-r from-danger/60 to-danger" :
+        "bg-gradient-to-r from-text-muted/40 to-text-muted/60"
       )} />
       
       <div className="p-4 pt-5">
@@ -44,10 +44,10 @@ export function StockCard({ mueble, onClick }: StockCardProps) {
           <div className="flex items-center gap-3">
             <div className={cn(
               "w-11 h-11 rounded-xl flex items-center justify-center transition-all duration-300 group-hover:scale-110",
-              mueble.condicion === "BUENO" ? "bg-emerald-100 text-emerald-600" :
-              mueble.condicion === "REGULAR" ? "bg-amber-100 text-amber-600" :
-              mueble.condicion === "DANADO" ? "bg-red-100 text-red-600" :
-              "bg-stone-100 text-stone-500"
+              mueble.condicion === "BUENO" ? "bg-success-bg text-success" :
+              mueble.condicion === "REGULAR" ? "bg-warning-bg text-warning" :
+              mueble.condicion === "DANADO" ? "bg-danger-bg text-danger" :
+              "bg-bg-tertiary text-text-muted"
             )}>
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={CATEGORY_ICONS[mueble.categoria] || CATEGORY_ICONS.default} />
@@ -67,10 +67,10 @@ export function StockCard({ mueble, onClick }: StockCardProps) {
           </div>
           <span className={cn(
             "px-2.5 py-1 text-[10px] font-semibold rounded-full uppercase tracking-wide",
-            mueble.condicion === "BUENO" ? "bg-emerald-100 text-emerald-700" :
-            mueble.condicion === "REGULAR" ? "bg-amber-100 text-amber-700" :
-            mueble.condicion === "DANADO" ? "bg-red-100 text-red-700" :
-            "bg-stone-100 text-stone-600"
+            mueble.condicion === "BUENO" ? "bg-success-bg text-success" :
+            mueble.condicion === "REGULAR" ? "bg-warning-bg text-warning" :
+            mueble.condicion === "DANADO" ? "bg-danger-bg text-danger" :
+            "bg-bg-tertiary text-text-muted"
           )}>
             {CONDICION_LABELS[mueble.condicion]}
           </span>

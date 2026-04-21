@@ -28,7 +28,7 @@ export function CanalCard({ canal, onClick }: Props) {
       )}
 
       <div className="flex items-center gap-1.5 mt-auto">
-        <div className={cn("w-2 h-2 rounded-full", canal.activo ? "bg-emerald-500" : "bg-gray-400")} />
+        <div className={cn("w-2 h-2 rounded-full", canal.activo ? "bg-success" : "bg-text-muted")} />
         <span className="text-xs text-text-muted">{canal.activo ? "Activo" : "Inactivo"}</span>
       </div>
     </div>

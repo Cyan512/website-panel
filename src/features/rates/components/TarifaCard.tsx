@@ -26,7 +26,7 @@ export function TarifaCard({ tarifa, onClick }: Props) {
         </span>
       </div>
 
-      <p className="text-2xl font-bold font-playfair text-accent-primary">
+      <p className="text-2xl font-bold font-display text-accent-primary">
         {tarifa.precio.toFixed(2)}
         <span className="text-xs font-normal text-text-muted ml-1">/ {tarifa.unidad}</span>
       </p>

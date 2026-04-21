@@ -11,10 +11,10 @@ interface PagoCardProps {
 
 export function PagoCard({ pago, onClick }: PagoCardProps) {
   const estadoColors: Record<string, string> = {
-    CONFIRMADO: "bg-emerald-100 text-emerald-700",
-    DEVUELTO: "bg-amber-100 text-amber-700",
-    RETENIDO: "bg-orange-100 text-orange-700",
-    ANULADO: "bg-red-100 text-red-700",
+    CONFIRMADO: "bg-success-bg text-success",
+    DEVUELTO: "bg-warning-bg text-warning",
+    RETENIDO: "bg-warning-bg text-warning",
+    ANULADO: "bg-danger-bg text-danger",
   };
 
   return (
@@ -28,7 +28,7 @@ export function PagoCard({ pago, onClick }: PagoCardProps) {
             <MdPayment className="w-5 h-5" />
           </div>
           <div>
-            <p className="font-bold text-lg font-playfair">{pago.moneda} {parseFloat(pago.monto).toFixed(2)}</p>
+            <p className="font-bold text-lg font-display">{pago.moneda} {parseFloat(pago.monto).toFixed(2)}</p>
             <p className="text-text-muted text-sm">{metodoPagoLabels[pago.metodo]}</p>
           </div>
         </div>

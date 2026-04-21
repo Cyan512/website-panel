@@ -264,7 +264,7 @@ export function PagoModal({ isOpen, onClose, onSuccess, pago }: PagoModalProps) 
                   onFocus={() => setShowSuggestions(true)}
                   onBlur={() => setTimeout(() => setShowSuggestions(false), 150)}
                   placeholder="Buscar por código o nombre de huésped..."
-                  className={cn(selectClass, "pl-9", reservaSeleccionada ? "border-emerald-500/50 bg-emerald-500/5" : "")}
+                  className={cn(selectClass, "pl-9", reservaSeleccionada ? "border-emerald-500/50 bg-success/5" : "")}
                   disabled={!!folioSeleccionado}
                 />
               </div>
@@ -320,7 +320,7 @@ export function PagoModal({ isOpen, onClose, onSuccess, pago }: PagoModalProps) 
                     setFormData((prev) => ({ ...prev, monto: "" }));
                   }
                 }}
-                className={cn(selectClass, folioSeleccionado ? "border-emerald-500/50 bg-emerald-500/5" : "")}
+                className={cn(selectClass, folioSeleccionado ? "border-emerald-500/50 bg-success/5" : "")}
                 disabled={!!reservaSeleccionada || loadingFolios}
               >
                 <option value="">{loadingFolios ? "Cargando folios..." : "Seleccionar folio"}</option>

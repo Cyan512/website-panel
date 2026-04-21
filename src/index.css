@@ -1,5 +1,3 @@
-@import url("https://fonts.googleapis.com/css2?family=IM+Fell+English:ital@0;1&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Lora:ital,wght@0,400;0,500;0,600;1,400&display=swap");
-
 @import "tailwindcss";
 
 :root {
@@ -52,13 +50,17 @@
   --color-info-bg:    rgba(122, 58, 24, 0.12);
 
   /* ── SOMBRAS ────────────────────────────────────────── */
-  --shadow-sm:  0 2px 16px rgba(90, 42, 14, 0.13);
-  --shadow-md:  0 4px 28px rgba(90, 42, 14, 0.18);
-  --shadow-btn: 0 3px 14px rgba(123, 28, 28, 0.30);
+  --shadow-sm:  0 1px 3px rgba(90, 42, 14, 0.08), 0 2px 12px rgba(90, 42, 14, 0.06);
+  --shadow-md:  0 4px 20px rgba(90, 42, 14, 0.10), 0 8px 32px rgba(90, 42, 14, 0.08);
+  --shadow-lg:  0 12px 40px rgba(90, 42, 14, 0.14), 0 4px 12px rgba(90, 42, 14, 0.08);
+  --shadow-btn: 0 2px 8px rgba(123, 28, 28, 0.25), 0 4px 16px rgba(123, 28, 28, 0.15);
+  --shadow-gold: 0 0 24px rgba(184, 137, 42, 0.18);
 
   --spacing-button-width: 350px;
   --spacing-button-height: 40px;
   --duration-animation: 300ms;
+  --font-display: 'Cinzel', Georgia, serif;
+  --font-body: 'Crimson Pro', Georgia, serif;
 }
 
 @theme {
@@ -92,38 +94,61 @@
 
 /* ── TIPOGRAFÍA BASE ──────────────────────────────────── */
 * {
-  font-family: 'Lora', Georgia, serif;
-  font-feature-settings: "kern" 1, "liga" 1;
+  font-family: var(--font-body);
+  font-feature-settings: "kern" 1, "liga" 1, "cv01" 1;
 }
 
 body {
   background-color: var(--color-bg-primary);
+  background-image:
+    radial-gradient(ellipse at 30% 20%, rgba(184,137,42,0.04) 0%, transparent 60%),
+    radial-gradient(ellipse at 70% 80%, rgba(158,36,36,0.03) 0%, transparent 55%);
   color: var(--color-text-primary);
-  font-size: 14px;
-  line-height: 1.6;
+  font-size: 15px;
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-/* Títulos decorativos / números grandes */
-.font-playfair,
-h1, h2 {
-  font-family: 'Playfair Display', Georgia, serif;
+/* Display / Títulos elegantes */
+.font-display,
+h1, h2, h3 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  letter-spacing: 0.02em;
 }
 
-/* Números grandes de tarjetas — solo 24px+ */
-.font-display {
-  font-family: 'IM Fell English', Georgia, serif;
-  font-feature-settings: "kern" 1, "liga" 1;
+/* Subtítulos y labels */
+h4, h5, h6 {
+  font-family: var(--font-body);
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+
+.font-body {
+  font-family: var(--font-body);
+}
+
+/* Números grandes de tarjetas */
+.font-numeral {
+  font-family: var(--font-display);
+  font-variant-numeric: lining-nums tabular-nums;
+  font-weight: 700;
+  letter-spacing: -0.01em;
 }
 
 /* ── SIDEBAR ──────────────────────────────────────────── */
 aside {
-  background: linear-gradient(
-    160deg,
-    var(--color-sidebar-from) 0%,
-    var(--color-sidebar-mid) 55%,
-    var(--color-sidebar-to) 100%
-  );
+  background:
+    url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ecc85a' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E"),
+    linear-gradient(
+      160deg,
+      var(--color-sidebar-from) 0%,
+      var(--color-sidebar-mid) 55%,
+      var(--color-sidebar-to) 100%
+    );
   border-right: 3px solid var(--color-sidebar-border);
+  box-shadow: 4px 0 24px rgba(30, 10, 2, 0.35);
 }
 
 /* Todos los textos dentro del sidebar van claros */
@@ -184,6 +209,10 @@ aside [class*="hover:bg-bg-hover"]:hover {
 /* Sección label "Principal" */
 aside [class*="uppercase"][class*="tracking"] {
   color: rgba(236, 200, 90, 0.65) !important;
+  font-family: var(--font-display) !important;
+  font-size: 0.65rem !important;
+  letter-spacing: 0.12em !important;
+  text-transform: uppercase;
 }
 
 /* Borde izquierdo del grupo activo */
@@ -208,7 +237,8 @@ aside svg {
 /* Mínimo 12px para badges funcionales */
 [class*="rounded-full"] {
   font-size: max(11px, 0.75rem);
-  letter-spacing: 0.025em;
+  letter-spacing: 0.035em;
+  font-family: var(--font-display);
 }
 
 /* Estado: Confirmado / Libre */
@@ -251,28 +281,32 @@ aside svg {
   .field-label {
     @apply text-xs font-semibold tracking-wide uppercase;
     color: var(--color-text-secondary);
-    font-family: 'italic', Georgia, serif;
-    letter-spacing: 0.06em;
+    font-family: var(--font-display);
+    letter-spacing: 0.08em;
+    font-size: 0.7rem;
   }
 
   .field-input {
     background: rgba(255, 255, 255, 0.55);
     border: 1.5px solid var(--color-border);
     color: var(--color-text-primary);
-    font-family: 'italic', Georgia, serif;
-    font-size: 14px;
+    font-family: var(--font-body);
+    font-size: 15px;
+    border-radius: 0.5rem;
+    transition: all 0.25s ease;
   }
 
   .field-input::placeholder {
     color: var(--color-text-muted);
-    opacity: 0.8;
+    opacity: 0.7;
+    font-style: italic;
   }
 
   .field-input:focus {
     border-color: var(--color-accent);
-    background: rgba(255, 255, 255, 0.75);
+    background: rgba(255, 255, 255, 0.78);
     outline: none;
-    box-shadow: 0 0 0 3px rgba(184, 137, 42, 0.15);
+    box-shadow: 0 0 0 4px rgba(184, 137, 42, 0.12), 0 1px 2px rgba(184, 137, 42, 0.08);
   }
 }
 
@@ -286,13 +320,63 @@ a[class*="bg-primary"] {
 .bg-bg-card,
 [class*="rounded-2xl"][class*="border"] {
   box-shadow: var(--shadow-sm);
+  transition: box-shadow 0.3s ease, transform 0.3s ease;
+}
+
+.bg-bg-card:hover,
+[class*="rounded-2xl"][class*="border"]:hover {
+  box-shadow: var(--shadow-md);
+}
+
+/* Efecto de borde decorativo sutil en tarjetas */
+.card-decorated {
+  position: relative;
+}
+.card-decorated::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1.5px;
+  background: linear-gradient(135deg, rgba(184,137,42,0.25) 0%, transparent 40%, transparent 60%, rgba(184,137,42,0.15) 100%);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+.card-decorated:hover::before {
+  opacity: 1;
 }
 
 /* ── SOMBRAS UTILITARIAS ──────────────────────────────── */
 .shadow-andean-sm { box-shadow: var(--shadow-sm); }
 .shadow-andean-md { box-shadow: var(--shadow-md); }
+.shadow-andean-lg { box-shadow: var(--shadow-lg); }
+.shadow-gold { box-shadow: var(--shadow-gold); }
 
 /* ── SILEO TOASTER ────────────────────────────────────── */
 [data-sileo-viewport] {
   z-index: 9999 !important;
+}
+
+/* ── ANIMACIONES ───────────────────────────────────────── */
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slide-up {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.5s ease-out both;
+}
+
+.animate-slide-up {
+  animation: slide-up 0.5s ease-out both;
 }

@@ -258,7 +258,7 @@ export default function Ingresos() {
         <div className="flex flex-col gap-2 sm:items-end">
           {/* Total */}
           <div className="sm:text-right">
-            <p className="text-2xl font-bold text-emerald-500">
+            <p className="text-2xl font-bold text-success">
               ${totalIngresos.toLocaleString('es-ES', { minimumFractionDigits: 2 })}
             </p>
             <p className="text-xs text-text-muted">{getDateLabel()}</p>
@@ -357,7 +357,7 @@ export default function Ingresos() {
             style={{ left: tooltip.x + 10, top: tooltip.y - 40 }}
           >
             <p className="text-xs text-text-muted">{tooltip.date}</p>
-            <p className="text-lg font-bold text-emerald-500">${tooltip.value.toLocaleString('es-ES')}</p>
+            <p className="text-lg font-bold text-success">${tooltip.value.toLocaleString('es-ES')}</p>
           </div>
         )}
       </div>

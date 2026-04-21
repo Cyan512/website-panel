@@ -14,15 +14,15 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
 
 const variantStyles: Record<ButtonVariant, string> = {
   primary:
-    "bg-primary text-white hover:bg-primary-hover shadow-md shadow-primary/20",
+    "bg-primary text-white hover:bg-primary-hover shadow-btn active:scale-[0.97] active:shadow-sm transition-all duration-200",
   secondary:
-    "bg-bg-tertiary text-text-primary hover:bg-bg-hover border border-border",
+    "bg-bg-tertiary text-text-primary hover:bg-bg-hover border border-border active:scale-[0.97] transition-all duration-200",
   danger:
-    "bg-danger text-white hover:bg-red-600 shadow-md shadow-danger/20",
+    "bg-danger text-white hover:bg-red-600 shadow-md shadow-danger/20 active:scale-[0.97] active:shadow-sm transition-all duration-200",
   ghost:
-    "bg-transparent text-text-secondary hover:bg-bg-tertiary hover:text-text-primary",
+    "bg-transparent text-text-secondary hover:bg-bg-tertiary hover:text-text-primary active:scale-[0.97] transition-all duration-200",
   outline:
-    "bg-transparent border border-primary text-primary hover:bg-primary/10",
+    "bg-transparent border border-primary text-primary hover:bg-primary/10 active:scale-[0.97] transition-all duration-200",
 };
 
 const sizeStyles: Record<ButtonSize, string> = {
@@ -45,7 +45,7 @@ export function Button({
   return (
     <button
       className={cn(
-        "inline-flex items-center justify-center font-medium transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:outline-none",
+        "inline-flex items-center justify-center font-medium transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100 focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:outline-none tracking-wide",
         variantStyles[variant],
         sizeStyles[size],
         className

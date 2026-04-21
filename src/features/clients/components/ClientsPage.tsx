@@ -129,7 +129,7 @@ export default function ClientsPage() {
             </div>
             <div className="flex gap-3 pt-2">
               <button onClick={() => handleEdit(selectedHuesped)} className="flex-1 py-3 bg-accent-primary/10 text-accent-primary font-medium rounded-xl hover:bg-accent-primary/20 transition-all border border-accent-primary/20">Editar</button>
-              <button onClick={() => handleDelete(selectedHuesped)} disabled={deleting} className="flex-1 py-3 bg-red-50 text-danger font-medium rounded-xl hover:bg-red-100 transition-all border border-red-200 disabled:opacity-50">{deleting ? "Eliminando..." : "Eliminar"}</button>
+              <button onClick={() => handleDelete(selectedHuesped)} disabled={deleting} className="flex-1 py-3 bg-danger-bg text-danger font-medium rounded-xl hover:bg-danger-bg transition-all border border-danger/20 disabled:opacity-50">{deleting ? "Eliminando..." : "Eliminar"}</button>
             </div>
           </div>
         </Modal>

@@ -100,8 +100,8 @@ export function RoomCalendar({ fechasReserva }: Props) {
                 "aspect-square flex items-center justify-center rounded-md text-[11px] font-medium transition-colors",
                 isToday && "ring-1 ring-primary",
                 isPast && !isOccupied && "text-text-muted/40",
-                !isPast && !isOccupied && "bg-emerald-500/15 text-emerald-700",
-                isOccupied && "bg-red-500/15 text-red-700",
+                !isPast && !isOccupied && "bg-success/15 text-success",
+                isOccupied && "bg-danger/15 text-danger",
               )}
             >
               {day}
@@ -113,10 +113,10 @@ export function RoomCalendar({ fechasReserva }: Props) {
       {/* Legend */}
       <div className="flex items-center gap-4 mt-3 text-[10px] text-text-muted">
         <span className="flex items-center gap-1">
-          <span className="w-2.5 h-2.5 rounded-sm bg-emerald-500/30 inline-block" /> Libre
+          <span className="w-2.5 h-2.5 rounded-sm bg-success/30 inline-block" /> Libre
         </span>
         <span className="flex items-center gap-1">
-          <span className="w-2.5 h-2.5 rounded-sm bg-red-500/30 inline-block" /> Reservado
+          <span className="w-2.5 h-2.5 rounded-sm bg-danger/30 inline-block" /> Reservado
         </span>
       </div>
     </div>

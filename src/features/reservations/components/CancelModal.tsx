@@ -36,7 +36,7 @@ export function CancelModal({ isOpen, onClose, onSuccess, reserva, onCancel }: P
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="Cancelar Reserva">
       <div className="space-y-4">
-        <div className="bg-red-50 border border-red-200 rounded-xl p-4 text-sm">
+        <div className="bg-danger-bg border border-danger/20 rounded-xl p-4 text-sm">
           <p className="font-medium text-danger">Reserva: {reserva.codigo}</p>
           <p className="text-text-muted mt-1">{reserva.nombre_huesped} — Hab. {reserva.nro_habitacion}</p>
         </div>

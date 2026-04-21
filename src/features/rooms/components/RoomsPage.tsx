@@ -163,7 +163,7 @@ export default function RoomsPage() {
                 {selectedHabitacion.nro_habitacion}
               </div>
               <div>
-                <p className="text-2xl font-bold font-playfair">{selectedHabitacion.nro_habitacion}</p>
+                <p className="text-2xl font-bold font-display">{selectedHabitacion.nro_habitacion}</p>
                 <p className="text-text-muted text-sm">Piso {selectedHabitacion.piso} • {selectedHabitacion.tipo_habitacion?.nombre}</p>
               </div>
             </div>
@@ -171,7 +171,7 @@ export default function RoomsPage() {
             <div className="grid grid-cols-2 gap-3">
               <div className="bg-paper-medium/20 rounded-xl p-3">
                 <p className="text-text-muted text-xs">Estado físico</p>
-                <span className={cn("inline-block px-2 py-0.5 text-xs font-semibold rounded-full mt-1", selectedHabitacion.estado ? "bg-emerald-600 text-emerald-100" : "bg-gray-600 text-gray-100")}>
+                <span className={cn("inline-block px-2 py-0.5 text-xs font-semibold rounded-full mt-1", selectedHabitacion.estado ? "bg-success-bg text-success" : "bg-bg-tertiary text-text-muted")}>
                   {selectedHabitacion.estado ? "Disponible" : "No disponible"}
                 </span>
               </div>
@@ -188,18 +188,18 @@ export default function RoomsPage() {
                 <div className="space-y-2">
                   {fechasReserva.map((r, i) => {
                     const colorMap: Record<string, string> = {
-                      CONFIRMADA:  "bg-emerald-500 text-emerald-100 border-emerald-200",
-                      EN_CASA:     "bg-blue-500 text-blue-100 border-blue-200",
-                      TENTATIVA:   "bg-amber-500 text-amber-100 border-amber-200",
-                      COMPLETADA:  "bg-indigo-500 text-indigo-100 border-indigo-200",
-                      CANCELADA:   "bg-red-500 text-red-100 border-red-200",
-                      NO_LLEGO:    "bg-gray-500 text-gray-100 border-gray-200",
+                      CONFIRMADA:  "bg-success-bg text-success border-success/20",
+                      EN_CASA:     "bg-info-bg text-info border-info/20",
+                      TENTATIVA:   "bg-warning-bg text-warning border-warning/20",
+                      COMPLETADA:  "bg-accent-primary/10 text-accent-primary border-accent-primary/20",
+                      CANCELADA:   "bg-danger-bg text-danger border-danger/20",
+                      NO_LLEGO:    "bg-bg-tertiary text-text-muted border-border",
                     };
                     const labelMap: Record<string, string> = {
                       CONFIRMADA: "Confirmada", EN_CASA: "En Casa", TENTATIVA: "Tentativa",
                       COMPLETADA: "Completada", CANCELADA: "Cancelada", NO_LLEGO: "No Llegó",
                     };
-                    const color = colorMap[r.estado] ?? "bg-gray-100 text-gray-600 border-gray-200";
+                    const color = colorMap[r.estado] ?? "bg-bg-tertiary text-text-muted border-border/50";
                     return (
                       <div key={i} className={cn("flex items-center justify-between rounded-xl px-3 py-2.5 border text-xs", color)}>
                         <span className="font-medium">

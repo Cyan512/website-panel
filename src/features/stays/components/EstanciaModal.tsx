@@ -137,7 +137,7 @@ export function EstanciaModal({ isOpen, onClose, onSuccess, estancia, onSave }: 
             onFocus={() => setShowSuggestions(true)}
             onBlur={() => setTimeout(() => setShowSuggestions(false), 150)}
             placeholder="Buscar por código o nombre de huésped..."
-            className={cn(selectClass, reservaSeleccionada ? "border-emerald-500/50 bg-emerald-500/5" : "")}
+            className={cn(selectClass, reservaSeleccionada ? "border-emerald-500/50 bg-success/5" : "")}
             required
           />
 
@@ -156,9 +156,9 @@ export function EstanciaModal({ isOpen, onClose, onSuccess, estancia, onSave }: 
                     <div className="flex items-center gap-2">
                       <span className="font-mono text-xs font-semibold text-primary">{r.codigo}</span>
                       <span className={cn("text-[10px] px-1.5 py-0.5 rounded-full font-medium",
-                        r.estado === "CONFIRMADA" ? "bg-emerald-100 text-emerald-700" :
-                        r.estado === "TENTATIVA" ? "bg-amber-100 text-amber-700" :
-                        "bg-gray-100 text-gray-600"
+                        r.estado === "CONFIRMADA" ? "bg-success-bg text-success" :
+                        r.estado === "TENTATIVA" ? "bg-warning-bg text-warning" :
+                        "bg-bg-tertiary text-text-muted"
                       )}>{r.estado}</span>
                     </div>
                     <p className="text-sm text-text-primary mt-0.5">{r.nombre_huesped}</p>

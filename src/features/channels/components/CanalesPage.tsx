@@ -68,15 +68,15 @@ export default function CanalesPage() {
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 p-4 sm:p-6">
               <div className="bg-gradient-to-br from-accent-primary/10 to-accent-light/10 rounded-2xl p-5 border border-accent-primary/20">
                 <p className="text-text-muted text-sm">Total Canales</p>
-                <p className="text-2xl font-bold font-playfair mt-1">{canales.length}</p>
+                <p className="text-2xl font-bold font-display mt-1">{canales.length}</p>
               </div>
-              <div className="bg-gradient-to-br from-emerald-40 to-emerald-100/50 rounded-2xl p-5 border border-emerald-200/50">
+              <div className="bg-gradient-to-br from-success/30 to-success-bg rounded-2xl p-5 border border-success/20">
                 <p className="text-text-muted text-sm">Activos</p>
-                <p className="text-2xl font-bold font-playfair mt-1 text-emerald-500">{activos}</p>
+                <p className="text-2xl font-bold font-display mt-1 text-success">{activos}</p>
               </div>
               <div className="bg-gradient-to-br from-paper-medium/20 to-paper-medium/10 rounded-2xl p-5 border border-border-light/50">
                 <p className="text-text-muted text-sm">Inactivos</p>
-                <p className="text-2xl font-bold font-playfair mt-1">{canales.length - activos}</p>
+                <p className="text-2xl font-bold font-display mt-1">{canales.length - activos}</p>
               </div>
             </div>
 
@@ -112,14 +112,14 @@ export default function CanalesPage() {
         <Modal isOpen={!!selectedCanal} onClose={() => setSelectedCanal(null)} title="Detalle del Canal">
           <div className="space-y-4">
               <div className="text-center py-4 bg-paper-medium/20 rounded-2xl">
-                <p className="text-2xl font-bold font-playfair text-accent-primary">{selectedCanal.nombre}</p>
+                <p className="text-2xl font-bold font-display text-accent-primary">{selectedCanal.nombre}</p>
                 <span className={cn("inline-block mt-2 text-xs font-medium px-3 py-1 rounded-full", tipoCanalColors[selectedCanal.tipo])}>
                   {tipoCanalLabels[selectedCanal.tipo]}
                 </span>
               </div>
               <div className="bg-paper-medium/20 rounded-xl p-3">
                 <p className="text-text-muted text-xs">Estado</p>
-                <span className={cn("inline-block px-2 py-1 text-xs font-semibold rounded-full mt-1", selectedCanal.activo ? "bg-emerald-100 text-emerald-700" : "bg-gray-100 text-gray-600")}>
+                  <span className={cn("inline-block px-2 py-1 text-xs font-semibold rounded-full mt-1", selectedCanal.activo ? "bg-success-bg text-success" : "bg-bg-tertiary text-text-muted")}>
                   {selectedCanal.activo ? "Activo" : "Inactivo"}
                 </span>
               </div>
@@ -133,7 +133,7 @@ export default function CanalesPage() {
                 {isAdmin && (
                   <>
                     <button onClick={() => openEdit(selectedCanal)} className="flex-1 py-3 bg-accent-primary/10 text-accent-primary font-medium rounded-xl hover:bg-accent-primary/20 transition-all border border-accent-primary/20">Editar</button>
-                    <button onClick={handleDelete} disabled={deleting} className="flex-1 py-3 bg-red-50 text-danger font-medium rounded-xl hover:bg-red-100 transition-all border border-red-200 disabled:opacity-50">{deleting ? "Eliminando..." : "Eliminar"}</button>
+                    <button onClick={handleDelete} disabled={deleting} className="flex-1 py-3 bg-danger-bg text-danger font-medium rounded-xl hover:bg-danger-bg transition-all border border-danger/20 disabled:opacity-50">{deleting ? "Eliminando..." : "Eliminar"}</button>
                   </>
                 )}
                 <button onClick={() => setSelectedCanal(null)} className="flex-1 py-3 bg-paper-medium/20 text-text-muted font-medium rounded-xl hover:bg-paper-medium/30 transition-all border border-border">Cerrar</button>

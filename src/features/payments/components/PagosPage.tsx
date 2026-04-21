@@ -13,10 +13,10 @@ import { usePagos } from "../hooks/usePagos";
 import { formatUTCDate, formatUTCDateLong } from "@/shared/utils/format";
 
 const estadoColors: Record<string, string> = {
-  CONFIRMADO: "bg-emerald-100 text-emerald-700",
-  DEVUELTO: "bg-amber-100 text-amber-700",
-  RETENIDO: "bg-orange-100 text-orange-700",
-  ANULADO: "bg-red-100 text-red-700",
+  CONFIRMADO: "bg-success-bg text-success",
+  DEVUELTO: "bg-warning-bg text-warning",
+  RETENIDO: "bg-warning-bg text-warning",
+  ANULADO: "bg-danger-bg text-danger",
 };
 
 export default function PagosPage() {
@@ -112,17 +112,17 @@ export default function PagosPage() {
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 p-4 sm:p-6">
               <div className="bg-gradient-to-br from-accent-primary/10 to-accent-light/10 rounded-2xl p-5 border border-accent-primary/20">
                 <p className="text-text-muted text-sm">Total Registrado</p>
-                <p className="text-2xl font-bold font-playfair mt-1">{pagos[0]?.moneda || "USD"} {totalMonto.toFixed(2)}</p>
+                <p className="text-2xl font-bold font-display mt-1">{pagos[0]?.moneda || "USD"} {totalMonto.toFixed(2)}</p>
                 <p className="text-text-muted text-xs mt-1">{pagos.length} transacciones</p>
               </div>
-              <div className="bg-gradient-to-br from-emerald-40 to-emerald-100/50 rounded-2xl p-5 border border-emerald-200/50">
+              <div className="bg-gradient-to-br from-success/30 to-success-bg rounded-2xl p-5 border border-success/20">
                 <p className="text-text-muted text-sm">Confirmados</p>
-                <p className="text-2xl font-bold font-playfair mt-1 text-emerald-500">{pagos[0]?.moneda || "USD"} {montoConfirmado.toFixed(2)}</p>
+                <p className="text-2xl font-bold font-display mt-1 text-success">{pagos[0]?.moneda || "USD"} {montoConfirmado.toFixed(2)}</p>
                 <p className="text-text-muted text-xs mt-1">{pagos.filter(p => p.estado === "CONFIRMADO").length} pagos</p>
               </div>
               <div className="bg-gradient-to-br from-paper-medium/20 to-paper-medium/10 rounded-2xl p-5 border border-border-light/50">
                 <p className="text-text-muted text-sm">Anulados/Devueltos</p>
-                <p className="text-2xl font-bold font-playfair mt-1 text-danger">{pagos.filter(p => p.estado === "ANULADO" || p.estado === "DEVUELTO").length}</p>
+                <p className="text-2xl font-bold font-display mt-1 text-danger">{pagos.filter(p => p.estado === "ANULADO" || p.estado === "DEVUELTO").length}</p>
                 <p className="text-text-muted text-xs mt-1">transacciones</p>
               </div>
             </div>
@@ -179,7 +179,7 @@ export default function PagosPage() {
                       <td className="py-3 px-2 text-text-muted hidden md:table-cell text-xs">{p.recibido_por?.name ?? "—"}</td>
                       <td className="py-3 px-2 text-right font-semibold text-text-primary">{p.moneda} {parseFloat(p.monto).toFixed(2)}</td>
                       <td className="py-3 px-2">
-                        <span className={cn("text-xs font-medium px-2 py-0.5 rounded-full", estadoColors[p.estado] ?? "bg-gray-100 text-gray-600")}>
+                        <span className={cn("text-xs font-medium px-2 py-0.5 rounded-full", estadoColors[p.estado] ?? "bg-bg-tertiary text-text-muted")}>
                           {estadoPagoLabels[p.estado]}
                         </span>
                       </td>
@@ -225,14 +225,14 @@ export default function PagosPage() {
         <Modal isOpen={!!selectedPago} onClose={() => setSelectedPago(null)} title="Detalle del Pago">
           <div className="space-y-4">
             <div className="text-center py-4 bg-paper-medium/20 rounded-2xl">
-              <p className="text-4xl font-bold font-playfair text-accent-primary">{selectedPago.moneda} {parseFloat(selectedPago.monto).toFixed(2)}</p>
+              <p className="text-4xl font-bold font-display text-accent-primary">{selectedPago.moneda} {parseFloat(selectedPago.monto).toFixed(2)}</p>
               <p className="text-text-muted mt-2 text-sm">{selectedPago.concepto === "RESERVA" ? "Pago de Reserva" : "Pago de Consumo"}</p>
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="bg-paper-medium/20 rounded-xl p-3"><p className="text-text-muted text-xs">Método</p><p className="text-sm font-medium">{metodoPagoLabels[selectedPago.metodo] ?? selectedPago.metodo}</p></div>
               <div className="bg-paper-medium/20 rounded-xl p-3">
                 <p className="text-text-muted text-xs">Estado</p>
-                <span className={cn("inline-block px-2 py-1 text-xs font-semibold rounded-full mt-1", estadoColors[selectedPago.estado] ?? "bg-gray-100 text-gray-600")}>{estadoPagoLabels[selectedPago.estado]}</span>
+                <span className={cn("inline-block px-2 py-1 text-xs font-semibold rounded-full mt-1", estadoColors[selectedPago.estado] ?? "bg-bg-tertiary text-text-muted")}>{estadoPagoLabels[selectedPago.estado]}</span>
               </div>
             </div>
             <div className="bg-paper-medium/10 rounded-xl p-3">
@@ -255,7 +255,7 @@ export default function PagosPage() {
               {isAdmin && (
                 <>
                   <button onClick={() => handleEdit(selectedPago)} className="flex-1 py-3 bg-accent-primary/10 text-accent-primary font-medium rounded-xl hover:bg-accent-primary/20 transition-all border border-accent-primary/20">Editar</button>
-                  <button onClick={() => handleDelete(selectedPago)} disabled={deleting} className="flex-1 py-3 bg-red-50 text-danger font-medium rounded-xl hover:bg-red-100 transition-all border border-red-200 disabled:opacity-50">{deleting ? "Eliminando..." : "Eliminar"}</button>
+                  <button onClick={() => handleDelete(selectedPago)} disabled={deleting} className="flex-1 py-3 bg-danger-bg text-danger font-medium rounded-xl hover:bg-danger-bg transition-all border border-danger/20 disabled:opacity-50">{deleting ? "Eliminando..." : "Eliminar"}</button>
                 </>
               )}
               <button onClick={() => setSelectedPago(null)} className="flex-1 py-3 bg-paper-medium/20 text-text-muted font-medium rounded-xl hover:bg-paper-medium/30 transition-all border border-border">Cerrar</button>

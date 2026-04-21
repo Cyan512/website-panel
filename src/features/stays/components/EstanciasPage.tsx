@@ -100,15 +100,15 @@ export default function EstanciasPage() {
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 p-4 sm:p-6">
               <div className="bg-gradient-to-br from-accent-primary/10 to-accent-light/10 rounded-2xl p-4 border border-accent-primary/20">
                 <p className="text-text-muted text-xs">Total</p>
-                <p className="text-2xl font-bold font-playfair mt-1">{estancias.length}</p>
+                <p className="text-2xl font-bold font-display mt-1">{estancias.length}</p>
               </div>
-              <div className="bg-gradient-to-br from-emerald-40 to-emerald-100/50 rounded-2xl p-4 border border-emerald-200/50">
+              <div className="bg-gradient-to-br from-success/30 to-success-bg rounded-2xl p-4 border border-success/20">
                 <p className="text-text-muted text-xs">En Casa</p>
-                <p className="text-2xl font-bold font-playfair mt-1 text-emerald-500">{enCasa}</p>
+                <p className="text-2xl font-bold font-display mt-1 text-success">{enCasa}</p>
               </div>
               <div className="bg-gradient-to-br from-paper-medium/20 to-paper-medium/10 rounded-2xl p-4 border border-border-light/50">
                 <p className="text-text-muted text-xs">Completadas / Salida</p>
-                <p className="text-2xl font-bold font-playfair mt-1">{estancias.length - enCasa}</p>
+                <p className="text-2xl font-bold font-display mt-1">{estancias.length - enCasa}</p>
               </div>
             </div>
 
@@ -180,7 +180,7 @@ export default function EstanciasPage() {
                       <td className="py-3 px-2" onClick={(ev) => ev.stopPropagation()}>
                         <div className="flex items-center justify-end gap-1">
                           {isAdmin && e.estado === "EN_CASA" && (
-                            <button onClick={() => openCheckout(e)} title="Check-out" className="p-1.5 rounded-lg text-text-muted hover:text-blue-600 hover:bg-blue-50 transition-all"><MdLogout className="w-4 h-4" /></button>
+                            <button onClick={() => openCheckout(e)} title="Check-out" className="p-1.5 rounded-lg text-text-muted hover:text-info hover:bg-info-bg transition-all"><MdLogout className="w-4 h-4" /></button>
                           )}
                           {isAdmin && (
                             <>
@@ -239,7 +239,7 @@ export default function EstanciasPage() {
         <Modal isOpen={!!selectedEstancia} onClose={() => setSelectedEstancia(null)} title="Detalle de Estancia">
           <div className="space-y-4">
             <div className="text-center py-4 bg-paper-medium/20 rounded-2xl">
-              <p className="text-xl font-bold font-playfair text-accent-primary">{selectedEstancia.huesped.nombres} {selectedEstancia.huesped.apellidos}</p>
+              <p className="text-xl font-bold font-display text-accent-primary">{selectedEstancia.huesped.nombres} {selectedEstancia.huesped.apellidos}</p>
               <p className="text-text-muted text-sm mt-1">Hab. {selectedEstancia.habitacion.nro_habitacion} — Piso {selectedEstancia.habitacion.piso}</p>
               <span className={cn("inline-block mt-2 text-xs font-medium px-3 py-1 rounded-full", estadoEstadiaColors[selectedEstancia.estado])}>
                 {estadoEstadiaLabels[selectedEstancia.estado]}
@@ -263,12 +263,12 @@ export default function EstanciasPage() {
             )}
             <div className="flex gap-3 pt-2">
               {isAdmin && selectedEstancia.estado === "EN_CASA" && (
-                <button onClick={() => openCheckout(selectedEstancia)} className="flex-1 py-3 bg-blue-50 text-blue-700 font-medium rounded-xl hover:bg-blue-100 transition-all border border-blue-200">Check-out</button>
+                <button onClick={() => openCheckout(selectedEstancia)} className="flex-1 py-3 bg-blue-50 text-info font-medium rounded-xl hover:bg-blue-100 transition-all border border-info/20">Check-out</button>
               )}
               {isAdmin && (
                 <>
                   <button onClick={() => openEdit(selectedEstancia)} className="flex-1 py-3 bg-accent-primary/10 text-accent-primary font-medium rounded-xl hover:bg-accent-primary/20 transition-all border border-accent-primary/20">Editar</button>
-                  <button onClick={() => handleDelete(selectedEstancia)} disabled={deleting} className="flex-1 py-3 bg-red-50 text-danger font-medium rounded-xl hover:bg-red-100 transition-all border border-red-200 disabled:opacity-50">{deleting ? "..." : "Eliminar"}</button>
+                  <button onClick={() => handleDelete(selectedEstancia)} disabled={deleting} className="flex-1 py-3 bg-danger-bg text-danger font-medium rounded-xl hover:bg-danger-bg transition-all border border-danger/20 disabled:opacity-50">{deleting ? "..." : "Eliminar"}</button>
                 </>
               )}
               <button onClick={() => setSelectedEstancia(null)} className="flex-1 py-3 bg-paper-medium/20 text-text-muted font-medium rounded-xl hover:bg-paper-medium/30 transition-all border border-border">Cerrar</button>

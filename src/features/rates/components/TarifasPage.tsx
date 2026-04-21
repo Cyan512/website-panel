@@ -66,15 +66,15 @@ export default function TarifasPage() {
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 p-4 sm:p-6">
               <div className="bg-gradient-to-br from-accent-primary/10 to-accent-light/10 rounded-2xl p-5 border border-accent-primary/20">
                 <p className="text-text-muted text-sm">Total Tarifas</p>
-                <p className="text-2xl font-bold font-playfair mt-1">{tarifas.length}</p>
+                <p className="text-2xl font-bold font-display mt-1">{tarifas.length}</p>
               </div>
-              <div className="bg-gradient-to-br from-emerald-40 to-emerald-100/50 rounded-2xl p-5 border border-emerald-200/50">
+              <div className="bg-gradient-to-br from-success/30 to-success-bg rounded-2xl p-5 border border-success/20">
                 <p className="text-text-muted text-sm">Canales</p>
-                <p className="text-2xl font-bold font-playfair mt-1 text-emerald-500">{canales.length}</p>
+                <p className="text-2xl font-bold font-display mt-1 text-success">{canales.length}</p>
               </div>
               <div className="bg-gradient-to-br from-paper-medium/20 to-paper-medium/10 rounded-2xl p-5 border border-border-light/50">
                 <p className="text-text-muted text-sm">Tipos de Habitación</p>
-                <p className="text-2xl font-bold font-playfair mt-1">{tiposHabitacion.length}</p>
+                <p className="text-2xl font-bold font-display mt-1">{tiposHabitacion.length}</p>
               </div>
             </div>
 
@@ -103,7 +103,7 @@ export default function TarifasPage() {
         <Modal isOpen={!!selectedTarifa} onClose={() => setSelectedTarifa(null)} title="Detalle de Tarifa">
           <div className="space-y-4">
               <div className="text-center py-4 bg-paper-medium/20 rounded-2xl">
-                <p className="text-4xl font-bold font-playfair text-accent-primary">
+                <p className="text-4xl font-bold font-display text-accent-primary">
                   {selectedTarifa.moneda} {selectedTarifa.precio.toFixed(2)}
                 </p>
                 <p className="text-text-muted mt-1 text-sm">por {selectedTarifa.unidad}</p>
@@ -139,7 +139,7 @@ export default function TarifasPage() {
                 {isAdmin && (
                   <>
                     <button onClick={() => openEdit(selectedTarifa)} className="flex-1 py-3 bg-accent-primary/10 text-accent-primary font-medium rounded-xl hover:bg-accent-primary/20 transition-all border border-accent-primary/20">Editar</button>
-                    <button onClick={handleDelete} disabled={deleting} className="flex-1 py-3 bg-red-50 text-danger font-medium rounded-xl hover:bg-red-100 transition-all border border-red-200 disabled:opacity-50">{deleting ? "Eliminando..." : "Eliminar"}</button>
+                    <button onClick={handleDelete} disabled={deleting} className="flex-1 py-3 bg-danger-bg text-danger font-medium rounded-xl hover:bg-danger/15 transition-all border border-danger/25 disabled:opacity-50">{deleting ? "Eliminando..." : "Eliminar"}</button>
                   </>
                 )}
                 <button onClick={() => setSelectedTarifa(null)} className="flex-1 py-3 bg-paper-medium/20 text-text-muted font-medium rounded-xl hover:bg-paper-medium/30 transition-all border border-border">Cerrar</button>

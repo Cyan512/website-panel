@@ -94,19 +94,19 @@ export default function ReservationsPage() {
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 p-4 sm:p-6">
               <div className="bg-gradient-to-br from-accent-primary/10 to-accent-light/10 rounded-2xl p-4 border border-accent-primary/20">
                 <p className="text-text-muted text-xs">Total</p>
-                <p className="text-2xl font-bold font-playfair mt-1">{counts.total}</p>
+                <p className="text-2xl font-bold font-display mt-1">{counts.total}</p>
               </div>
-              <div className="bg-gradient-to-br from-emerald-40 to-emerald-100/50 rounded-2xl p-4 border border-emerald-200/50">
+              <div className="bg-gradient-to-br from-success/30 to-success-bg rounded-2xl p-4 border border-success/20">
                 <p className="text-text-muted text-xs">Confirmadas</p>
-                <p className="text-2xl font-bold font-playfair mt-1 text-emerald-500">{counts.confirmadas}</p>
+                <p className="text-2xl font-bold font-display mt-1 text-success">{counts.confirmadas}</p>
               </div>
-              <div className="bg-gradient-to-br from-blue-40 to-blue-100/50 rounded-2xl p-4 border border-blue-200/50">
+              <div className="bg-gradient-to-br from-info/30 to-info-bg rounded-2xl p-4 border border-info/20">
                 <p className="text-text-muted text-xs">En Casa</p>
-                <p className="text-2xl font-bold font-playfair mt-1 text-blue-500">{counts.enCasa}</p>
+                <p className="text-2xl font-bold font-display mt-1 text-info">{counts.enCasa}</p>
               </div>
-              <div className="bg-gradient-to-br from-red-40 to-red-100/50 rounded-2xl p-4 border border-red-200/50">
+              <div className="bg-gradient-to-br from-danger/30 to-danger-bg rounded-2xl p-4 border border-danger/20">
                 <p className="text-text-muted text-xs">Canceladas</p>
-                <p className="text-2xl font-bold font-playfair mt-1 text-red-500">{counts.canceladas}</p>
+                <p className="text-2xl font-bold font-display mt-1 text-danger">{counts.canceladas}</p>
               </div>
             </div>
 
@@ -185,7 +185,7 @@ export default function ReservationsPage() {
                         <div className="flex items-center justify-end gap-1">
                           <button onClick={() => openEdit(r)} title="Editar" className="p-1.5 rounded-lg text-text-muted hover:text-primary hover:bg-primary/10 transition-all"><MdEdit className="w-4 h-4" /></button>
                           {r.estado !== "CANCELADA" && r.estado !== "COMPLETADA" && r.estado !== "NO_LLEGO" && (
-                            <button onClick={() => openCancel(r)} title="Cancelar" className="p-1.5 rounded-lg text-text-muted hover:text-amber-600 hover:bg-amber-50 transition-all"><MdCancel className="w-4 h-4" /></button>
+                            <button onClick={() => openCancel(r)} title="Cancelar" className="p-1.5 rounded-lg text-text-muted hover:text-warning hover:bg-warning-bg transition-all"><MdCancel className="w-4 h-4" /></button>
                           )}
                           <button onClick={() => handleDelete(r)} disabled={deleting} title="Eliminar" className="p-1.5 rounded-lg text-text-muted hover:text-danger hover:bg-danger/10 transition-all disabled:opacity-40"><MdDelete className="w-4 h-4" /></button>
                         </div>
@@ -263,7 +263,7 @@ export default function ReservationsPage() {
               </div>
             ))}
             {selectedReserva.motivo_cancel && (
-              <div className="bg-red-50 border border-red-200 rounded-xl px-3 py-2.5">
+              <div className="bg-danger-bg border border-danger/20 rounded-xl px-3 py-2.5">
                 <p className="text-xs text-text-muted">Motivo cancelación</p>
                 <p className="text-sm text-danger mt-0.5">{selectedReserva.motivo_cancel}</p>
               </div>
@@ -271,9 +271,9 @@ export default function ReservationsPage() {
             <div className="flex gap-3 pt-2">
               <button onClick={() => openEdit(selectedReserva)} className="flex-1 py-3 bg-accent-primary/10 text-accent-primary font-medium rounded-xl hover:bg-accent-primary/20 transition-all border border-accent-primary/20">Editar</button>
               {selectedReserva.estado !== "CANCELADA" && selectedReserva.estado !== "COMPLETADA" && selectedReserva.estado !== "NO_LLEGO" && (
-                <button onClick={() => openCancel(selectedReserva)} className="flex-1 py-3 bg-amber-50 text-amber-700 font-medium rounded-xl hover:bg-amber-100 transition-all border border-amber-200">Cancelar</button>
+                <button onClick={() => openCancel(selectedReserva)} className="flex-1 py-3 bg-amber-50 text-warning font-medium rounded-xl hover:bg-amber-100 transition-all border border-warning/20">Cancelar</button>
               )}
-              <button onClick={() => handleDelete(selectedReserva)} disabled={deleting} className="flex-1 py-3 bg-red-50 text-danger font-medium rounded-xl hover:bg-red-100 transition-all border border-red-200 disabled:opacity-50">Eliminar</button>
+              <button onClick={() => handleDelete(selectedReserva)} disabled={deleting} className="flex-1 py-3 bg-danger-bg text-danger font-medium rounded-xl hover:bg-danger-bg transition-all border border-danger/20 disabled:opacity-50">Eliminar</button>
             </div>
           </div>
         </Modal>

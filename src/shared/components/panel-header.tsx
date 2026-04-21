@@ -20,7 +20,7 @@ export default function PanelHeader({
     <div className={cn("flex flex-col gap-4", className)}>
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
-          <h1 className="text-xl font-bold text-text-primary font-playfair">
+          <h1 className="text-xl font-bold text-text-primary font-display">
             {title}
           </h1>
           {subtitle && (

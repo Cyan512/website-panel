@@ -68,6 +68,61 @@ El sistema usa CSS custom properties + `@theme` en `index.css`:
 - `--color-text-primary`, `--color-text-muted`
 - `--color-border`, `--color-success`, `--color-danger`
 
+## Diseño y Estética Andina
+
+La interfaz sigue una estética inspirada en los Andes: pergamino, rojo inca y oro andino. Todos los componentes deben mantener esta coherencia visual.
+
+### Tipografía
+- **Display / Títulos / h1, h2, h3**: `Cinzel` (Google Fonts CDN). Variable CSS: `--font-display`.
+- **Body / UI / p, span, input, label**: `Crimson Pro` (Google Fonts CDN). Variable CSS: `--font-body`.
+- **Regla**: Nunca usar `font-playfair`, `font-lora` u otras fuentes antiguas. Siempre usar `font-display` o dejar que `h1,h2,h3` hereden automáticamente.
+- Google Fonts se cargan vía CDN en `index.html`.
+
+### Paleta de colores (prohibido usar genéricos de Tailwind)
+- **Éxito / Disponible / Confirmado**: `success` (`#059669`) — **NUNCA** `emerald-*`
+- **Advertencia / Regular / Tentativo**: `warning` (`#b45309`) — **NUNCA** `amber-*` ni `orange-*`
+- **Peligro / Cancelado / Dañado**: `danger` (`#b91c1c`) — **NUNCA** `red-*`
+- **Información / En Casa**: `info` (`#475569`) — **NUNCA** `blue-*`
+- **Énfasis dorado**: `accent` / `accent-primary` / `accent-light` — para detalles premium
+- **Fondo**: `bg-primary` (pergamino), `bg-secondary` (gradiente sutil), `bg-card`
+- **Texto**: `text-primary` (oscuro), `text-secondary`, `text-muted`
+- **Bordes**: `border`, `border-light`
+
+### Badges de estado
+Siempre usar la paleta andina, nunca colores genéricos de Tailwind:
+- Éxito: `bg-success-bg text-success` (o `badge-success`)
+- Advertencia: `bg-warning-bg text-warning` (o `badge-warning`)
+- Peligro: `bg-danger-bg text-danger` (o `badge-danger`)
+- Info: `bg-info-bg text-info` (o `badge-info`)
+- Inactivo/Neutro: `bg-bg-tertiary text-text-muted`
+
+### Gradientes en tarjetas de stats
+Usar siempre colores de la paleta andina con opacidad suave:
+```
+bg-gradient-to-br from-success/30 to-success-bg border border-success/20
+bg-gradient-to-br from-info/30 to-info-bg border border-info/20
+bg-gradient-to-br from-danger/30 to-danger-bg border border-danger/20
+bg-gradient-to-br from-warning/30 to-warning-bg border border-warning/20
+bg-gradient-to-br from-accent-primary/10 to-accent-light/10 border border-accent-primary/20
+```
+
+### Sidebar
+- Fondo: gradiente oscuro con patrón geométrico sutil inspirado en textiles andinos (`bg-sidebar-pattern`).
+- Item activo: indicador dorado deslizante en el borde izquierdo (`bg-accent-light`) + fondo sutil `bg-accent/10`.
+- Item hover: `hover:bg-white/5` + micro-desplazamiento a la derecha.
+- Logo: tipografía `Cinzel`, halo dorado sutil.
+- Secciones: `font-display` en títulos de grupo.
+
+### Sombras
+Usar las sombras refinadas del sistema (definidas en `index.css`), nunca las genéricas de Tailwind:
+- Cards: `shadow-sm` o `shadow-md` con opacidad reducida para fondos oscuros.
+- Hover de cards: elevación sutil `-translate-y-0.5` + sombra más profusa.
+
+### Animaciones
+- Entrada escalonada de tarjetas: `animate-slide-up` con `animation-delay` inline.
+- Indicador activo del sidebar: transición suave de 300ms.
+- Hover de botones: `active:scale-[0.97]`.
+
 ## Cómo agregar una nueva feature
 
 1. Crear `src/features/<feature>/`.

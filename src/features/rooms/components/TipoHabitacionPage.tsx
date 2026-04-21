@@ -87,7 +87,7 @@ export default function TipoHabitacionPage() {
                 </svg>
               </div>
               <div>
-                <p className="text-2xl font-bold font-playfair">{selectedTipo.nombre}</p>
+                <p className="text-2xl font-bold font-display">{selectedTipo.nombre}</p>
                 {selectedTipo.descripcion && <p className="text-text-muted text-sm">{selectedTipo.descripcion}</p>}
               </div>
             </div>
@@ -96,7 +96,7 @@ export default function TipoHabitacionPage() {
               <button onClick={(e) => handleEdit(selectedTipo, e)} className="flex-1 py-3 bg-accent-primary/10 text-accent-primary font-medium rounded-xl hover:bg-accent-primary/20 transition-all border border-accent-primary/20">
                 Editar
               </button>
-              <button onClick={handleDelete} disabled={deleting} className="flex-1 py-3 bg-red-50 text-danger font-medium rounded-xl hover:bg-red-100 transition-all border border-red-200 disabled:opacity-50">
+              <button onClick={handleDelete} disabled={deleting} className="flex-1 py-3 bg-danger-bg text-danger font-medium rounded-xl hover:bg-danger-bg transition-all border border-danger/20 disabled:opacity-50">
                 {deleting ? "Eliminando..." : "Eliminar"}
               </button>
             </div>

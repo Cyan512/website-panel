@@ -73,12 +73,12 @@ export default function MueblesPage() {
             <div className="grid grid-cols-2 sm:grid-cols-5 gap-4 p-4 sm:p-6">
               <div className="bg-gradient-to-br from-accent-primary/10 to-accent-light/10 rounded-2xl p-4 border border-accent-primary/20">
                 <p className="text-text-muted text-xs">Total</p>
-                <p className="text-2xl font-bold font-playfair mt-1">{muebles.length}</p>
+                <p className="text-2xl font-bold font-display mt-1">{muebles.length}</p>
               </div>
               {conditionKeys.map((c) => (
                 <div key={c} className="bg-gradient-to-br from-paper-medium/20 to-paper-medium/10 rounded-2xl p-4 border border-border-light/50">
                   <p className="text-text-muted text-xs">{muebleConditionLabels[c]}</p>
-                  <p className="text-2xl font-bold font-playfair mt-1">{muebles.filter((m) => m.condicion === c).length}</p>
+                  <p className="text-2xl font-bold font-display mt-1">{muebles.filter((m) => m.condicion === c).length}</p>
                 </div>
               ))}
             </div>
@@ -138,7 +138,7 @@ export default function MueblesPage() {
                 </div>
               )}
               <div className="text-center py-3 bg-paper-medium/20 rounded-2xl">
-                <p className="text-xl font-bold font-playfair text-accent-primary">{selectedMueble.nombre}</p>
+                <p className="text-xl font-bold font-display text-accent-primary">{selectedMueble.nombre}</p>
                 <p className="text-text-muted text-sm mt-0.5">{selectedMueble.codigo}</p>
                 <span className={cn("inline-block mt-2 text-xs font-medium px-3 py-1 rounded-full", muebleConditionColors[selectedMueble.condicion as MuebleCondition])}>
                   {muebleConditionLabels[selectedMueble.condicion as MuebleCondition]}
@@ -184,7 +184,7 @@ export default function MueblesPage() {
               )}
               <div className="flex gap-3 pt-2">
                 <button onClick={() => openEdit(selectedMueble)} className="flex-1 py-3 bg-accent-primary/10 text-accent-primary font-medium rounded-xl hover:bg-accent-primary/20 transition-all border border-accent-primary/20">Editar</button>
-                <button onClick={handleDelete} disabled={deleting} className="flex-1 py-3 bg-red-50 text-danger font-medium rounded-xl hover:bg-red-100 transition-all border border-red-200 disabled:opacity-50">{deleting ? "..." : "Eliminar"}</button>
+                <button onClick={handleDelete} disabled={deleting} className="flex-1 py-3 bg-danger-bg text-danger font-medium rounded-xl hover:bg-danger-bg transition-all border border-danger/20 disabled:opacity-50">{deleting ? "..." : "Eliminar"}</button>
               </div>
           </div>
           </div>

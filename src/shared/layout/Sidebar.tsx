@@ -117,13 +117,17 @@ function GroupItem({ group, userRole, onNavClick }: { group: MenuGroup; userRole
       <button
         onClick={() => setOpen((o) => !o)}
         className={cn(
-          "w-full flex items-center gap-3 mx-2 px-3 py-2.5 rounded-lg my-0.5 transition-all duration-200 focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:outline-none",
-          isActive ? "bg-primary/10 text-primary" : "text-text-secondary hover:bg-bg-hover hover:text-text-primary"
+          "w-full flex items-center gap-3 mx-2 px-3 py-2.5 rounded-lg my-0.5 transition-all duration-300 focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:outline-none group relative overflow-hidden",
+          isActive ? "text-accent-light bg-accent/10" : "text-text-secondary hover:bg-white/5 hover:text-text-primary"
         )}
         style={{ width: "calc(100% - 1rem)" }}
       >
-        <Icon className="w-5 h-5 shrink-0" />
-        <span className="text-sm font-medium flex-1 text-left">{group.label}</span>
+        <span className={cn(
+          "absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-0 rounded-full bg-accent-light transition-all duration-300",
+          isActive && "h-5 rounded-full"
+        )} />
+        <Icon className={cn("w-5 h-5 shrink-0 transition-transform duration-300", !isActive && "group-hover:translate-x-0.5")} />
+        <span className="text-sm font-medium flex-1 text-left" style={{ fontFamily: 'var(--font-body)' }}>{group.label}</span>
         {open ? <MdExpandLess className="w-4 h-4 shrink-0" /> : <MdExpandMore className="w-4 h-4 shrink-0" />}
       </button>
 
@@ -138,13 +142,21 @@ function GroupItem({ group, userRole, onNavClick }: { group: MenuGroup; userRole
                 onClick={onNavClick}
                 className={({ isActive }) =>
                   cn(
-                    "flex items-center gap-3 mx-2 px-3 py-2 rounded-lg my-0.5 transition-all duration-200",
-                    isActive ? "bg-primary text-white" : "text-text-secondary hover:bg-bg-hover hover:text-text-primary"
+                    "flex items-center gap-3 mx-2 px-3 py-2 rounded-lg my-0.5 transition-all duration-300 relative overflow-hidden group",
+                    isActive ? "text-accent-light bg-accent/10" : "text-text-secondary hover:bg-white/5 hover:text-text-primary"
                   )
                 }
               >
-                <ChildIcon className="w-4 h-4" />
-                <span className="text-sm">{child.label}</span>
+                {({ isActive }) => (
+                  <>
+                    <span className={cn(
+                      "absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-0 rounded-full bg-accent-light transition-all duration-300",
+                      isActive && "h-4 rounded-full"
+                    )} />
+                    <ChildIcon className={cn("w-4 h-4 transition-transform duration-300", !isActive && "group-hover:translate-x-0.5")} />
+                    <span className="text-sm" style={{ fontFamily: 'var(--font-body)' }}>{child.label}</span>
+                  </>
+                )}
               </NavLink>
             );
           })}
@@ -210,12 +222,13 @@ export default function Sidebar() {
       )}>
         <div className="py-5 px-4 border-b border-border shrink-0">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-xl overflow-hidden drop-shadow-xl drop-shadow-primary/100 shrink-0">
-              <img src="/chakana_sin_fondo.svg" alt="Logo" className="w-full h-full object-cover" />
+            <div className="w-12 h-12 rounded-xl overflow-hidden shrink-0 relative">
+              <div className="absolute inset-0 rounded-xl ring-1 ring-accent/30 ring-offset-2 ring-offset-transparent" />
+              <img src="/chakana_sin_fondo.svg" alt="Logo" className="w-full h-full object-cover drop-shadow-lg" />
             </div>
             <div>
-              <h2 className="text-base font-bold text-text-primary">Kori Hotel</h2>
-              <p className="text-[10px] text-text-muted uppercase tracking-wider">Admin Panel</p>
+              <h2 className="text-base font-bold text-text-primary" style={{ fontFamily: 'var(--font-display)', letterSpacing: '0.06em' }}>Kori Hotel</h2>
+              <p className="text-[10px] text-text-muted uppercase tracking-widest" style={{ fontFamily: 'var(--font-display)', letterSpacing: '0.14em' }}>Admin Panel</p>
             </div>
           </div>
         </div>
@@ -225,7 +238,7 @@ export default function Sidebar() {
             if (navItem.kind === "separator") {
               return (
                 <div key={`sep-${idx}`} className="px-4 pt-4 pb-1">
-                  <p className="text-[10px] font-semibold tracking-wider uppercase text-text-muted">{navItem.label}</p>
+                  <p className="text-[10px] font-semibold tracking-wider uppercase text-text-muted" style={{ fontFamily: 'var(--font-display)', letterSpacing: '0.14em' }}>{navItem.label}</p>
                 </div>
               );
             }
@@ -240,13 +253,21 @@ export default function Sidebar() {
                   onClick={handleNavClick}
                   className={({ isActive }) =>
                     cn(
-                      "flex items-center gap-3 mx-2 px-3 py-2.5 rounded-lg my-0.5 transition-all duration-200",
-                      isActive ? "bg-primary text-white" : "text-text-secondary hover:bg-bg-hover hover:text-text-primary"
+                      "flex items-center gap-3 mx-2 px-3 py-2.5 rounded-lg my-0.5 transition-all duration-300 relative overflow-hidden group",
+                      isActive ? "text-accent-light bg-accent/10" : "text-text-secondary hover:bg-white/5 hover:text-text-primary"
                     )
                   }
                 >
-                  <Icon className="w-5 h-5" />
-                  <span className="text-sm font-medium">{item.label}</span>
+                  {({ isActive }) => (
+                    <>
+                      <span className={cn(
+                        "absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-0 rounded-full bg-accent-light transition-all duration-300",
+                        isActive && "h-5 rounded-full"
+                      )} />
+                      <Icon className={cn("w-5 h-5 transition-transform duration-300", !isActive && "group-hover:translate-x-0.5")} />
+                      <span className="text-sm font-medium" style={{ fontFamily: 'var(--font-body)' }}>{item.label}</span>
+                    </>
+                  )}
                 </NavLink>
               );
             }

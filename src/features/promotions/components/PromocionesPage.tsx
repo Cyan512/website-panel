@@ -226,9 +226,9 @@ export default function PromocionesPage() {
                     </td>
                     <td className="py-3 px-2 text-center hidden sm:table-cell">
                       <span className={cn("text-xs font-medium px-2 py-0.5 rounded-full",
-                        vigente ? "bg-emerald-100 text-emerald-700" :
-                        p.estado ? "bg-amber-100 text-amber-700" :
-                        "bg-gray-100 text-gray-500"
+                        vigente ? "bg-success-bg text-success" :
+                        p.estado ? "bg-warning-bg text-warning" :
+                        "bg-bg-tertiary text-text-muted"
                       )}>
                         {vigente ? "Vigente" : p.estado ? "Inactiva" : "Desactivada"}
                       </span>

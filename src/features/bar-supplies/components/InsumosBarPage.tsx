@@ -18,9 +18,9 @@ const selectClass = "w-full rounded-xl py-3 text-sm px-3.5 border border-border 
 const labelClass = "block text-sm font-medium text-text-primary mb-1";
 
 function stockBadge(actual: number, minimo: number) {
-  if (actual <= 0) return "bg-red-100 text-red-700";
-  if (actual <= minimo) return "bg-amber-100 text-amber-700";
-  return "bg-emerald-100 text-emerald-700";
+  if (actual <= 0) return "bg-danger-bg text-danger";
+  if (actual <= minimo) return "bg-warning-bg text-warning";
+  return "bg-success-bg text-success";
 }
 
 // ─── Insumo form ─────────────────────────────────────────────────────────────
@@ -237,7 +237,7 @@ export default function InsumosBarPage() {
                   </td>
                   <td className="py-3 px-2 text-right text-text-muted text-xs hidden md:table-cell">{i.stock_minimo}</td>
                   <td className="py-3 px-2 text-center hidden sm:table-cell">
-                    <span className={cn("text-xs font-medium px-2 py-0.5 rounded-full", i.activo ? "bg-emerald-100 text-emerald-700" : "bg-gray-100 text-gray-500")}>
+                    <span className={cn("text-xs font-medium px-2 py-0.5 rounded-full", i.activo ? "bg-success-bg text-success" : "bg-bg-tertiary text-text-muted")}>
                       {i.activo ? "Activo" : "Inactivo"}
                     </span>
                   </td>

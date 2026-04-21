@@ -394,7 +394,7 @@ export default function FoliosPage() {
                       </td>
                       <td className="py-3 px-2">
                         <span className={cn("text-xs font-medium px-2 py-0.5 rounded-full",
-                          f.estado ? "bg-emerald-100 text-emerald-700" : "bg-gray-100 text-gray-600"
+                          f.estado ? "bg-success-bg text-success" : "bg-bg-tertiary text-text-muted"
                         )}>
                           {f.estado ? "Abierto" : "Cerrado"}
                         </span>
@@ -478,7 +478,7 @@ export default function FoliosPage() {
                   placeholder="Buscar por huésped o habitación..."
                   className={cn(
                     "w-full pl-9 pr-4 py-3 text-sm rounded-xl border bg-bg-card text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-primary/30",
-                    estanciaSelected ? "border-emerald-500/50 bg-emerald-500/5" : "border-border"
+                    estanciaSelected ? "border-emerald-500/50 bg-success/5" : "border-border"
                   )}
                   required
                 />
@@ -619,7 +619,7 @@ export default function FoliosPage() {
                 placeholder="Buscar por nombre o código..."
                 className={cn(
                   "w-full pl-9 pr-4 py-3 text-sm rounded-xl border bg-bg-card text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-primary/30",
-                  productoSelected ? "border-emerald-500/50 bg-emerald-500/5" : "border-border"
+                  productoSelected ? "border-emerald-500/50 bg-success/5" : "border-border"
                 )}
               />
             </div>

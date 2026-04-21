@@ -77,15 +77,15 @@ export default function CategoriasMueblePage() {
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 p-4 sm:p-6">
               <div className="bg-gradient-to-br from-accent-primary/10 to-accent-light/10 rounded-2xl p-5 border border-accent-primary/20">
                 <p className="text-text-muted text-sm">Total</p>
-                <p className="text-2xl font-bold font-playfair mt-1">{categorias.length}</p>
+                <p className="text-2xl font-bold font-display mt-1">{categorias.length}</p>
               </div>
-              <div className="bg-gradient-to-br from-emerald-40 to-emerald-100/50 rounded-2xl p-5 border border-emerald-200/50">
+              <div className="bg-gradient-to-br from-success/30 to-success-bg rounded-2xl p-5 border border-success/20">
                 <p className="text-text-muted text-sm">Activas</p>
-                <p className="text-2xl font-bold font-playfair mt-1 text-emerald-500">{activas}</p>
+                <p className="text-2xl font-bold font-display mt-1 text-success">{activas}</p>
               </div>
               <div className="bg-gradient-to-br from-paper-medium/20 to-paper-medium/10 rounded-2xl p-5 border border-border-light/50">
                 <p className="text-text-muted text-sm">Inactivas</p>
-                <p className="text-2xl font-bold font-playfair mt-1">{categorias.length - activas}</p>
+                <p className="text-2xl font-bold font-display mt-1">{categorias.length - activas}</p>
               </div>
             </div>
 
@@ -121,14 +121,14 @@ export default function CategoriasMueblePage() {
                       <td className="py-3 px-2 font-medium text-text-primary">{cat.nombre}</td>
                       <td className="py-3 px-2 text-text-muted hidden sm:table-cell">{cat.descripcion ?? "—"}</td>
                       <td className="py-3 px-2">
-                        <span className={cn("text-xs font-medium px-2 py-0.5 rounded-full", cat.activo ? "bg-emerald-100 text-emerald-700" : "bg-gray-100 text-gray-600")}>
+                        <span className={cn("text-xs font-medium px-2 py-0.5 rounded-full", cat.activo ? "bg-success-bg text-success" : "bg-bg-tertiary text-text-muted")}>
                           {cat.activo ? "Activa" : "Inactiva"}
                         </span>
                       </td>
                       <td className="py-3 px-2">
                         <div className="flex items-center justify-end gap-2">
                           <button onClick={() => openEdit(cat)} className="text-xs px-3 py-1.5 rounded-lg bg-accent-primary/10 text-accent-primary hover:bg-accent-primary/20 transition-all border border-accent-primary/20">Editar</button>
-                          <button onClick={() => handleDelete(cat)} disabled={deleting === cat.id} className="text-xs px-3 py-1.5 rounded-lg bg-red-50 text-danger hover:bg-red-100 transition-all border border-red-200 disabled:opacity-50">{deleting === cat.id ? "..." : "Eliminar"}</button>
+                          <button onClick={() => handleDelete(cat)} disabled={deleting === cat.id} className="text-xs px-3 py-1.5 rounded-lg bg-danger-bg text-danger hover:bg-danger-bg transition-all border border-danger/20 disabled:opacity-50">{deleting === cat.id ? "..." : "Eliminar"}</button>
                         </div>
                       </td>
                     </tr>
