@@ -49,7 +49,7 @@ const protectedRoutes: RouteConfig[] = [
 export const routes: RouteConfig[] = [
   ...authRoutes,
   { path: "/", element: <Sidebar />, children: protectedRoutes },
-  { path: "*", element: <Navigate to="/" replace /> },
+  { path: "*", element: <Navigate to="/dashboard" replace /> },
 ];
 
 function renderRoutes(routeConfigs: RouteConfig[]) {
