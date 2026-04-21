@@ -14,13 +14,35 @@ export const muebleConditionColors: Record<MuebleCondition, string> = {
   FALTANTE: "bg-bg-tertiary text-text-muted",
 };
 
+export interface PaginationMeta {
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+  hasNextPage: boolean;
+  hasPreviousPage: boolean;
+}
+
+export interface PaginatedMuebles {
+  list: Mueble[];
+  pagination: PaginationMeta;
+}
+
 export interface Mueble {
   id: string;
   codigo: string;
   nombre: string;
   descripcion: string | null;
   categoria_id: string;
-  imagen_url: string | null;
+  categoria?: {
+    id: string;
+    nombre: string;
+    descripcion: string | null;
+    activo: boolean;
+    created_at: string;
+    updated_at: string;
+  };
+  url_imagen: string | null;
   condicion: MuebleCondition;
   fecha_adquisicion: string | null;
   ultima_revision: string | null;

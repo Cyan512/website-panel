@@ -7,6 +7,7 @@ import type { Mueble, CreateMueble, MuebleCondition } from "../types";
 import type { Habitacion } from "@/features/rooms/types";
 import type { CategoriaMueble } from "@/features/furniture-categories/types";
 import { MdUpload, MdClose } from "react-icons/md";
+import { mueblesApi } from "../api";
 
 interface Props {
   isOpen: boolean;
@@ -15,10 +16,10 @@ interface Props {
   mueble?: Mueble | null;
   categorias: CategoriaMueble[];
   habitaciones: Habitacion[];
-  onSave: (data: CreateMueble) => Promise<Mueble>;
 }
 
-const selectClass = "field-input w-full rounded-xl py-3.5 text-sm px-3.5 focus:outline-none focus:ring-2 focus:ring-accent-primary/30 focus:border-accent-primary border border-border-light/50";
+const selectClass =
+  "field-input w-full rounded-xl py-3.5 text-sm px-3.5 focus:outline-none focus:ring-2 focus:ring-accent-primary/30 focus:border-accent-primary border border-border-light/50";
 const labelClass = "field-label block mb-2 text-text-secondary font-medium";
 
 const defaultForm = {
@@ -32,7 +33,7 @@ const defaultForm = {
   habitacion_id: "",
 };
 
-export function MuebleModal({ isOpen, onClose, onSuccess, mueble, categorias, habitaciones, onSave }: Props) {
+export function MuebleModal({ isOpen, onClose, onSuccess, mueble, categorias, habitaciones }: Props) {
   const [form, setForm] = useState(defaultForm);
   const [saving, setSaving] = useState(false);
   const [imageFiles, setImageFiles] = useState<File[]>([]);
@@ -78,12 +79,19 @@ export function MuebleModal({ isOpen, onClose, onSuccess, mueble, categorias, ha
 
     setSaving(true);
     try {
-      await onSave(payload);
-      sileo.success({ title: mueble ? "Mueble actualizado" : "Mueble creado", description: payload.nombre });
+      if (mueble) {
+        await mueblesApi.update(mueble.id, payload);
+        sileo.success({ title: "Mueble actualizado", description: payload.nombre });
+      } else {
+        await mueblesApi.create(payload);
+        sileo.success({ title: "Mueble creado", description: payload.nombre });
+      }
       onSuccess();
       onClose();
     } catch (err) {
-      if (!isHandledError(err)) { sileo.error({ title: "Error", description: "No se pudo guardar el mueble" }); }
+      if (!isHandledError(err)) {
+        sileo.error({ title: "Error", description: "No se pudo guardar el mueble" });
+      }
     } finally {
       setSaving(false);
     }
@@ -92,80 +100,151 @@ export function MuebleModal({ isOpen, onClose, onSuccess, mueble, categorias, ha
   return (
     <Modal isOpen={isOpen} onClose={onClose} title={mueble ? "Editar Mueble" : "Nuevo Mueble"} size="lg">
       <div className="max-h-[70vh] overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <InputField label="Código" value={form.codigo} onChange={(e) => setForm((f) => ({ ...f, codigo: e.target.value }))} placeholder="Ej: MBL-001" required />
-          <InputField label="Nombre" value={form.nombre} onChange={(e) => setForm((f) => ({ ...f, nombre: e.target.value }))} placeholder="Ej: Cama King" required />
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div>
-            <label className={labelClass}>Categoría</label>
-            <select value={form.categoria_id} onChange={(e) => setForm((f) => ({ ...f, categoria_id: e.target.value }))} className={selectClass} required>
-              <option value="">Seleccionar...</option>
-              {categorias.map((c) => <option key={c.id} value={c.id}>{c.nombre}</option>)}
-            </select>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <InputField
+              label="Código"
+              value={form.codigo}
+              onChange={(e) => setForm((f) => ({ ...f, codigo: e.target.value }))}
+              placeholder="Ej: MBL-001"
+              required
+            />
+            <InputField
+              label="Nombre"
+              value={form.nombre}
+              onChange={(e) => setForm((f) => ({ ...f, nombre: e.target.value }))}
+              placeholder="Ej: Cama King"
+              required
+            />
           </div>
-          <div>
-            <label className={labelClass}>Habitación</label>
-            <select value={form.habitacion_id} onChange={(e) => setForm((f) => ({ ...f, habitacion_id: e.target.value }))} className={selectClass} required>
-              <option value="">Seleccionar...</option>
-              {habitaciones.map((h) => <option key={h.id} value={h.id}>Hab. {h.nro_habitacion} — Piso {h.piso}</option>)}
-            </select>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className={labelClass}>Categoría</label>
+              <select
+                value={form.categoria_id}
+                onChange={(e) => setForm((f) => ({ ...f, categoria_id: e.target.value }))}
+                className={selectClass}
+                required
+              >
+                <option value="">Seleccionar...</option>
+                {categorias.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.nombre}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className={labelClass}>Habitación</label>
+              <select
+                value={form.habitacion_id}
+                onChange={(e) => setForm((f) => ({ ...f, habitacion_id: e.target.value }))}
+                className={selectClass}
+                required
+              >
+                <option value="">Seleccionar...</option>
+                {habitaciones.map((h) => (
+                  <option key={h.id} value={h.id}>
+                    Hab. {h.nro_habitacion} — Piso {h.piso}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
-        </div>
 
-        <div>
-          <label className={labelClass}>Condición</label>
-          <select value={form.condicion} onChange={(e) => setForm((f) => ({ ...f, condicion: e.target.value as MuebleCondition }))} className={selectClass}>
-            {Object.entries(muebleConditionLabels).map(([key, label]) => (
-              <option key={key} value={key}>{label}</option>
-            ))}
-          </select>
-        </div>
-
-        <div>
-          <label className={labelClass}>Descripción (opcional)</label>
-          <textarea value={form.descripcion} onChange={(e) => setForm((f) => ({ ...f, descripcion: e.target.value }))} rows={2} className="field-input w-full rounded-xl py-3 text-sm px-3.5 focus:outline-none focus:ring-2 focus:ring-accent-primary/30 focus:border-accent-primary border border-border-light/50 resize-none" placeholder="Descripción del mueble..." />
-        </div>
-
-        {/* Imagen */}
-        <div>
-          <label className={labelClass}>Imagen (opcional)</label>
-          <input ref={fileInputRef} type="file" accept="image/*" multiple className="hidden" onChange={(e) => setImageFiles(Array.from(e.target.files ?? []))} />
-          <button type="button" onClick={() => fileInputRef.current?.click()} className="w-full flex items-center justify-center gap-2 py-3 rounded-xl border-2 border-dashed border-border hover:border-primary/50 hover:bg-primary/5 transition-all text-text-muted hover:text-primary text-sm">
-            <MdUpload className="w-5 h-5" />
-            {imageFiles.length > 0 ? `${imageFiles.length} archivo(s) seleccionado(s)` : "Seleccionar imagen"}
-          </button>
-          {imageFiles.length > 0 && (
-            <div className="mt-2 grid grid-cols-3 gap-2">
-              {imageFiles.map((f, i) => (
-                <div key={i} className="relative group rounded-xl overflow-hidden border border-border aspect-square">
-                  <img src={URL.createObjectURL(f)} alt={f.name} className="w-full h-full object-cover" />
-                  <button type="button" onClick={() => setImageFiles((prev) => prev.filter((_, idx) => idx !== i))} className="absolute top-1 right-1 p-1 rounded-full bg-black/70 text-white hover:bg-danger transition-colors">
-                    <MdClose className="w-3 h-3" />
-                  </button>
-                </div>
+          <div>
+            <label className={labelClass}>Condición</label>
+            <select
+              value={form.condicion}
+              onChange={(e) => setForm((f) => ({ ...f, condicion: e.target.value as MuebleCondition }))}
+              className={selectClass}
+            >
+              {Object.entries(muebleConditionLabels).map(([key, label]) => (
+                <option key={key} value={key}>
+                  {label}
+                </option>
               ))}
-            </div>
-          )}
-          {mueble?.imagen_url && imageFiles.length === 0 && (
-            <div className="mt-2 rounded-xl overflow-hidden border border-border aspect-video">
-              <img src={mueble.imagen_url} alt="Imagen actual" className="w-full h-full object-cover" />
-            </div>
-          )}
-        </div>
+            </select>
+          </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <InputField label="Fecha adquisición (opcional)" type="date" value={form.fecha_adquisicion} onChange={(e) => setForm((f) => ({ ...f, fecha_adquisicion: e.target.value }))} />
-          <InputField label="Última revisión (opcional)" type="date" value={form.ultima_revision} onChange={(e) => setForm((f) => ({ ...f, ultima_revision: e.target.value }))} />
-        </div>
+          <div>
+            <label className={labelClass}>Descripción (opcional)</label>
+            <textarea
+              value={form.descripcion}
+              onChange={(e) => setForm((f) => ({ ...f, descripcion: e.target.value }))}
+              rows={2}
+              className="field-input w-full rounded-xl py-3 text-sm px-3.5 focus:outline-none focus:ring-2 focus:ring-accent-primary/30 focus:border-accent-primary border border-border-light/50 resize-none"
+              placeholder="Descripción del mueble..."
+            />
+          </div>
 
-        <div className="flex gap-3 pt-2">
-          <Button type="button" variant="secondary" onClick={onClose} className="flex-1">Cancelar</Button>
-          <Button type="submit" isLoading={saving} className="flex-1">{saving ? "Guardando..." : mueble ? "Actualizar" : "Crear"}</Button>
-        </div>
-      </form>
+          {/* Imagen */}
+          <div>
+            <label className={labelClass}>Imagen (opcional)</label>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              multiple
+              className="hidden"
+              onChange={(e) => setImageFiles(Array.from(e.target.files ?? []))}
+            />
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              className="w-full flex items-center justify-center gap-2 py-3 rounded-xl border-2 border-dashed border-border hover:border-primary/50 hover:bg-primary/5 transition-all text-text-muted hover:text-primary text-sm"
+            >
+              <MdUpload className="w-5 h-5" />
+              {imageFiles.length > 0 ? `${imageFiles.length} archivo(s) seleccionado(s)` : "Seleccionar imagen"}
+            </button>
+            {imageFiles.length > 0 && (
+              <div className="mt-2 grid grid-cols-3 gap-2">
+                {imageFiles.map((f, i) => (
+                  <div key={i} className="relative group rounded-xl overflow-hidden border border-border aspect-square">
+                    <img src={URL.createObjectURL(f)} alt={f.name} className="w-full h-full object-cover" />
+                    <button
+                      type="button"
+                      onClick={() => setImageFiles((prev) => prev.filter((_, idx) => idx !== i))}
+                      className="absolute top-1 right-1 p-1 rounded-full bg-black/70 text-white hover:bg-danger transition-colors"
+                    >
+                      <MdClose className="w-3 h-3" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+            {mueble?.url_imagen && imageFiles.length === 0 && (
+              <div className="mt-2 rounded-xl overflow-hidden border border-border aspect-video">
+                <img src={mueble.url_imagen} alt="Imagen actual" className="w-full h-full object-cover" />
+              </div>
+            )}
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <InputField
+              label="Fecha adquisición (opcional)"
+              type="date"
+              value={form.fecha_adquisicion}
+              onChange={(e) => setForm((f) => ({ ...f, fecha_adquisicion: e.target.value }))}
+            />
+            <InputField
+              label="Última revisión (opcional)"
+              type="date"
+              value={form.ultima_revision}
+              onChange={(e) => setForm((f) => ({ ...f, ultima_revision: e.target.value }))}
+            />
+          </div>
+
+          <div className="flex gap-3 pt-2">
+            <Button type="button" variant="secondary" onClick={onClose} className="flex-1">
+              Cancelar
+            </Button>
+            <Button type="submit" isLoading={saving} className="flex-1">
+              {saving ? "Guardando..." : mueble ? "Actualizar" : "Crear"}
+            </Button>
+          </div>
+        </form>
       </div>
     </Modal>
   );

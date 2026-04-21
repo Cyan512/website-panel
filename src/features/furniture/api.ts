@@ -3,6 +3,47 @@ import type { Mueble, CreateMueble, UpdateMueble } from "./types";
 import type { CategoriaMueble } from "../furniture-categories/types";
 
 export const mueblesApi = {
+  getPage: async (
+    page: number,
+    limit: number,
+    nombre?: string,
+    categoria?: string,
+    condicion?: string,
+    signal?: AbortSignal,
+  ): Promise<{
+    list: Mueble[];
+    pagination: {
+      page: number;
+      limit: number;
+      total: number;
+      totalPages: number;
+      hasNextPage: boolean;
+      hasPreviousPage: boolean;
+    };
+  }> => {
+    const params = new URLSearchParams();
+    params.append("page", String(page));
+    params.append("limit", String(limit));
+    if (nombre) params.append("nombre", nombre);
+    if (categoria) params.append("categoria", categoria);
+    if (condicion) params.append("condicion", condicion);
+    const response = await axiosInstance.get<{
+      success: boolean;
+      data: {
+        list: Mueble[];
+        pagination: {
+          page: number;
+          limit: number;
+          total: number;
+          totalPages: number;
+          hasNextPage: boolean;
+          hasPreviousPage: boolean;
+        };
+      };
+    }>(`/api/private/muebles?${params}`, { signal });
+    return response.data.data;
+  },
+
   getAll: async (): Promise<Mueble[]> => {
     const response = await axiosInstance.get<{ success: boolean; data: Mueble[] }>("/api/private/muebles");
     return response.data.data;
@@ -29,8 +70,11 @@ export const mueblesApi = {
       return response.data.data;
     }
     const response = await axiosInstance.post<{ success: boolean; data: Mueble }>("/api/private/muebles", {
-      codigo: data.codigo, nombre: data.nombre, categoria_id: data.categoria_id,
-      habitacion_id: data.habitacion_id, condicion: data.condicion,
+      codigo: data.codigo,
+      nombre: data.nombre,
+      categoria_id: data.categoria_id,
+      habitacion_id: data.habitacion_id,
+      condicion: data.condicion,
       ...(data.descripcion && { descripcion: data.descripcion }),
       ...(data.fecha_adquisicion && { fecha_adquisicion: data.fecha_adquisicion }),
       ...(data.ultima_revision && { ultima_revision: data.ultima_revision }),
@@ -72,8 +116,17 @@ export const mueblesApi = {
 };
 
 export const categoriasApi = {
+  getPage: async (): Promise<CategoriaMueble[]> => {
+    const response = await axiosInstance.get<{ success: boolean; data: CategoriaMueble[] }>(
+      "/api/private/categorias-mueble",
+    );
+    return response.data.data;
+  },
+
   getAll: async (): Promise<CategoriaMueble[]> => {
-    const response = await axiosInstance.get<{ success: boolean; data: CategoriaMueble[] }>("/api/private/categorias-mueble");
+    const response = await axiosInstance.get<{ success: boolean; data: CategoriaMueble[] }>(
+      "/api/private/categorias-mueble",
+    );
     return response.data.data;
   },
 };
