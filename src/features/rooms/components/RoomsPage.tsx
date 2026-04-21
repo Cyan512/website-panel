@@ -4,7 +4,7 @@ import { RoomCard } from "./RoomCard";
 import { RoomModal } from "./RoomModal";
 import { ImageCarousel } from "./ImageCarousel";
 import { RoomCalendar } from "./RoomCalendar";
-import { PanelHeader, Button, Modal } from "@/components";
+import { PanelHeader, Button, Modal, CrudToolbar, Pagination, ConfirmDialog } from "@/components";
 import { cn } from "@/shared/utils/cn";
 import { sileo } from "sileo";
 import { isHandledError } from "@/shared/utils/error";
@@ -35,6 +35,7 @@ export default function RoomsPage() {
   const [muebles, setMuebles] = useState<import("../types").HabitacionMueble[]>([]);
   const [loadingFechas, setLoadingFechas] = useState(false);
   const [calendarOpen, setCalendarOpen] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
 
   const handleSelectHabitacion = async (hab: Habitacion) => {
     setSelectedHabitacion(hab);
@@ -56,8 +57,6 @@ export default function RoomsPage() {
 
   const handleDelete = async () => {
     if (!selectedHabitacion) return;
-    const confirmed = window.confirm(`¿Eliminar la habitación ${selectedHabitacion.nro_habitacion}?`);
-    if (!confirmed) return;
     setDeleting(true);
     try {
       await deleteHabitacion(selectedHabitacion.id);
@@ -80,13 +79,6 @@ export default function RoomsPage() {
   const from = total === 0 ? 0 : (page - 1) * limit + 1;
   const to = Math.min(page * limit, total);
 
-  const pageNumbers = Array.from({ length: totalPages }, (_, i) => i + 1)
-    .filter((p) => p === 1 || p === totalPages || Math.abs(p - page) <= 1)
-    .reduce<(number | "...")[]>((acc, p, i, arr) => {
-      if (i > 0 && p - (arr[i - 1] as number) > 1) acc.push("...");
-      acc.push(p); return acc;
-    }, []);
-
   return (
     <>
       <PanelHeader
@@ -94,26 +86,15 @@ export default function RoomsPage() {
         subtitle="Gestión y estado de habitaciones"
         action={<Button onClick={() => { setEditingHabitacion(null); setIsModalOpen(true); }}>+ Nueva Habitación</Button>}
       >
-        {/* Toolbar */}
-        <div className="px-4 sm:px-6 pt-4 pb-3 flex flex-col sm:flex-row gap-3">
-          <div className="relative flex-1">
-            <MdSearch className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
-            <input
-              type="text"
-              value={tipoSearch}
-              onChange={(e) => { setTipoSearch(e.target.value); changeTipo(e.target.value); }}
-              placeholder="Filtrar por tipo (ej: suite, estándar...)"
-              className="w-full pl-9 pr-4 py-2.5 text-sm rounded-xl border border-border bg-bg-card text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-primary/30"
-            />
-          </div>
-          <div className="flex items-center gap-2 shrink-0">
-            <span className="text-xs text-text-muted hidden sm:block">Mostrar</span>
-            <select value={limit} onChange={(e) => changeLimit(Number(e.target.value))} className="text-sm rounded-xl border border-border bg-bg-card text-text-primary px-2 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary/30">
-              {[12, 24, 48].map((n) => <option key={n} value={n}>{n}</option>)}
-            </select>
-            <span className="text-xs text-text-muted hidden sm:block">hab.</span>
-          </div>
-        </div>
+        <CrudToolbar
+          searchValue={tipoSearch}
+          onSearchChange={(v) => { setTipoSearch(v); changeTipo(v); }}
+          searchPlaceholder="Filtrar por tipo (ej: suite, estándar...)"
+          pageSizeValue={limit}
+          onPageSizeChange={(v) => changeLimit(v)}
+          pageSizeOptions={[12, 24, 48]}
+          pageSizeSuffix="hab."
+        />
 
         {loading ? (
           <div className="flex items-center justify-center py-16 text-text-muted text-sm">Cargando...</div>
@@ -133,20 +114,13 @@ export default function RoomsPage() {
             </div>
 
             {/* Pagination */}
-            <div className="flex items-center justify-between text-xs text-text-muted px-4 sm:px-6 py-4 border-t border-border/50">
-              <span>{total === 0 ? "Sin resultados" : `${from}–${to} de ${total} habitación${total !== 1 ? "es" : ""}`}</span>
-              <div className="flex items-center gap-1">
-                <button onClick={() => goToPage(1)} disabled={page === 1} className={cn("px-2 py-1.5 rounded-lg border transition-all", page === 1 ? "border-border text-text-muted/30 cursor-not-allowed" : "border-border hover:border-primary/50 hover:text-primary")}>«</button>
-                <button onClick={() => goToPage(page - 1)} disabled={page === 1} className={cn("px-3 py-1.5 rounded-lg border transition-all", page === 1 ? "border-border text-text-muted/30 cursor-not-allowed" : "border-border hover:border-primary/50 hover:text-primary")}>Anterior</button>
-                {pageNumbers.map((p, i) =>
-                  p === "..." ? <span key={`e-${i}`} className="px-1">…</span> : (
-                    <button key={p} onClick={() => goToPage(p as number)} className={cn("w-8 h-8 rounded-lg border text-xs transition-all", p === page ? "bg-primary text-white border-primary" : "border-border hover:border-primary/50 hover:text-primary")}>{p}</button>
-                  )
-                )}
-                <button onClick={() => goToPage(page + 1)} disabled={!hasNextPage} className={cn("px-3 py-1.5 rounded-lg border transition-all", !hasNextPage ? "border-border text-text-muted/30 cursor-not-allowed" : "border-border hover:border-primary/50 hover:text-primary")}>Siguiente</button>
-                <button onClick={() => goToPage(totalPages)} disabled={page === totalPages} className={cn("px-2 py-1.5 rounded-lg border transition-all", page === totalPages ? "border-border text-text-muted/30 cursor-not-allowed" : "border-border hover:border-primary/50 hover:text-primary")}>»</button>
-              </div>
-            </div>
+            <Pagination
+              page={page}
+              totalPages={totalPages}
+              hasNextPage={hasNextPage}
+              onPageChange={goToPage}
+              label={total === 0 ? "Sin resultados" : `${from}–${to} de ${total} habitación${total !== 1 ? "es" : ""}`}
+            />
           </>
         )}
       </PanelHeader>
@@ -306,7 +280,7 @@ export default function RoomsPage() {
 
             <div className="flex gap-3 pt-2">
               <Button onClick={(e) => handleEdit(selectedHabitacion, e)} className="flex-1">Editar</Button>
-              <Button onClick={handleDelete} variant="danger" className="flex-1" disabled={deleting}>{deleting ? "Eliminando..." : "Eliminar"}</Button>
+              <Button onClick={() => setDeleteOpen(true)} variant="danger" className="flex-1" disabled={deleting}>{deleting ? "Eliminando..." : "Eliminar"}</Button>
               <Button onClick={() => setSelectedHabitacion(null)} variant="secondary" className="flex-1">Cerrar</Button>
             </div>
           </div>
@@ -317,6 +291,23 @@ export default function RoomsPage() {
       {selectedHabitacion && (
         <ImageCarousel images={selectedHabitacion.url_imagen ?? []} isOpen={carouselOpen} onClose={() => setCarouselOpen(false)} initialIndex={carouselIndex} />
       )}
+
+      <ConfirmDialog
+        isOpen={deleteOpen}
+        onClose={() => setDeleteOpen(false)}
+        title="Eliminar habitación"
+        description={
+          selectedHabitacion ? `¿Eliminar la habitación ${selectedHabitacion.nro_habitacion}?` : undefined
+        }
+        confirmText="Eliminar"
+        cancelText="Cancelar"
+        confirmVariant="danger"
+        isConfirmLoading={deleting}
+        onConfirm={async () => {
+          setDeleteOpen(false);
+          await handleDelete();
+        }}
+      />
     </>
   );
 }

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { PanelHeader, Button, EmptyState, Loading, Modal } from "@/components";
+import { PanelHeader, Button, EmptyState, Loading, Modal, ConfirmDialog } from "@/components";
 import { CanalCard } from "./CanalCard";
 import { CanalModal } from "./CanalModal";
 import { tipoCanalLabels, tipoCanalColors } from "../types";
@@ -19,6 +19,7 @@ export default function CanalesPage() {
   const [editingCanal, setEditingCanal] = useState<Canal | null>(null);
   const [selectedCanal, setSelectedCanal] = useState<Canal | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
 
   if (loading) return <div className="flex items-center justify-center min-h-[60vh]"><Loading text="Cargando canales..." /></div>;
   if (error) return <div className="flex items-center justify-center min-h-[60vh]"><div className="text-danger">{error}</div></div>;
@@ -30,8 +31,6 @@ export default function CanalesPage() {
 
   const handleDelete = async () => {
     if (!selectedCanal) return;
-    const confirmed = window.confirm(`¿Eliminar el canal "${selectedCanal.nombre}"?`);
-    if (!confirmed) return;
 
     setDeleting(true);
     try {
@@ -133,7 +132,7 @@ export default function CanalesPage() {
                 {isAdmin && (
                   <>
                     <button onClick={() => openEdit(selectedCanal)} className="flex-1 py-3 bg-accent-primary/10 text-accent-primary font-medium rounded-xl hover:bg-accent-primary/20 transition-all border border-accent-primary/20">Editar</button>
-                    <button onClick={handleDelete} disabled={deleting} className="flex-1 py-3 bg-danger-bg text-danger font-medium rounded-xl hover:bg-danger-bg transition-all border border-danger/20 disabled:opacity-50">{deleting ? "Eliminando..." : "Eliminar"}</button>
+                    <button onClick={() => setDeleteOpen(true)} disabled={deleting} className="flex-1 py-3 bg-danger-bg text-danger font-medium rounded-xl hover:bg-danger-bg transition-all border border-danger/20 disabled:opacity-50">{deleting ? "Eliminando..." : "Eliminar"}</button>
                   </>
                 )}
                 <button onClick={() => setSelectedCanal(null)} className="flex-1 py-3 bg-paper-medium/20 text-text-muted font-medium rounded-xl hover:bg-paper-medium/30 transition-all border border-border">Cerrar</button>
@@ -141,6 +140,21 @@ export default function CanalesPage() {
           </div>
         </Modal>
       )}
+
+      <ConfirmDialog
+        isOpen={deleteOpen}
+        onClose={() => setDeleteOpen(false)}
+        title="Eliminar canal"
+        description={selectedCanal ? `¿Eliminar el canal "${selectedCanal.nombre}"?` : undefined}
+        confirmText="Eliminar"
+        cancelText="Cancelar"
+        confirmVariant="danger"
+        isConfirmLoading={deleting}
+        onConfirm={async () => {
+          setDeleteOpen(false);
+          await handleDelete();
+        }}
+      />
     </>
   );
 }

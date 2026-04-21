@@ -137,7 +137,7 @@ export function EstanciaModal({ isOpen, onClose, onSuccess, estancia, onSave }: 
             onFocus={() => setShowSuggestions(true)}
             onBlur={() => setTimeout(() => setShowSuggestions(false), 150)}
             placeholder="Buscar por código o nombre de huésped..."
-            className={cn(selectClass, reservaSeleccionada ? "border-emerald-500/50 bg-success/5" : "")}
+            className={cn(selectClass, reservaSeleccionada ? "border-success/40 bg-success-bg/40" : "")}
             required
           />
 

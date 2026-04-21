@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { PanelHeader, Button, EmptyState, Modal } from "@/components";
+import { PanelHeader, Button, EmptyState, Modal, CrudToolbar, Pagination, ConfirmDialog } from "@/components";
 import { useHuespedes } from "@/features/clients/hooks/useHuespedes";
 import { useHabitaciones } from "@/features/rooms/hooks/useRooms";
 import { useTarifas } from "@/features/rates/hooks/useTarifas";
@@ -32,6 +32,7 @@ export default function ReservationsPage() {
   const [selectedReserva, setSelectedReserva] = useState<Reserva | null>(null);
   const [tipoSearch, setTipoSearch] = useState("");
   const [deleting, setDeleting] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<Reserva | null>(null);
 
   if (error) return <div className="flex items-center justify-center min-h-[60vh]"><div className="text-danger">{error}</div></div>;
 
@@ -41,22 +42,15 @@ export default function ReservationsPage() {
   const from = total === 0 ? 0 : (page - 1) * limit + 1;
   const to = Math.min(page * limit, total);
 
-  const pageNumbers = Array.from({ length: totalPages }, (_, i) => i + 1)
-    .filter((p) => p === 1 || p === totalPages || Math.abs(p - page) <= 1)
-    .reduce<(number | "...")[]>((acc, p, i, arr) => {
-      if (i > 0 && p - (arr[i - 1] as number) > 1) acc.push("...");
-      acc.push(p); return acc;
-    }, []);
-
   const handleCreate = async (data: CreateReserva) => createReserva(data);
   const handleUpdate = async (data: UpdateReserva) => {
     if (!editingReserva) throw new Error("No hay reserva seleccionada");
     return updateReserva(editingReserva.id, data);
   };
 
+  const requestDelete = (r: Reserva) => setDeleteTarget(r);
+
   const handleDelete = async (r: Reserva) => {
-    const confirmed = window.confirm(`¿Eliminar la reserva "${r.codigo}"?`);
-    if (!confirmed) return;
     setDeleting(true);
     try {
       await deleteReserva(r.id);
@@ -111,54 +105,41 @@ export default function ReservationsPage() {
             </div>
 
             {/* Toolbar */}
-            <div className="px-4 sm:px-6 pb-3 flex flex-col sm:flex-row gap-3">
-              <div className="relative flex-1">
-                <MdSearch className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
-                <input
-                  type="text"
-                  value={search}
-                  onChange={(e) => changeSearch(e.target.value)}                  
-                  placeholder="Buscar por nombre de huésped..."
-                  className="w-full pl-9 pr-4 py-2.5 text-sm rounded-xl border border-border bg-bg-card text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-primary/30"
-                />
-              </div>
-
-              <div className="relative flex-1">
+            <CrudToolbar
+              searchValue={search}
+              onSearchChange={(v) => changeSearch(v)}
+              searchPlaceholder="Buscar por nombre de huésped..."
+              pageSizeValue={limit}
+              onPageSizeChange={(v) => changeLimit(v)}
+              pageSizeOptions={[5, 10, 25, 50]}
+            >
+              <div className="relative flex-1 min-w-[240px]">
                 <MdSearch className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
                 <input
                   type="text"
                   value={tipoSearch}
                   onChange={(e) => { setTipoSearch(e.target.value); changeTipo(e.target.value); }}
                   placeholder="Filtrar por tipo habitación (ej: Suite, Doble...)"
-                  className="w-full pl-9 pr-4 py-2.5 text-sm rounded-xl border border-border bg-bg-card text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-primary/30"
+                  className="w-full pl-9 pr-4 py-2.5 text-base rounded-xl border border-border bg-bg-card text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-primary/30"
                 />
               </div>
-
-
-              <div className="flex items-center gap-2 shrink-0">
-                <span className="text-xs text-text-muted hidden sm:block">Mostrar</span>
-                <select value={limit} onChange={(e) => changeLimit(Number(e.target.value))} className="text-sm rounded-xl border border-border bg-bg-card text-text-primary px-2 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary/30">
-                  {[5, 10, 25, 50].map((n) => <option key={n} value={n}>{n}</option>)}
-                </select>
-                <span className="text-xs text-text-muted hidden sm:block">filas</span>
-              </div>
-            </div>
+            </CrudToolbar>
 
             {/* Filtro tipo de habitación */}
             
 
             {/* Table */}
             <div className="overflow-x-auto px-4 sm:px-6 pb-2">
-              <table className="w-full text-sm">
+              <table className="w-full text-base">
                 <thead>
                   <tr className="border-b border-border">
-                    <th className="text-left py-3 px-2 text-xs font-semibold text-text-muted uppercase tracking-wide">Código</th>
-                    <th className="text-left py-3 px-2 text-xs font-semibold text-text-muted uppercase tracking-wide">Huésped</th>
-                    <th className="text-left py-3 px-2 text-xs font-semibold text-text-muted uppercase tracking-wide hidden sm:table-cell">Habitación</th>
-                    <th className="text-left py-3 px-2 text-xs font-semibold text-text-muted uppercase tracking-wide hidden md:table-cell">Fechas</th>
-                    <th className="text-left py-3 px-2 text-xs font-semibold text-text-muted uppercase tracking-wide hidden lg:table-cell">Pax</th>
-                    <th className="text-left py-3 px-2 text-xs font-semibold text-text-muted uppercase tracking-wide">Estado</th>
-                    <th className="py-3 px-2 text-right text-xs font-semibold text-text-muted uppercase tracking-wide">Acciones</th>
+                    <th className="text-left py-3 px-2 text-sm font-semibold text-text-muted uppercase tracking-wide">Código</th>
+                    <th className="text-left py-3 px-2 text-sm font-semibold text-text-muted uppercase tracking-wide">Huésped</th>
+                    <th className="text-left py-3 px-2 text-sm font-semibold text-text-muted uppercase tracking-wide hidden sm:table-cell">Habitación</th>
+                    <th className="text-left py-3 px-2 text-sm font-semibold text-text-muted uppercase tracking-wide hidden md:table-cell">Fechas</th>
+                    <th className="text-left py-3 px-2 text-sm font-semibold text-text-muted uppercase tracking-wide hidden lg:table-cell">Pax</th>
+                    <th className="text-left py-3 px-2 text-sm font-semibold text-text-muted uppercase tracking-wide">Estado</th>
+                    <th className="py-3 px-2 text-right text-sm font-semibold text-text-muted uppercase tracking-wide">Acciones</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -168,16 +149,16 @@ export default function ReservationsPage() {
                     <tr><td colSpan={7} className="text-center py-10 text-text-muted">Sin resultados</td></tr>
                   ) : filtered.map((r) => (
                     <tr key={r.id} onClick={() => setSelectedReserva(r)} className="border-b border-border/50 last:border-0 hover:bg-accent-primary/5 cursor-pointer transition-colors">
-                      <td className="py-3 px-2 font-mono text-xs font-medium text-accent-primary">{r.codigo}</td>
+                      <td className="py-3 px-2 font-mono text-sm font-medium text-accent-primary">{r.codigo}</td>
                       <td className="py-3 px-2 font-medium text-text-primary">{r.nombre_huesped}</td>
                       <td className="py-3 px-2 text-text-muted hidden sm:table-cell">Hab. {r.nro_habitacion}</td>
                       <td className="py-3 px-2 hidden md:table-cell">
-                        <p className="text-text-primary text-xs">{formatUTCDate(r.fecha_inicio)}</p>
-                        <p className="text-text-muted text-xs">{formatUTCDate(r.fecha_fin)} · {noches(r)}n</p>
+                        <p className="text-text-primary text-sm">{formatUTCDate(r.fecha_inicio)}</p>
+                        <p className="text-text-muted text-sm">{formatUTCDate(r.fecha_fin)} · {noches(r)}n</p>
                       </td>
                       <td className="py-3 px-2 text-text-muted hidden lg:table-cell">{r.adultos}A{r.ninos > 0 ? ` ${r.ninos}N` : ""}</td>
                       <td className="py-3 px-2">
-                        <span className={cn("text-xs font-medium px-2 py-0.5 rounded-full", estadoReservaColors[r.estado])}>
+                        <span className={cn("text-sm font-medium px-2 py-0.5 rounded-full", estadoReservaColors[r.estado])}>
                           {estadoReservaLabels[r.estado]}
                         </span>
                       </td>
@@ -187,7 +168,7 @@ export default function ReservationsPage() {
                           {r.estado !== "CANCELADA" && r.estado !== "COMPLETADA" && r.estado !== "NO_LLEGO" && (
                             <button onClick={() => openCancel(r)} title="Cancelar" className="p-1.5 rounded-lg text-text-muted hover:text-warning hover:bg-warning-bg transition-all"><MdCancel className="w-4 h-4" /></button>
                           )}
-                          <button onClick={() => handleDelete(r)} disabled={deleting} title="Eliminar" className="p-1.5 rounded-lg text-text-muted hover:text-danger hover:bg-danger/10 transition-all disabled:opacity-40"><MdDelete className="w-4 h-4" /></button>
+                          <button onClick={() => requestDelete(r)} disabled={deleting} title="Eliminar" className="p-1.5 rounded-lg text-text-muted hover:text-danger hover:bg-danger/10 transition-all disabled:opacity-40"><MdDelete className="w-4 h-4" /></button>
                         </div>
                       </td>
                     </tr>
@@ -197,20 +178,13 @@ export default function ReservationsPage() {
             </div>
 
             {/* Pagination */}
-            <div className="flex items-center justify-between text-xs text-text-muted px-4 sm:px-6 py-4 border-t border-border/50">
-              <span>{total === 0 ? "Sin resultados" : `${from}–${to} de ${total} reserva${total !== 1 ? "s" : ""}`}</span>
-              <div className="flex items-center gap-1">
-                <button onClick={() => goToPage(1)} disabled={page === 1} className={cn("px-2 py-1.5 rounded-lg border transition-all", page === 1 ? "border-border text-text-muted/30 cursor-not-allowed" : "border-border hover:border-primary/50 hover:text-primary")}>«</button>
-                <button onClick={() => goToPage(page - 1)} disabled={page === 1} className={cn("px-3 py-1.5 rounded-lg border transition-all", page === 1 ? "border-border text-text-muted/30 cursor-not-allowed" : "border-border hover:border-primary/50 hover:text-primary")}>Anterior</button>
-                {pageNumbers.map((p, i) =>
-                  p === "..." ? <span key={`e-${i}`} className="px-1">…</span> : (
-                    <button key={p} onClick={() => goToPage(p as number)} className={cn("w-8 h-8 rounded-lg border text-xs transition-all", p === page ? "bg-primary text-white border-primary" : "border-border hover:border-primary/50 hover:text-primary")}>{p}</button>
-                  )
-                )}
-                <button onClick={() => goToPage(page + 1)} disabled={!hasNextPage} className={cn("px-3 py-1.5 rounded-lg border transition-all", !hasNextPage ? "border-border text-text-muted/30 cursor-not-allowed" : "border-border hover:border-primary/50 hover:text-primary")}>Siguiente</button>
-                <button onClick={() => goToPage(totalPages)} disabled={page === totalPages} className={cn("px-2 py-1.5 rounded-lg border transition-all", page === totalPages ? "border-border text-text-muted/30 cursor-not-allowed" : "border-border hover:border-primary/50 hover:text-primary")}>»</button>
-              </div>
-            </div>
+            <Pagination
+              page={page}
+              totalPages={totalPages}
+              hasNextPage={hasNextPage}
+              onPageChange={goToPage}
+              label={total === 0 ? "Sin resultados" : `${from}–${to} de ${total} reserva${total !== 1 ? "s" : ""}`}
+            />
           </>
         )}
       </PanelHeader>
@@ -271,13 +245,30 @@ export default function ReservationsPage() {
             <div className="flex gap-3 pt-2">
               <button onClick={() => openEdit(selectedReserva)} className="flex-1 py-3 bg-accent-primary/10 text-accent-primary font-medium rounded-xl hover:bg-accent-primary/20 transition-all border border-accent-primary/20">Editar</button>
               {selectedReserva.estado !== "CANCELADA" && selectedReserva.estado !== "COMPLETADA" && selectedReserva.estado !== "NO_LLEGO" && (
-                <button onClick={() => openCancel(selectedReserva)} className="flex-1 py-3 bg-amber-50 text-warning font-medium rounded-xl hover:bg-amber-100 transition-all border border-warning/20">Cancelar</button>
+                <button onClick={() => openCancel(selectedReserva)} className="flex-1 py-3 bg-warning-bg text-warning font-medium rounded-xl hover:bg-warning-bg/80 transition-all border border-warning/20">Cancelar</button>
               )}
-              <button onClick={() => handleDelete(selectedReserva)} disabled={deleting} className="flex-1 py-3 bg-danger-bg text-danger font-medium rounded-xl hover:bg-danger-bg transition-all border border-danger/20 disabled:opacity-50">Eliminar</button>
+              <button onClick={() => requestDelete(selectedReserva)} disabled={deleting} className="flex-1 py-3 bg-danger-bg text-danger font-medium rounded-xl hover:bg-danger-bg transition-all border border-danger/20 disabled:opacity-50">Eliminar</button>
             </div>
           </div>
         </Modal>
       )}
+
+      <ConfirmDialog
+        isOpen={!!deleteTarget}
+        onClose={() => setDeleteTarget(null)}
+        title="Eliminar reserva"
+        description={deleteTarget ? `¿Eliminar la reserva "${deleteTarget.codigo}"?` : undefined}
+        confirmText="Eliminar"
+        cancelText="Cancelar"
+        confirmVariant="danger"
+        isConfirmLoading={deleting}
+        onConfirm={async () => {
+          if (!deleteTarget) return;
+          const target = deleteTarget;
+          setDeleteTarget(null);
+          await handleDelete(target);
+        }}
+      />
     </>
   );
 }

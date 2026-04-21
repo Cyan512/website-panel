@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { authClient } from "@/shared/lib/auth";
-import { PanelHeader, Button, EmptyState, Loading, Modal } from "@/components";
+import { PanelHeader, Button, EmptyState, Loading, Modal, CrudToolbar, Pagination, ConfirmDialog } from "@/components";
 import { PagoModal } from "./PagoModal";
 import { sileo } from "sileo";
 import { isHandledError } from "@/shared/utils/error";
@@ -28,6 +28,7 @@ export default function PagosPage() {
   const [selectedPago, setSelectedPago] = useState<Pago | null>(null);
   const [editingPago, setEditingPago] = useState<Pago | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<Pago | null>(null);
   const [search, setSearch] = useState("");
   const [filterEstado, setFilterEstado] = useState<EstadoPago | "">("");
   const [page, setPage] = useState(1);
@@ -55,8 +56,6 @@ export default function PagosPage() {
   };
 
   const handleDelete = async (pago: Pago) => {
-    const confirmed = window.confirm(`¿Eliminar pago de ${pago.moneda} ${parseFloat(pago.monto).toFixed(2)}?`);
-    if (!confirmed) return;
     setDeleting(true);
     try {
       await deletePago(pago.id);
@@ -82,12 +81,6 @@ export default function PagosPage() {
   const paginated = filtered.slice((page - 1) * perPage, page * perPage);
   const from = filtered.length === 0 ? 0 : (page - 1) * perPage + 1;
   const to = Math.min(page * perPage, filtered.length);
-  const pageNumbers = Array.from({ length: totalPages }, (_, i) => i + 1)
-    .filter((p) => p === 1 || p === totalPages || Math.abs(p - page) <= 1)
-    .reduce<(number | "...")[]>((acc, p, i, arr) => {
-      if (i > 0 && p - (arr[i - 1] as number) > 1) acc.push("...");
-      acc.push(p); return acc;
-    }, []);
 
   const totalMonto = pagos.reduce((acc, p) => acc + parseFloat(p.monto), 0);
   const montoConfirmado = pagos.filter(p => p.estado === "CONFIRMADO").reduce((acc, p) => acc + parseFloat(p.monto), 0);
@@ -128,19 +121,14 @@ export default function PagosPage() {
             </div>
 
             {/* Toolbar */}
-            <div className="px-4 sm:px-6 pb-3 flex flex-col sm:flex-row gap-3">
-              <div className="relative flex-1">
-                <MdSearch className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
-                <input type="text" value={search} onChange={(e) => { setSearch(e.target.value); setPage(1); }} placeholder="Buscar por concepto, método, monto..." className="w-full pl-9 pr-4 py-2.5 text-sm rounded-xl border border-border bg-bg-card text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-primary/30" />
-              </div>
-              <div className="flex items-center gap-2 shrink-0">
-                <span className="text-xs text-text-muted hidden sm:block">Mostrar</span>
-                <select value={perPage} onChange={(e) => { setPerPage(Number(e.target.value)); setPage(1); }} className="text-sm rounded-xl border border-border bg-bg-card text-text-primary px-2 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary/30">
-                  {[5, 10, 25, 50].map((n) => <option key={n} value={n}>{n}</option>)}
-                </select>
-                <span className="text-xs text-text-muted hidden sm:block">filas</span>
-              </div>
-            </div>
+            <CrudToolbar
+              searchValue={search}
+              onSearchChange={(v) => { setSearch(v); setPage(1); }}
+              searchPlaceholder="Buscar por concepto, método, monto..."
+              pageSizeValue={perPage}
+              onPageSizeChange={(v) => { setPerPage(v); setPage(1); }}
+              pageSizeOptions={[5, 10, 25, 50]}
+            />
 
             {/* Estado filters */}
             <div className="px-4 sm:px-6 pb-3 flex gap-2 flex-wrap">
@@ -154,16 +142,16 @@ export default function PagosPage() {
 
             {/* Table */}
             <div className="overflow-x-auto px-4 sm:px-6">
-              <table className="w-full text-sm">
+              <table className="w-full text-base">
                 <thead>
                   <tr className="border-b border-border">
-                    <th className="text-left py-3 px-2 text-xs font-semibold text-text-muted uppercase tracking-wide">Fecha</th>
-                    <th className="text-left py-3 px-2 text-xs font-semibold text-text-muted uppercase tracking-wide">Concepto</th>
-                    <th className="text-left py-3 px-2 text-xs font-semibold text-text-muted uppercase tracking-wide hidden sm:table-cell">Método</th>
-                    <th className="text-left py-3 px-2 text-xs font-semibold text-text-muted uppercase tracking-wide hidden md:table-cell">Recibido por</th>
-                    <th className="text-right py-3 px-2 text-xs font-semibold text-text-muted uppercase tracking-wide">Monto</th>
-                    <th className="text-left py-3 px-2 text-xs font-semibold text-text-muted uppercase tracking-wide">Estado</th>
-                    <th className="py-3 px-2 text-right text-xs font-semibold text-text-muted uppercase tracking-wide">Acciones</th>
+                    <th className="text-left py-3 px-2 text-sm font-semibold text-text-muted uppercase tracking-wide">Fecha</th>
+                    <th className="text-left py-3 px-2 text-sm font-semibold text-text-muted uppercase tracking-wide">Concepto</th>
+                    <th className="text-left py-3 px-2 text-sm font-semibold text-text-muted uppercase tracking-wide hidden sm:table-cell">Método</th>
+                    <th className="text-left py-3 px-2 text-sm font-semibold text-text-muted uppercase tracking-wide hidden md:table-cell">Recibido por</th>
+                    <th className="text-right py-3 px-2 text-sm font-semibold text-text-muted uppercase tracking-wide">Monto</th>
+                    <th className="text-left py-3 px-2 text-sm font-semibold text-text-muted uppercase tracking-wide">Estado</th>
+                    <th className="py-3 px-2 text-right text-sm font-semibold text-text-muted uppercase tracking-wide">Acciones</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -171,15 +159,15 @@ export default function PagosPage() {
                     <tr><td colSpan={7} className="text-center py-10 text-text-muted">Sin resultados</td></tr>
                   ) : paginated.map((p) => (
                     <tr key={p.id} onClick={() => setSelectedPago(p)} className="border-b border-border/50 last:border-0 hover:bg-accent-primary/5 cursor-pointer transition-colors">
-                      <td className="py-3 px-2 text-text-muted text-xs">{formatUTCDate(p.fecha_pago)}</td>
+                      <td className="py-3 px-2 text-text-muted text-sm">{formatUTCDate(p.fecha_pago)}</td>
                       <td className="py-3 px-2">
-                        <p className="font-medium text-text-primary text-xs">{p.concepto}</p>
+                        <p className="font-medium text-text-primary text-sm">{p.concepto}</p>
                       </td>
-                      <td className="py-3 px-2 text-text-muted hidden sm:table-cell text-xs">{metodoPagoLabels[p.metodo] ?? p.metodo}</td>
-                      <td className="py-3 px-2 text-text-muted hidden md:table-cell text-xs">{p.recibido_por?.name ?? "—"}</td>
+                      <td className="py-3 px-2 text-text-muted hidden sm:table-cell text-sm">{metodoPagoLabels[p.metodo] ?? p.metodo}</td>
+                      <td className="py-3 px-2 text-text-muted hidden md:table-cell text-sm">{p.recibido_por?.name ?? "—"}</td>
                       <td className="py-3 px-2 text-right font-semibold text-text-primary">{p.moneda} {parseFloat(p.monto).toFixed(2)}</td>
                       <td className="py-3 px-2">
-                        <span className={cn("text-xs font-medium px-2 py-0.5 rounded-full", estadoColors[p.estado] ?? "bg-bg-tertiary text-text-muted")}>
+                        <span className={cn("text-sm font-medium px-2 py-0.5 rounded-full", estadoColors[p.estado] ?? "bg-bg-tertiary text-text-muted")}>
                           {estadoPagoLabels[p.estado]}
                         </span>
                       </td>
@@ -188,7 +176,7 @@ export default function PagosPage() {
                           {isAdmin && (
                             <>
                               <button onClick={() => handleEdit(p)} title="Editar" className="p-1.5 rounded-lg text-text-muted hover:text-primary hover:bg-primary/10 transition-all"><MdEdit className="w-4 h-4" /></button>
-                              <button onClick={() => handleDelete(p)} disabled={deleting} title="Eliminar" className="p-1.5 rounded-lg text-text-muted hover:text-danger hover:bg-danger/10 transition-all disabled:opacity-40"><MdDelete className="w-4 h-4" /></button>
+                              <button onClick={() => setDeleteTarget(p)} disabled={deleting} title="Eliminar" className="p-1.5 rounded-lg text-text-muted hover:text-danger hover:bg-danger/10 transition-all disabled:opacity-40"><MdDelete className="w-4 h-4" /></button>
                             </>
                           )}
                         </div>
@@ -200,20 +188,12 @@ export default function PagosPage() {
             </div>
 
             {/* Pagination */}
-            <div className="flex items-center justify-between text-xs text-text-muted px-4 sm:px-6 py-4 border-t border-border/50">
-              <span>{filtered.length === 0 ? "Sin resultados" : `${from}–${to} de ${filtered.length} pago${filtered.length !== 1 ? "s" : ""}`}</span>
-              <div className="flex items-center gap-1">
-                <button onClick={() => setPage(1)} disabled={page === 1} className={cn("px-2 py-1.5 rounded-lg border transition-all", page === 1 ? "border-border text-text-muted/30 cursor-not-allowed" : "border-border hover:border-primary/50 hover:text-primary")}>«</button>
-                <button onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1} className={cn("px-3 py-1.5 rounded-lg border transition-all", page === 1 ? "border-border text-text-muted/30 cursor-not-allowed" : "border-border hover:border-primary/50 hover:text-primary")}>Anterior</button>
-                {pageNumbers.map((p, i) =>
-                  p === "..." ? <span key={`e-${i}`} className="px-1">…</span> : (
-                    <button key={p} onClick={() => setPage(p as number)} className={cn("w-8 h-8 rounded-lg border text-xs transition-all", p === page ? "bg-primary text-white border-primary" : "border-border hover:border-primary/50 hover:text-primary")}>{p}</button>
-                  )
-                )}
-                <button onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page === totalPages} className={cn("px-3 py-1.5 rounded-lg border transition-all", page === totalPages ? "border-border text-text-muted/30 cursor-not-allowed" : "border-border hover:border-primary/50 hover:text-primary")}>Siguiente</button>
-                <button onClick={() => setPage(totalPages)} disabled={page === totalPages} className={cn("px-2 py-1.5 rounded-lg border transition-all", page === totalPages ? "border-border text-text-muted/30 cursor-not-allowed" : "border-border hover:border-primary/50 hover:text-primary")}>»</button>
-              </div>
-            </div>
+            <Pagination
+              page={page}
+              totalPages={totalPages}
+              onPageChange={setPage}
+              label={filtered.length === 0 ? "Sin resultados" : `${from}–${to} de ${filtered.length} pago${filtered.length !== 1 ? "s" : ""}`}
+            />
           </>
         )}
       </PanelHeader>
@@ -255,7 +235,7 @@ export default function PagosPage() {
               {isAdmin && (
                 <>
                   <button onClick={() => handleEdit(selectedPago)} className="flex-1 py-3 bg-accent-primary/10 text-accent-primary font-medium rounded-xl hover:bg-accent-primary/20 transition-all border border-accent-primary/20">Editar</button>
-                  <button onClick={() => handleDelete(selectedPago)} disabled={deleting} className="flex-1 py-3 bg-danger-bg text-danger font-medium rounded-xl hover:bg-danger-bg transition-all border border-danger/20 disabled:opacity-50">{deleting ? "Eliminando..." : "Eliminar"}</button>
+                  <button onClick={() => setDeleteTarget(selectedPago)} disabled={deleting} className="flex-1 py-3 bg-danger-bg text-danger font-medium rounded-xl hover:bg-danger-bg transition-all border border-danger/20 disabled:opacity-50">{deleting ? "Eliminando..." : "Eliminar"}</button>
                 </>
               )}
               <button onClick={() => setSelectedPago(null)} className="flex-1 py-3 bg-paper-medium/20 text-text-muted font-medium rounded-xl hover:bg-paper-medium/30 transition-all border border-border">Cerrar</button>
@@ -263,6 +243,27 @@ export default function PagosPage() {
           </div>
         </Modal>
       )}
+
+      <ConfirmDialog
+        isOpen={!!deleteTarget}
+        onClose={() => setDeleteTarget(null)}
+        title="Eliminar pago"
+        description={
+          deleteTarget
+            ? `¿Eliminar pago de ${deleteTarget.moneda} ${parseFloat(deleteTarget.monto).toFixed(2)}?`
+            : undefined
+        }
+        confirmText="Eliminar"
+        cancelText="Cancelar"
+        confirmVariant="danger"
+        isConfirmLoading={deleting}
+        onConfirm={async () => {
+          if (!deleteTarget) return;
+          const target = deleteTarget;
+          setDeleteTarget(null);
+          await handleDelete(target);
+        }}
+      />
     </>
   );
 }

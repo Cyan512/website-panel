@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { PanelHeader, Button, Modal, InputField } from "@/components";
+import { PanelHeader, Button, Modal, InputField, Checkbox, CrudToolbar, Pagination, ConfirmDialog } from "@/components";
 import { sileo } from "sileo";
 import { isHandledError } from "@/shared/utils/error";
 import { cn } from "@/shared/utils/cn";
@@ -78,6 +78,7 @@ export default function PromocionesPage() {
   const [form, setForm] = useState<PromoFormState>(emptyForm);
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<Promocion | null>(null);
 
   if (loading) return <div className="flex items-center justify-center min-h-[60vh] text-text-muted text-sm">Cargando promociones...</div>;
   if (error) return <div className="flex items-center justify-center min-h-[60vh] text-danger text-sm">{error}</div>;
@@ -141,7 +142,6 @@ export default function PromocionesPage() {
   };
 
   const handleDelete = async (p: Promocion) => {
-    if (!window.confirm(`¿Eliminar la promoción "${p.codigo}"?`)) return;
     setDeleting(true);
     try {
       await deletePromocion(p.id);
@@ -154,12 +154,6 @@ export default function PromocionesPage() {
 
   const from = filtered.length === 0 ? 0 : (page - 1) * limit + 1;
   const to = Math.min(page * limit, filtered.length);
-  const pageNumbers = Array.from({ length: totalPages }, (_, i) => i + 1)
-    .filter((p) => p === 1 || p === totalPages || Math.abs(p - page) <= 1)
-    .reduce<(number | "...")[]>((acc, p, i, arr) => {
-      if (i > 0 && p - (arr[i - 1] as number) > 1) acc.push("...");
-      acc.push(p); return acc;
-    }, []);
 
   return (
     <>
@@ -169,38 +163,27 @@ export default function PromocionesPage() {
         action={isAdmin ? <Button onClick={openCreate}><MdAdd className="w-4 h-4 mr-1" />Nueva Promoción</Button> : undefined}
       >
         {/* Toolbar */}
-        <div className="px-4 sm:px-6 py-3 flex flex-col sm:flex-row gap-3">
-          <div className="relative flex-1">
-            <MdSearch className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
-            <input
-              type="text" value={search}
-              onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-              placeholder="Buscar por código..."
-              className="w-full pl-9 pr-4 py-2.5 text-sm rounded-xl border border-border bg-bg-card text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-primary/30"
-            />
-          </div>
-          <div className="flex items-center gap-2 shrink-0">
-            <span className="text-xs text-text-muted hidden sm:block">Mostrar</span>
-            <select value={limit} onChange={(e) => { setLimit(Number(e.target.value)); setPage(1); }}
-              className="text-sm rounded-xl border border-border bg-bg-card text-text-primary px-2 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary/30">
-              {[5, 10, 25, 50].map((n) => <option key={n} value={n}>{n}</option>)}
-            </select>
-            <span className="text-xs text-text-muted hidden sm:block">filas</span>
-          </div>
-        </div>
+        <CrudToolbar
+          searchValue={search}
+          onSearchChange={(v) => { setSearch(v); setPage(1); }}
+          searchPlaceholder="Buscar por código..."
+          pageSizeValue={limit}
+          onPageSizeChange={(v) => { setLimit(v); setPage(1); }}
+          pageSizeOptions={[5, 10, 25, 50]}
+        />
 
         {/* Table */}
         <div className="overflow-x-auto px-4 sm:px-6">
-          <table className="w-full text-sm">
+          <table className="w-full text-base">
             <thead>
               <tr className="border-b border-border">
-                <th className="text-left py-3 px-2 text-xs font-semibold text-text-muted uppercase tracking-wide">Código</th>
-                <th className="text-left py-3 px-2 text-xs font-semibold text-text-muted uppercase tracking-wide hidden sm:table-cell">Tipo</th>
-                <th className="text-right py-3 px-2 text-xs font-semibold text-text-muted uppercase tracking-wide">Valor</th>
-                <th className="text-left py-3 px-2 text-xs font-semibold text-text-muted uppercase tracking-wide hidden md:table-cell">Vigencia</th>
-                <th className="text-center py-3 px-2 text-xs font-semibold text-text-muted uppercase tracking-wide hidden sm:table-cell">Estado</th>
-                <th className="text-center py-3 px-2 text-xs font-semibold text-text-muted uppercase tracking-wide hidden lg:table-cell">Habitaciones</th>
-                <th className="py-3 px-2 text-right text-xs font-semibold text-text-muted uppercase tracking-wide">Acciones</th>
+                <th className="text-left py-3 px-2 text-sm font-semibold text-text-muted uppercase tracking-wide">Código</th>
+                <th className="text-left py-3 px-2 text-sm font-semibold text-text-muted uppercase tracking-wide hidden sm:table-cell">Tipo</th>
+                <th className="text-right py-3 px-2 text-sm font-semibold text-text-muted uppercase tracking-wide">Valor</th>
+                <th className="text-left py-3 px-2 text-sm font-semibold text-text-muted uppercase tracking-wide hidden md:table-cell">Vigencia</th>
+                <th className="text-center py-3 px-2 text-sm font-semibold text-text-muted uppercase tracking-wide hidden sm:table-cell">Estado</th>
+                <th className="text-center py-3 px-2 text-sm font-semibold text-text-muted uppercase tracking-wide hidden lg:table-cell">Habitaciones</th>
+                <th className="py-3 px-2 text-right text-sm font-semibold text-text-muted uppercase tracking-wide">Acciones</th>
               </tr>
             </thead>
             <tbody>
@@ -210,8 +193,8 @@ export default function PromocionesPage() {
                 const vigente = isVigente(p);
                 return (
                   <tr key={p.id} className="border-b border-border/50 last:border-0 hover:bg-accent-primary/5 transition-colors">
-                    <td className="py-3 px-2 font-mono text-xs font-semibold text-text-primary">{p.codigo}</td>
-                    <td className="py-3 px-2 text-xs text-text-muted hidden sm:table-cell">
+                    <td className="py-3 px-2 font-mono text-sm font-semibold text-text-primary">{p.codigo}</td>
+                    <td className="py-3 px-2 text-sm text-text-muted hidden sm:table-cell">
                       {p.tipo_descuento === "PORCENTAJE" ? "Porcentaje" : "Monto fijo"}
                     </td>
                     <td className="py-3 px-2 text-right font-semibold text-text-primary">
@@ -219,7 +202,7 @@ export default function PromocionesPage() {
                         ? `${p.valor_descuento}%`
                         : `S/ ${p.valor_descuento.toFixed(2)}`}
                     </td>
-                    <td className="py-3 px-2 text-xs text-text-muted hidden md:table-cell">
+                    <td className="py-3 px-2 text-sm text-text-muted hidden md:table-cell">
                       {formatUTCDate(p.vig_desde)}
                       {" → "}
                       {formatUTCDate(p.vig_hasta)}
@@ -244,7 +227,7 @@ export default function PromocionesPage() {
                               className="p-1.5 rounded-lg text-text-muted hover:text-primary hover:bg-primary/10 transition-all">
                               <MdEdit className="w-4 h-4" />
                             </button>
-                            <button onClick={() => handleDelete(p)} disabled={deleting} title="Eliminar"
+                            <button onClick={() => setDeleteTarget(p)} disabled={deleting} title="Eliminar"
                               className="p-1.5 rounded-lg text-text-muted hover:text-danger hover:bg-danger/10 transition-all disabled:opacity-40">
                               <MdDelete className="w-4 h-4" />
                             </button>
@@ -260,18 +243,16 @@ export default function PromocionesPage() {
         </div>
 
         {/* Pagination */}
-        <div className="flex items-center justify-between text-xs text-text-muted px-4 sm:px-6 py-4 border-t border-border/50">
-          <span>{filtered.length === 0 ? "Sin resultados" : `${from}–${to} de ${filtered.length} promoción${filtered.length !== 1 ? "es" : ""}`}</span>
-          <div className="flex items-center gap-1">
-            <button onClick={() => setPage(1)} disabled={page === 1} className={cn("px-2 py-1.5 rounded-lg border transition-all", page === 1 ? "border-border text-text-muted/30 cursor-not-allowed" : "border-border hover:border-primary/50 hover:text-primary")}>«</button>
-            <button onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1} className={cn("px-3 py-1.5 rounded-lg border transition-all", page === 1 ? "border-border text-text-muted/30 cursor-not-allowed" : "border-border hover:border-primary/50 hover:text-primary")}>Anterior</button>
-            {pageNumbers.map((p, i) => p === "..." ? <span key={`e-${i}`} className="px-1">…</span> : (
-              <button key={p} onClick={() => setPage(p as number)} className={cn("w-8 h-8 rounded-lg border text-xs transition-all", p === page ? "bg-primary text-white border-primary" : "border-border hover:border-primary/50 hover:text-primary")}>{p}</button>
-            ))}
-            <button onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page === totalPages} className={cn("px-3 py-1.5 rounded-lg border transition-all", page === totalPages ? "border-border text-text-muted/30 cursor-not-allowed" : "border-border hover:border-primary/50 hover:text-primary")}>Siguiente</button>
-            <button onClick={() => setPage(totalPages)} disabled={page === totalPages} className={cn("px-2 py-1.5 rounded-lg border transition-all", page === totalPages ? "border-border text-text-muted/30 cursor-not-allowed" : "border-border hover:border-primary/50 hover:text-primary")}>»</button>
-          </div>
-        </div>
+        <Pagination
+          page={page}
+          totalPages={totalPages}
+          onPageChange={setPage}
+          label={
+            filtered.length === 0
+              ? "Sin resultados"
+              : `${from}–${to} de ${filtered.length} promoción${filtered.length !== 1 ? "es" : ""}`
+          }
+        />
       </PanelHeader>
 
       {/* ── Modal ── */}
@@ -384,14 +365,13 @@ export default function PromocionesPage() {
           </div>
 
           <div className="flex items-center gap-3">
-            <input
-              type="checkbox"
+            <Checkbox
               id="promo-estado"
+              size="md"
               checked={form.estado}
-              onChange={(e) => setForm((f) => ({ ...f, estado: e.target.checked }))}
-              className="w-4 h-4 accent-primary"
+              onChange={(e) => setForm((f) => ({ ...f, estado: e.currentTarget.checked }))}
+              label="Activa"
             />
-            <label htmlFor="promo-estado" className="text-sm text-text-primary">Activa</label>
           </div>
 
           <div className="flex gap-3 pt-2">
@@ -402,6 +382,23 @@ export default function PromocionesPage() {
         </div>
       </Modal>
       )}
+
+      <ConfirmDialog
+        isOpen={!!deleteTarget}
+        onClose={() => setDeleteTarget(null)}
+        title="Eliminar promoción"
+        description={deleteTarget ? `¿Eliminar la promoción "${deleteTarget.codigo}"?` : undefined}
+        confirmText="Eliminar"
+        cancelText="Cancelar"
+        confirmVariant="danger"
+        isConfirmLoading={deleting}
+        onConfirm={async () => {
+          if (!deleteTarget) return;
+          const target = deleteTarget;
+          setDeleteTarget(null);
+          await handleDelete(target);
+        }}
+      />
     </>
   );
 }

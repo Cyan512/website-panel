@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { PanelHeader, Button, EmptyState, Loading, Modal } from "@/components";
+import { PanelHeader, Button, EmptyState, Loading, Modal, CrudToolbar, Pagination, ConfirmDialog } from "@/components";
 import { EstanciaModal } from "./EstanciaModal";
 import { CheckoutModal } from "./CheckoutModal";
 import { estadoEstadiaLabels, estadoEstadiaColors } from "../types";
@@ -22,6 +22,7 @@ export default function EstanciasPage() {
   const [editingEstancia, setEditingEstancia] = useState<Estancia | null>(null);
   const [selectedEstancia, setSelectedEstancia] = useState<Estancia | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<Estancia | null>(null);
   const [search, setSearch] = useState("");
   const [filterEstado, setFilterEstado] = useState<EstadoEstadia | "">("");
   const [page, setPage] = useState(1);
@@ -36,8 +37,6 @@ export default function EstanciasPage() {
   };
 
   const handleDelete = async (e: Estancia) => {
-    const confirmed = window.confirm(`¿Eliminar la estancia de "${e.huesped.nombres} ${e.huesped.apellidos}"?`);
-    if (!confirmed) return;
     setDeleting(true);
     try {
       await deleteEstancia(e.id);
@@ -69,14 +68,6 @@ export default function EstanciasPage() {
   const paginated = filtered.slice((page - 1) * perPage, page * perPage);
   const from = filtered.length === 0 ? 0 : (page - 1) * perPage + 1;
   const to = Math.min(page * perPage, filtered.length);
-
-  const pages = Array.from({ length: totalPages }, (_, i) => i + 1)
-    .filter((p) => p === 1 || p === totalPages || Math.abs(p - page) <= 1)
-    .reduce<(number | "...")[]>((acc, p, i, arr) => {
-      if (i > 0 && p - (arr[i - 1] as number) > 1) acc.push("...");
-      acc.push(p);
-      return acc;
-    }, []);
 
   const enCasa = estancias.filter((e) => e.estado === "EN_CASA").length;
 
@@ -113,29 +104,14 @@ export default function EstanciasPage() {
             </div>
 
             {/* Toolbar */}
-            <div className="px-4 sm:px-6 pb-3 flex flex-col sm:flex-row gap-3">
-              <div className="relative flex-1">
-                <MdSearch className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
-                <input
-                  type="text"
-                  value={search}
-                  onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-                  placeholder="Buscar por huésped, habitación, reserva..."
-                  className="w-full pl-9 pr-4 py-2.5 text-sm rounded-xl border border-border bg-bg-card text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-primary/30"
-                />
-              </div>
-              <div className="flex items-center gap-2 shrink-0">
-                <span className="text-xs text-text-muted hidden sm:block">Mostrar</span>
-                <select
-                  value={perPage}
-                  onChange={(e) => { setPerPage(Number(e.target.value)); setPage(1); }}
-                  className="text-sm rounded-xl border border-border bg-bg-card text-text-primary px-2 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary/30"
-                >
-                  {[5, 10, 25, 50].map((n) => <option key={n} value={n}>{n}</option>)}
-                </select>
-                <span className="text-xs text-text-muted hidden sm:block">filas</span>
-              </div>
-            </div>
+            <CrudToolbar
+              searchValue={search}
+              onSearchChange={(v) => { setSearch(v); setPage(1); }}
+              searchPlaceholder="Buscar por huésped, habitación, reserva..."
+              pageSizeValue={perPage}
+              onPageSizeChange={(v) => { setPerPage(v); setPage(1); }}
+              pageSizeOptions={[5, 10, 25, 50]}
+            />
 
             {/* Estado filters */}
             <div className="px-4 sm:px-6 pb-3 flex gap-2 flex-wrap">
@@ -149,15 +125,15 @@ export default function EstanciasPage() {
 
             {/* Table */}
             <div className="overflow-x-auto px-4 sm:px-6">
-              <table className="w-full text-sm">
+              <table className="w-full text-base">
                 <thead>
                   <tr className="border-b border-border">
-                    <th className="text-left py-3 px-2 text-xs font-semibold text-text-muted uppercase tracking-wide">Huésped</th>
-                    <th className="text-left py-3 px-2 text-xs font-semibold text-text-muted uppercase tracking-wide hidden sm:table-cell">Habitación</th>
-                    <th className="text-left py-3 px-2 text-xs font-semibold text-text-muted uppercase tracking-wide hidden md:table-cell">Entrada</th>
-                    <th className="text-left py-3 px-2 text-xs font-semibold text-text-muted uppercase tracking-wide hidden md:table-cell">Salida</th>
-                    <th className="text-left py-3 px-2 text-xs font-semibold text-text-muted uppercase tracking-wide">Estado</th>
-                    <th className="py-3 px-2 text-right text-xs font-semibold text-text-muted uppercase tracking-wide">Acciones</th>
+                    <th className="text-left py-3 px-2 text-sm font-semibold text-text-muted uppercase tracking-wide">Huésped</th>
+                    <th className="text-left py-3 px-2 text-sm font-semibold text-text-muted uppercase tracking-wide hidden sm:table-cell">Habitación</th>
+                    <th className="text-left py-3 px-2 text-sm font-semibold text-text-muted uppercase tracking-wide hidden md:table-cell">Entrada</th>
+                    <th className="text-left py-3 px-2 text-sm font-semibold text-text-muted uppercase tracking-wide hidden md:table-cell">Salida</th>
+                    <th className="text-left py-3 px-2 text-sm font-semibold text-text-muted uppercase tracking-wide">Estado</th>
+                    <th className="py-3 px-2 text-right text-sm font-semibold text-text-muted uppercase tracking-wide">Acciones</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -185,7 +161,7 @@ export default function EstanciasPage() {
                           {isAdmin && (
                             <>
                               <button onClick={() => openEdit(e)} title="Editar" className="p-1.5 rounded-lg text-text-muted hover:text-primary hover:bg-primary/10 transition-all"><MdEdit className="w-4 h-4" /></button>
-                              <button onClick={() => handleDelete(e)} disabled={deleting} title="Eliminar" className="p-1.5 rounded-lg text-text-muted hover:text-danger hover:bg-danger/10 transition-all disabled:opacity-40"><MdDelete className="w-4 h-4" /></button>
+                              <button onClick={() => setDeleteTarget(e)} disabled={deleting} title="Eliminar" className="p-1.5 rounded-lg text-text-muted hover:text-danger hover:bg-danger/10 transition-all disabled:opacity-40"><MdDelete className="w-4 h-4" /></button>
                             </>
                           )}
                         </div>
@@ -197,20 +173,16 @@ export default function EstanciasPage() {
             </div>
 
             {/* Pagination */}
-            <div className="flex items-center justify-between text-xs text-text-muted px-4 sm:px-6 py-4 border-t border-border/50">
-              <span>{filtered.length === 0 ? "Sin resultados" : `${from}–${to} de ${filtered.length} estancia${filtered.length !== 1 ? "s" : ""}`}</span>
-              <div className="flex items-center gap-1">
-                <button onClick={() => setPage(1)} disabled={page === 1} className={cn("px-2 py-1.5 rounded-lg border transition-all", page === 1 ? "border-border text-text-muted/30 cursor-not-allowed" : "border-border hover:border-primary/50 hover:text-primary")}>«</button>
-                <button onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1} className={cn("px-3 py-1.5 rounded-lg border transition-all", page === 1 ? "border-border text-text-muted/30 cursor-not-allowed" : "border-border hover:border-primary/50 hover:text-primary")}>Anterior</button>
-                {pages.map((p, i) =>
-                  p === "..." ? <span key={`e-${i}`} className="px-1">…</span> : (
-                    <button key={p} onClick={() => setPage(p as number)} className={cn("w-8 h-8 rounded-lg border text-xs transition-all", p === page ? "bg-primary text-white border-primary" : "border-border hover:border-primary/50 hover:text-primary")}>{p}</button>
-                  )
-                )}
-                <button onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page === totalPages} className={cn("px-3 py-1.5 rounded-lg border transition-all", page === totalPages ? "border-border text-text-muted/30 cursor-not-allowed" : "border-border hover:border-primary/50 hover:text-primary")}>Siguiente</button>
-                <button onClick={() => setPage(totalPages)} disabled={page === totalPages} className={cn("px-2 py-1.5 rounded-lg border transition-all", page === totalPages ? "border-border text-text-muted/30 cursor-not-allowed" : "border-border hover:border-primary/50 hover:text-primary")}>»</button>
-              </div>
-            </div>
+            <Pagination
+              page={page}
+              totalPages={totalPages}
+              onPageChange={setPage}
+              label={
+                filtered.length === 0
+                  ? "Sin resultados"
+                  : `${from}–${to} de ${filtered.length} estancia${filtered.length !== 1 ? "s" : ""}`
+              }
+            />
           </>
         )}
       </PanelHeader>
@@ -263,12 +235,12 @@ export default function EstanciasPage() {
             )}
             <div className="flex gap-3 pt-2">
               {isAdmin && selectedEstancia.estado === "EN_CASA" && (
-                <button onClick={() => openCheckout(selectedEstancia)} className="flex-1 py-3 bg-blue-50 text-info font-medium rounded-xl hover:bg-blue-100 transition-all border border-info/20">Check-out</button>
+                <button onClick={() => openCheckout(selectedEstancia)} className="flex-1 py-3 bg-info-bg text-info font-medium rounded-xl hover:bg-info-bg/80 transition-all border border-info/20">Check-out</button>
               )}
               {isAdmin && (
                 <>
                   <button onClick={() => openEdit(selectedEstancia)} className="flex-1 py-3 bg-accent-primary/10 text-accent-primary font-medium rounded-xl hover:bg-accent-primary/20 transition-all border border-accent-primary/20">Editar</button>
-                  <button onClick={() => handleDelete(selectedEstancia)} disabled={deleting} className="flex-1 py-3 bg-danger-bg text-danger font-medium rounded-xl hover:bg-danger-bg transition-all border border-danger/20 disabled:opacity-50">{deleting ? "..." : "Eliminar"}</button>
+                  <button onClick={() => setDeleteTarget(selectedEstancia)} disabled={deleting} className="flex-1 py-3 bg-danger-bg text-danger font-medium rounded-xl hover:bg-danger-bg transition-all border border-danger/20 disabled:opacity-50">{deleting ? "..." : "Eliminar"}</button>
                 </>
               )}
               <button onClick={() => setSelectedEstancia(null)} className="flex-1 py-3 bg-paper-medium/20 text-text-muted font-medium rounded-xl hover:bg-paper-medium/30 transition-all border border-border">Cerrar</button>
@@ -276,6 +248,27 @@ export default function EstanciasPage() {
           </div>
         </Modal>
       )}
+
+      <ConfirmDialog
+        isOpen={!!deleteTarget}
+        onClose={() => setDeleteTarget(null)}
+        title="Eliminar estancia"
+        description={
+          deleteTarget
+            ? `¿Eliminar la estancia de "${deleteTarget.huesped.nombres} ${deleteTarget.huesped.apellidos}"?`
+            : undefined
+        }
+        confirmText="Eliminar"
+        cancelText="Cancelar"
+        confirmVariant="danger"
+        isConfirmLoading={deleting}
+        onConfirm={async () => {
+          if (!deleteTarget) return;
+          const target = deleteTarget;
+          setDeleteTarget(null);
+          await handleDelete(target);
+        }}
+      />
     </>
   );
 }

@@ -7,9 +7,9 @@ export const tipoCanalLabels: Record<TipoCanal, string> = {
 };
 
 export const tipoCanalColors: Record<TipoCanal, string> = {
-  OTA: "bg-blue-500 text-blue-100",
-  DIRECTO: "bg-emerald-500 text-emerald-100",
-  AGENTE: "bg-purple-500 text-purple-100",
+  OTA: "bg-info-bg text-info border border-info/20",
+  DIRECTO: "bg-success-bg text-success border border-success/20",
+  AGENTE: "bg-accent-primary/10 text-accent-primary border border-accent-primary/20",
 };
 
 export interface Canal {

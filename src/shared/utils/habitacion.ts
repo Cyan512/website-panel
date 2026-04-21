@@ -55,17 +55,17 @@ export function obtenerEstadoHabitacion(
 }
 
 export const estadoHabitacionColors: Record<EstadoHabitacionCalculado, string> = {
-  DISPONIBLE:      "bg-emerald-500 text-emerald-100",
-  OCUPADA:         "bg-red-500 text-red-100",
-  RESERVADA:       "bg-blue-500 text-blue-100",
-  PENDIENTE:       "bg-amber-500 text-amber-100",
-  "NO DISPONIBLE": "bg-gray-400 text-gray-100",
+  DISPONIBLE:      "bg-success-bg text-success border border-success/20",
+  OCUPADA:         "bg-danger-bg text-danger border border-danger/20",
+  RESERVADA:       "bg-info-bg text-info border border-info/20",
+  PENDIENTE:       "bg-warning-bg text-warning border border-warning/20",
+  "NO DISPONIBLE": "bg-bg-tertiary text-text-muted border border-border/50",
 };
 
 export const estadoHabitacionBar: Record<EstadoHabitacionCalculado, string> = {
-  DISPONIBLE:      "bg-gradient-to-r from-emerald-400 to-emerald-600",
-  OCUPADA:         "bg-gradient-to-r from-red-400 to-red-600",
-  RESERVADA:       "bg-gradient-to-r from-blue-400 to-blue-600",
-  PENDIENTE:       "bg-gradient-to-r from-amber-400 to-amber-600",
-  "NO DISPONIBLE": "bg-gradient-to-r from-gray-400 to-gray-500",
+  DISPONIBLE:      "bg-gradient-to-r from-success/40 to-success-bg",
+  OCUPADA:         "bg-gradient-to-r from-danger/40 to-danger-bg",
+  RESERVADA:       "bg-gradient-to-r from-info/40 to-info-bg",
+  PENDIENTE:       "bg-gradient-to-r from-warning/40 to-warning-bg",
+  "NO DISPONIBLE": "bg-gradient-to-r from-bg-tertiary/60 to-bg-tertiary/30",
 };

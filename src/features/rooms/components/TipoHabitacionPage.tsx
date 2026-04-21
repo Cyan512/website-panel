@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useTiposHabitacion } from "../hooks/useRooms";
 import { TipoHabitacionCard } from "./TipoHabitacionCard";
 import { TipoHabitacionModal } from "./TipoHabitacionModal";
-import { PanelHeader, Button, Modal } from "@/components";
+import { PanelHeader, Button, Modal, ConfirmDialog } from "@/components";
 import { sileo } from "sileo";
 import { isHandledError } from "@/shared/utils/error";
 import type { TipoHabitacion } from "../types";
@@ -14,12 +14,10 @@ export default function TipoHabitacionPage() {
   const [selectedTipo, setSelectedTipo] = useState<TipoHabitacion | null>(null);
   const [editingTipo, setEditingTipo] = useState<TipoHabitacion | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
 
   const handleDelete = async () => {
     if (!selectedTipo) return;
-    
-    const confirmed = window.confirm(`¿Estás seguro de eliminar "${selectedTipo.nombre}"?`);
-    if (!confirmed) return;
 
     setDeleting(true);
     try {
@@ -96,7 +94,7 @@ export default function TipoHabitacionPage() {
               <button onClick={(e) => handleEdit(selectedTipo, e)} className="flex-1 py-3 bg-accent-primary/10 text-accent-primary font-medium rounded-xl hover:bg-accent-primary/20 transition-all border border-accent-primary/20">
                 Editar
               </button>
-              <button onClick={handleDelete} disabled={deleting} className="flex-1 py-3 bg-danger-bg text-danger font-medium rounded-xl hover:bg-danger-bg transition-all border border-danger/20 disabled:opacity-50">
+              <button onClick={() => setDeleteOpen(true)} disabled={deleting} className="flex-1 py-3 bg-danger-bg text-danger font-medium rounded-xl hover:bg-danger-bg transition-all border border-danger/20 disabled:opacity-50">
                 {deleting ? "Eliminando..." : "Eliminar"}
               </button>
             </div>
@@ -107,6 +105,21 @@ export default function TipoHabitacionPage() {
           </div>
         </Modal>
       )}
+
+      <ConfirmDialog
+        isOpen={deleteOpen}
+        onClose={() => setDeleteOpen(false)}
+        title="Eliminar tipo de habitación"
+        description={selectedTipo ? `¿Estás seguro de eliminar "${selectedTipo.nombre}"?` : undefined}
+        confirmText="Eliminar"
+        cancelText="Cancelar"
+        confirmVariant="danger"
+        isConfirmLoading={deleting}
+        onConfirm={async () => {
+          setDeleteOpen(false);
+          await handleDelete();
+        }}
+      />
     </>
   );
 }

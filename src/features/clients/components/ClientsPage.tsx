@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { authClient } from "@/shared/lib/auth";
-import { PanelHeader, Button, EmptyState, Loading, Modal } from "@/components";
+import { PanelHeader, Button, EmptyState, Loading, Modal, ConfirmDialog } from "@/components";
 import { HuespedModal } from "./HuespedModal";
 import { sileo } from "sileo";
 import { isHandledError } from "@/shared/utils/error";
@@ -21,6 +21,8 @@ export default function ClientsPage() {
   const [selectedHuesped, setSelectedHuesped] = useState<Huesped | null>(null);
   const [editingHuesped, setEditingHuesped] = useState<Huesped | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<Huesped | null>(null);
+  const [deleteManyIds, setDeleteManyIds] = useState<string[] | null>(null);
   const [search, setSearch] = useState("");
 
   const handleSearchChange = (q: string) => {
@@ -34,8 +36,6 @@ export default function ClientsPage() {
   const handleDelete = async (huesped?: Huesped) => {
     const target = huesped ?? selectedHuesped;
     if (!target) return;
-    const confirmed = window.confirm(`¿Estás seguro de eliminar a ${target.nombres} ${target.apellidos}?`);
-    if (!confirmed) return;
     setDeleting(true);
     try {
       await deleteHuesped(target.id);
@@ -48,8 +48,6 @@ export default function ClientsPage() {
   };
 
   const handleDeleteMany = async (ids: string[]) => {
-    const confirmed = window.confirm(`¿Eliminar ${ids.length} huésped${ids.length !== 1 ? "es" : ""}?`);
-    if (!confirmed) return;
     setDeleting(true);
     try {
       await Promise.all(ids.map((id) => deleteHuesped(id)));
@@ -94,8 +92,8 @@ export default function ClientsPage() {
               onSearch={handleSearchChange}
               onRowClick={setSelectedHuesped}
               onEdit={handleEdit}
-              onDelete={handleDelete}
-              onDeleteMany={handleDeleteMany}
+              onDelete={(h) => setDeleteTarget(h)}
+              onDeleteMany={(ids) => setDeleteManyIds(ids)}
             />
           </div>
         )}
@@ -129,11 +127,51 @@ export default function ClientsPage() {
             </div>
             <div className="flex gap-3 pt-2">
               <button onClick={() => handleEdit(selectedHuesped)} className="flex-1 py-3 bg-accent-primary/10 text-accent-primary font-medium rounded-xl hover:bg-accent-primary/20 transition-all border border-accent-primary/20">Editar</button>
-              <button onClick={() => handleDelete(selectedHuesped)} disabled={deleting} className="flex-1 py-3 bg-danger-bg text-danger font-medium rounded-xl hover:bg-danger-bg transition-all border border-danger/20 disabled:opacity-50">{deleting ? "Eliminando..." : "Eliminar"}</button>
+              <button onClick={() => setDeleteTarget(selectedHuesped)} disabled={deleting} className="flex-1 py-3 bg-danger-bg text-danger font-medium rounded-xl hover:bg-danger-bg transition-all border border-danger/20 disabled:opacity-50">{deleting ? "Eliminando..." : "Eliminar"}</button>
             </div>
           </div>
         </Modal>
       )}
+
+      <ConfirmDialog
+        isOpen={!!deleteTarget}
+        onClose={() => setDeleteTarget(null)}
+        title="Eliminar huésped"
+        description={
+          deleteTarget ? `¿Estás seguro de eliminar a ${deleteTarget.nombres} ${deleteTarget.apellidos}?` : undefined
+        }
+        confirmText="Eliminar"
+        cancelText="Cancelar"
+        confirmVariant="danger"
+        isConfirmLoading={deleting}
+        onConfirm={async () => {
+          if (!deleteTarget) return;
+          const target = deleteTarget;
+          setDeleteTarget(null);
+          await handleDelete(target);
+        }}
+      />
+
+      <ConfirmDialog
+        isOpen={!!deleteManyIds}
+        onClose={() => setDeleteManyIds(null)}
+        title="Eliminar huéspedes"
+        description={
+          deleteManyIds
+            ? `¿Eliminar ${deleteManyIds.length} huésped${deleteManyIds.length !== 1 ? "es" : ""}?`
+            : undefined
+        }
+        confirmText="Eliminar"
+        cancelText="Cancelar"
+        confirmVariant="danger"
+        isConfirmLoading={deleting}
+        onConfirm={async () => {
+          if (!deleteManyIds) return;
+          const ids = deleteManyIds;
+          setDeleteManyIds(null);
+          await handleDeleteMany(ids);
+        }}
+      />
     </>
   );
 }

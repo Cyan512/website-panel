@@ -3,7 +3,7 @@ import { useInventory } from "../hooks/useInventory";
 import { StockCard, CONDICION_LABELS } from "./StockCard";
 import { StockModal } from "./StockModal";
 import { ImportModal } from "./ImportModal";
-import { PanelHeader, Button } from "@/components";
+import { PanelHeader, Button, ConfirmDialog } from "@/components";
 import { FaFileImport, FaFileExport } from "react-icons/fa";
 import { cn } from "@/shared/utils/cn";
 import { sileo } from "sileo";
@@ -19,6 +19,7 @@ export default function InventoryPage() {
   const [selectedMueble, setSelectedMueble] = useState<Mueble | null>(null);
   const [editingMueble, setEditingMueble] = useState<Mueble | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
 
   const handleExport = () => {
     if (muebles.length === 0) {
@@ -56,9 +57,6 @@ export default function InventoryPage() {
 
   const handleDelete = async () => {
     if (!selectedMueble) return;
-    
-    const confirmed = window.confirm(`¿Estás seguro de eliminar "${selectedMueble.nombre}"?`);
-    if (!confirmed) return;
 
     setDeleting(true);
     try {
@@ -183,13 +181,28 @@ export default function InventoryPage() {
 
               <div className="flex gap-3 pt-2">
                 <button onClick={(e) => handleEdit(selectedMueble, e)} className="flex-1 py-3 bg-accent-primary/10 text-accent-primary font-medium rounded-xl hover:bg-accent-primary/20 transition-all border border-accent-primary/20">Editar</button>
-                <button onClick={handleDelete} disabled={deleting} className="flex-1 py-3 bg-danger-bg text-danger font-medium rounded-xl hover:bg-danger/15 transition-all border border-danger/25 disabled:opacity-50">{deleting ? "Eliminando..." : "Eliminar"}</button>
+                <button onClick={() => setDeleteOpen(true)} disabled={deleting} className="flex-1 py-3 bg-danger-bg text-danger font-medium rounded-xl hover:bg-danger/15 transition-all border border-danger/25 disabled:opacity-50">{deleting ? "Eliminando..." : "Eliminar"}</button>
               </div>
               <button onClick={() => setSelectedMueble(null)} className="w-full py-3 bg-paper-medium/30 text-text-dark font-medium rounded-xl hover:bg-paper-medium/50 transition-all border border-border-light/30">Cerrar</button>
             </div>
           </div>
         </div>
       )}
+
+      <ConfirmDialog
+        isOpen={deleteOpen}
+        onClose={() => setDeleteOpen(false)}
+        title="Eliminar mueble"
+        description={selectedMueble ? `¿Estás seguro de eliminar "${selectedMueble.nombre}"?` : undefined}
+        confirmText="Eliminar"
+        cancelText="Cancelar"
+        confirmVariant="danger"
+        isConfirmLoading={deleting}
+        onConfirm={async () => {
+          setDeleteOpen(false);
+          await handleDelete();
+        }}
+      />
     </>
   );
 }

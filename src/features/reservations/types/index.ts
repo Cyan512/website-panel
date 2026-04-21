@@ -10,12 +10,12 @@ export const estadoReservaLabels: Record<EstadoReserva, string> = {
 };
 
 export const estadoReservaColors: Record<EstadoReserva, string> = {
-  TENTATIVA: "bg-amber-200 text-amber-600",
-  CONFIRMADA: "bg-emerald-200 text-emerald-600",
-  EN_CASA: "bg-blue-200 text-blue-600",
-  COMPLETADA: "bg-indigo-200 text-indigo-600",
-  CANCELADA: "bg-red-200 text-red-600",
-  NO_LLEGO: "bg-gray-200 text-gray-600",
+  TENTATIVA: "bg-warning-bg text-warning",
+  CONFIRMADA: "bg-success-bg text-success",
+  EN_CASA: "bg-info-bg text-info",
+  COMPLETADA: "bg-accent-primary/10 text-accent-primary border border-accent-primary/20",
+  CANCELADA: "bg-danger-bg text-danger",
+  NO_LLEGO: "bg-bg-tertiary text-text-muted border border-border/50",
 };
 
 export interface PaginationMeta {

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { PanelHeader, Button, EmptyState, Loading, Modal } from "@/components";
+import { PanelHeader, Button, EmptyState, Loading, Modal, ConfirmDialog } from "@/components";
 import { useTarifas } from "../hooks/useTarifas";
 import { useTiposHabitacion } from "@/features/rooms/hooks/useRooms";
 import { TarifaCard } from "./TarifaCard";
@@ -19,6 +19,7 @@ export default function TarifasPage() {
   const [editingTarifa, setEditingTarifa] = useState<Tarifa | null>(null);
   const [selectedTarifa, setSelectedTarifa] = useState<Tarifa | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
 
   if (loading) return <div className="flex items-center justify-center min-h-[60vh]"><Loading text="Cargando tarifas..." /></div>;
   if (error) return <div className="flex items-center justify-center min-h-[60vh]"><div className="text-danger">{error}</div></div>;
@@ -30,8 +31,6 @@ export default function TarifasPage() {
 
   const handleDelete = async () => {
     if (!selectedTarifa) return;
-    const confirmed = window.confirm(`¿Eliminar la tarifa de "${selectedTarifa.tipo_habitacion.nombre} - ${selectedTarifa.canal.nombre}"?`);
-    if (!confirmed) return;
 
     setDeleting(true);
     try {
@@ -139,7 +138,7 @@ export default function TarifasPage() {
                 {isAdmin && (
                   <>
                     <button onClick={() => openEdit(selectedTarifa)} className="flex-1 py-3 bg-accent-primary/10 text-accent-primary font-medium rounded-xl hover:bg-accent-primary/20 transition-all border border-accent-primary/20">Editar</button>
-                    <button onClick={handleDelete} disabled={deleting} className="flex-1 py-3 bg-danger-bg text-danger font-medium rounded-xl hover:bg-danger/15 transition-all border border-danger/25 disabled:opacity-50">{deleting ? "Eliminando..." : "Eliminar"}</button>
+                    <button onClick={() => setDeleteOpen(true)} disabled={deleting} className="flex-1 py-3 bg-danger-bg text-danger font-medium rounded-xl hover:bg-danger/15 transition-all border border-danger/25 disabled:opacity-50">{deleting ? "Eliminando..." : "Eliminar"}</button>
                   </>
                 )}
                 <button onClick={() => setSelectedTarifa(null)} className="flex-1 py-3 bg-paper-medium/20 text-text-muted font-medium rounded-xl hover:bg-paper-medium/30 transition-all border border-border">Cerrar</button>
@@ -147,6 +146,25 @@ export default function TarifasPage() {
           </div>
         </Modal>
       )}
+
+      <ConfirmDialog
+        isOpen={deleteOpen}
+        onClose={() => setDeleteOpen(false)}
+        title="Eliminar tarifa"
+        description={
+          selectedTarifa
+            ? `¿Eliminar la tarifa de "${selectedTarifa.tipo_habitacion.nombre} - ${selectedTarifa.canal.nombre}"?`
+            : undefined
+        }
+        confirmText="Eliminar"
+        cancelText="Cancelar"
+        confirmVariant="danger"
+        isConfirmLoading={deleting}
+        onConfirm={async () => {
+          setDeleteOpen(false);
+          await handleDelete();
+        }}
+      />
     </>
   );
 }

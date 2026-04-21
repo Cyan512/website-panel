@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { PanelHeader, Button, EmptyState, Loading } from "@/components";
+import { PanelHeader, Button, EmptyState, Loading, CrudToolbar, Pagination, ConfirmDialog } from "@/components";
 import { useCategoriasMueble } from "../hooks/useCategoriasMueble";
 import { CategoriaMuebleModal } from "./CategoriaMuebleModal";
 import { cn } from "@/shared/utils/cn";
@@ -13,6 +13,7 @@ export default function CategoriasMueblePage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingCategoria, setEditingCategoria] = useState<CategoriaMueble | null>(null);
   const [deleting, setDeleting] = useState<string | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<CategoriaMueble | null>(null);
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState(10);
@@ -26,8 +27,6 @@ export default function CategoriasMueblePage() {
   };
 
   const handleDelete = async (cat: CategoriaMueble) => {
-    const confirmed = window.confirm(`¿Eliminar la categoría "${cat.nombre}"?`);
-    if (!confirmed) return;
     setDeleting(cat.id);
     try {
       await deleteCategoria(cat.id);
@@ -51,12 +50,6 @@ export default function CategoriasMueblePage() {
   const paginated = filtered.slice((page - 1) * perPage, page * perPage);
   const from = filtered.length === 0 ? 0 : (page - 1) * perPage + 1;
   const to = Math.min(page * perPage, filtered.length);
-  const pageNumbers = Array.from({ length: totalPages }, (_, i) => i + 1)
-    .filter((p) => p === 1 || p === totalPages || Math.abs(p - page) <= 1)
-    .reduce<(number | "...")[]>((acc, p, i, arr) => {
-      if (i > 0 && p - (arr[i - 1] as number) > 1) acc.push("...");
-      acc.push(p); return acc;
-    }, []);
 
   return (
     <>
@@ -89,28 +82,23 @@ export default function CategoriasMueblePage() {
               </div>
             </div>
 
-            <div className="px-4 sm:px-6 pb-3 flex items-center gap-3">
-              <div className="relative flex-1">
-                <MdSearch className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
-                <input type="text" value={search} onChange={(e) => { setSearch(e.target.value); setPage(1); }} placeholder="Buscar por nombre o descripción..." className="w-full pl-9 pr-4 py-2.5 text-sm rounded-xl border border-border bg-bg-card text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-primary/30" />
-              </div>
-              <div className="flex items-center gap-2 shrink-0">
-                <span className="text-xs text-text-muted hidden sm:block">Mostrar</span>
-                <select value={perPage} onChange={(e) => { setPerPage(Number(e.target.value)); setPage(1); }} className="text-sm rounded-xl border border-border bg-bg-card text-text-primary px-2 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary/30">
-                  {[5, 10, 25, 50].map((n) => <option key={n} value={n}>{n}</option>)}
-                </select>
-                <span className="text-xs text-text-muted hidden sm:block">filas</span>
-              </div>
-            </div>
+            <CrudToolbar
+              searchValue={search}
+              onSearchChange={(v) => { setSearch(v); setPage(1); }}
+              searchPlaceholder="Buscar por nombre o descripción..."
+              pageSizeValue={perPage}
+              onPageSizeChange={(v) => { setPerPage(v); setPage(1); }}
+              pageSizeOptions={[5, 10, 25, 50]}
+            />
 
             <div className="px-4 sm:px-6 pb-2">
-              <table className="w-full text-sm">
+              <table className="w-full text-base">
                 <thead>
                   <tr className="border-b border-border">
-                    <th className="text-left py-3 px-2 text-text-muted font-semibold text-xs uppercase tracking-wide">Nombre</th>
-                    <th className="text-left py-3 px-2 text-text-muted font-semibold text-xs uppercase tracking-wide hidden sm:table-cell">Descripción</th>
-                    <th className="text-left py-3 px-2 text-text-muted font-semibold text-xs uppercase tracking-wide">Estado</th>
-                    <th className="py-3 px-2 text-right text-text-muted font-semibold text-xs uppercase tracking-wide">Acciones</th>
+                    <th className="text-left py-3 px-2 text-text-muted font-semibold text-sm uppercase tracking-wide">Nombre</th>
+                    <th className="text-left py-3 px-2 text-text-muted font-semibold text-sm uppercase tracking-wide hidden sm:table-cell">Descripción</th>
+                    <th className="text-left py-3 px-2 text-text-muted font-semibold text-sm uppercase tracking-wide">Estado</th>
+                    <th className="py-3 px-2 text-right text-text-muted font-semibold text-sm uppercase tracking-wide">Acciones</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -128,7 +116,7 @@ export default function CategoriasMueblePage() {
                       <td className="py-3 px-2">
                         <div className="flex items-center justify-end gap-2">
                           <button onClick={() => openEdit(cat)} className="text-xs px-3 py-1.5 rounded-lg bg-accent-primary/10 text-accent-primary hover:bg-accent-primary/20 transition-all border border-accent-primary/20">Editar</button>
-                          <button onClick={() => handleDelete(cat)} disabled={deleting === cat.id} className="text-xs px-3 py-1.5 rounded-lg bg-danger-bg text-danger hover:bg-danger-bg transition-all border border-danger/20 disabled:opacity-50">{deleting === cat.id ? "..." : "Eliminar"}</button>
+                          <button onClick={() => setDeleteTarget(cat)} disabled={deleting === cat.id} className="text-xs px-3 py-1.5 rounded-lg bg-danger-bg text-danger hover:bg-danger-bg transition-all border border-danger/20 disabled:opacity-50">{deleting === cat.id ? "..." : "Eliminar"}</button>
                         </div>
                       </td>
                     </tr>
@@ -138,20 +126,16 @@ export default function CategoriasMueblePage() {
             </div>
 
             {/* Pagination */}
-            <div className="flex items-center justify-between text-xs text-text-muted px-4 sm:px-6 py-4 border-t border-border/50">
-              <span>{filtered.length === 0 ? "Sin resultados" : `${from}–${to} de ${filtered.length} categoría${filtered.length !== 1 ? "s" : ""}`}</span>
-              <div className="flex items-center gap-1">
-                <button onClick={() => setPage(1)} disabled={page === 1} className={cn("px-2 py-1.5 rounded-lg border transition-all", page === 1 ? "border-border text-text-muted/30 cursor-not-allowed" : "border-border hover:border-primary/50 hover:text-primary")}>«</button>
-                <button onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1} className={cn("px-3 py-1.5 rounded-lg border transition-all", page === 1 ? "border-border text-text-muted/30 cursor-not-allowed" : "border-border hover:border-primary/50 hover:text-primary")}>Anterior</button>
-                {pageNumbers.map((p, i) =>
-                  p === "..." ? <span key={`e-${i}`} className="px-1">…</span> : (
-                    <button key={p} onClick={() => setPage(p as number)} className={cn("w-8 h-8 rounded-lg border text-xs transition-all", p === page ? "bg-primary text-white border-primary" : "border-border hover:border-primary/50 hover:text-primary")}>{p}</button>
-                  )
-                )}
-                <button onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page === totalPages} className={cn("px-3 py-1.5 rounded-lg border transition-all", page === totalPages ? "border-border text-text-muted/30 cursor-not-allowed" : "border-border hover:border-primary/50 hover:text-primary")}>Siguiente</button>
-                <button onClick={() => setPage(totalPages)} disabled={page === totalPages} className={cn("px-2 py-1.5 rounded-lg border transition-all", page === totalPages ? "border-border text-text-muted/30 cursor-not-allowed" : "border-border hover:border-primary/50 hover:text-primary")}>»</button>
-              </div>
-            </div>
+            <Pagination
+              page={page}
+              totalPages={totalPages}
+              onPageChange={setPage}
+              label={
+                filtered.length === 0
+                  ? "Sin resultados"
+                  : `${from}–${to} de ${filtered.length} categoría${filtered.length !== 1 ? "s" : ""}`
+              }
+            />
           </>
         )}
       </PanelHeader>
@@ -162,6 +146,23 @@ export default function CategoriasMueblePage() {
         onSuccess={fetchCategorias}
         categoria={editingCategoria}
         onSave={handleSave}
+      />
+
+      <ConfirmDialog
+        isOpen={!!deleteTarget}
+        onClose={() => setDeleteTarget(null)}
+        title="Eliminar categoría"
+        description={deleteTarget ? `¿Eliminar la categoría "${deleteTarget.nombre}"?` : undefined}
+        confirmText="Eliminar"
+        cancelText="Cancelar"
+        confirmVariant="danger"
+        isConfirmLoading={Boolean(deleting)}
+        onConfirm={async () => {
+          if (!deleteTarget) return;
+          const target = deleteTarget;
+          setDeleteTarget(null);
+          await handleDelete(target);
+        }}
       />
     </>
   );

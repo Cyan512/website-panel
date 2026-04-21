@@ -46,6 +46,59 @@ src/
 - **Spinner / Loading**: `Loading` soporta `fullScreen` y `text`.
 - **EmptyState**: `icon`, `title` (alias `label`), `description`, `action`.
 
+## CRUD UI Standard (páginas)
+
+Objetivo: que **todas** las páginas CRUD se vean y se sientan consistentes (márgenes, paddings, tipografía, filtros, checkboxes, paginación), respetando la estética andina.
+
+### Estructura de página
+
+- **Layout base** (orden visual):
+  - `PanelHeader` (title/subtitle + acción primaria).
+  - `CrudToolbar` (búsqueda + filtros + selector de filas).
+  - `ContentArea` (tabla o grid de cards/cuadros).
+  - `Pagination` (footer uniforme).
+
+### Create/Edit
+
+- **Botón Create**: siempre en `PanelHeader.action`, a la derecha, variante primaria.
+  - Texto estándar: `+ Nuevo ...` / `+ Nueva ...`.
+- **Create/Edit**: por defecto en **Modal** (mismo patrón en todas las features).
+
+### Listado: tabla vs cards
+
+- **Reservas**: se mantiene como **tabla en filas**.
+- **Default**: el resto de CRUDs debe ir en **cards/cuadros (grid)** cuando el dominio sea visual/estado (p. ej. habitaciones, muebles).
+- CRUDs tabulares (p. ej. productos/pagos) pueden usar tabla, pero deben usar el mismo wrapper/toolbar/paginación.
+
+### Filtros (búsqueda + checkbox)
+
+- **Búsqueda**: usar `SearchInput` (dentro de `CrudToolbar`) con icono y placeholder claro.
+- **Checkbox filters**: usar `Checkbox` shared para filtros por estado/categoría.
+  - Si hay muchos estados, preferir un `CheckboxFilterGroup` (wrap) y mantener consistente spacing.
+- **Regla de layout**:
+  - Búsqueda a la izquierda (`flex-1`).
+  - Filtros/chips a la derecha (wrap).
+  - Selector de `limit` alineado al extremo derecho.
+
+### Checkboxes
+
+- Usar siempre el componente shared `Checkbox`:
+  - Soporta `indeterminate` (select-all), `disabled`, `sm/md`.
+  - Apariencia consistente (focus ring, border, tokens del theme).
+
+### Tipografía (bump +1 en CRUD)
+
+- En páginas CRUD, subir 1 step:
+  - Toolbars: texto e inputs/selects en `text-base` (donde antes era `text-sm`).
+  - Labels pequeños: `text-sm` (donde antes era `text-xs`).
+- Sidebar y títulos principales no se modifican por defecto.
+
+### Paleta / prohibiciones (refuerzo)
+
+- Prohibido usar clases Tailwind genéricas para estados:
+  - **NUNCA**: `amber-*`, `orange-*`, `red-*`, `blue-*`, `emerald-*`.
+- Usar tokens andinos: `success`, `warning`, `danger`, `info`, `accent-*`, `bg-*-bg`, `text-*`.
+
 ## Routing
 
 - Las rutas protegidas se declaran en cada `features/<feature>/routes.tsx`.

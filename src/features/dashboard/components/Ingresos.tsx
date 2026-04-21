@@ -269,7 +269,7 @@ export default function Ingresos() {
             <select
               value={filter}
               onChange={(e) => setFilter(e.target.value as FilterType)}
-              className="bg-bg-secondary text-text-primary text-sm rounded-lg px-3 py-2 border border-border focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              className="bg-bg-secondary text-text-primary text-sm rounded-lg px-3 py-2 border border-border focus:outline-none focus:ring-2 focus:ring-primary/40"
             >
               <option value="day">Día</option>
               <option value="week">Semana</option>
@@ -283,7 +283,7 @@ export default function Ingresos() {
                 type="date"
                 value={selectedDate}
                 onChange={(e) => setSelectedDate(e.target.value)}
-                className="bg-bg-secondary text-text-primary text-sm rounded-lg px-3 py-2 border border-border focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  className="bg-bg-secondary text-text-primary text-sm rounded-lg px-3 py-2 border border-border focus:outline-none focus:ring-2 focus:ring-primary/40"
               />
             )}
             {filter === 'week' && (
@@ -291,7 +291,7 @@ export default function Ingresos() {
                 type="date"
                 value={weekStart}
                 onChange={(e) => setWeekStart(e.target.value)}
-                className="bg-bg-secondary text-text-primary text-sm rounded-lg px-3 py-2 border border-border focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  className="bg-bg-secondary text-text-primary text-sm rounded-lg px-3 py-2 border border-border focus:outline-none focus:ring-2 focus:ring-primary/40"
               />
             )}
             {filter === 'month' && (
@@ -299,7 +299,7 @@ export default function Ingresos() {
                 <select
                   value={selectedMonth}
                   onChange={(e) => setSelectedMonth(parseInt(e.target.value))}
-                  className="bg-bg-secondary text-text-primary text-sm rounded-lg px-3 py-2 border border-border focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  className="bg-bg-secondary text-text-primary text-sm rounded-lg px-3 py-2 border border-border focus:outline-none focus:ring-2 focus:ring-primary/40"
                 >
                   {MONTHS_ES.map((month, i) => (
                     <option key={i} value={i}>{month}</option>
@@ -308,7 +308,7 @@ export default function Ingresos() {
                 <select
                   value={selectedYear}
                   onChange={(e) => setSelectedYear(parseInt(e.target.value))}
-                  className="bg-bg-secondary text-text-primary text-sm rounded-lg px-3 py-2 border border-border focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  className="bg-bg-secondary text-text-primary text-sm rounded-lg px-3 py-2 border border-border focus:outline-none focus:ring-2 focus:ring-primary/40"
                 >
                   {availableYears.map((year) => (
                     <option key={year} value={year}>{year}</option>
@@ -320,7 +320,7 @@ export default function Ingresos() {
               <select
                 value={selectedYear}
                 onChange={(e) => setSelectedYear(parseInt(e.target.value))}
-                className="bg-bg-secondary text-text-primary text-sm rounded-lg px-3 py-2 border border-border focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                className="bg-bg-secondary text-text-primary text-sm rounded-lg px-3 py-2 border border-border focus:outline-none focus:ring-2 focus:ring-primary/40"
               >
                 {availableYears.map((year) => (
                   <option key={year} value={year}>{year}</option>
@@ -333,14 +333,14 @@ export default function Ingresos() {
                   type="date"
                   value={customStart}
                   onChange={(e) => setCustomStart(e.target.value)}
-                  className="bg-bg-secondary text-text-primary text-sm rounded-lg px-3 py-2 border border-border focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  className="bg-bg-secondary text-text-primary text-sm rounded-lg px-3 py-2 border border-border focus:outline-none focus:ring-2 focus:ring-primary/40"
                 />
                 <span className="text-text-muted text-sm">—</span>
                 <input
                   type="date"
                   value={customEnd}
                   onChange={(e) => setCustomEnd(e.target.value)}
-                  className="bg-bg-secondary text-text-primary text-sm rounded-lg px-3 py-2 border border-border focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  className="bg-bg-secondary text-text-primary text-sm rounded-lg px-3 py-2 border border-border focus:outline-none focus:ring-2 focus:ring-primary/40"
                 />
               </>
             )}

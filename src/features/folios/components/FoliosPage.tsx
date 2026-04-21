@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { authClient } from "@/shared/lib/auth";
-import { PanelHeader, Button, EmptyState, Loading, Modal } from "@/components";
+import { PanelHeader, Button, EmptyState, Loading, Modal, CrudToolbar, Pagination, ConfirmDialog } from "@/components";
 import { sileo } from "sileo";
 import { isHandledError } from "@/shared/utils/error";
 import { cn } from "@/shared/utils/cn";
@@ -59,6 +59,7 @@ export default function FoliosPage() {
   const [form, setForm] = useState<FolioFormState>(emptyForm);
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<Folio | null>(null);
 
   // Estancia search
   const [estanciaQuery, setEstanciaQuery] = useState("");
@@ -215,7 +216,6 @@ export default function FoliosPage() {
   };
 
   const handleDelete = async (f: Folio) => {
-    if (!window.confirm(`¿Eliminar el folio "${f.codigo}"?`)) return;
     setDeleting(true);
     try {
       await deleteFolio(f.id);
@@ -303,14 +303,6 @@ export default function FoliosPage() {
     }
   };
 
-  const pageNumbers = Array.from({ length: totalPages }, (_, i) => i + 1)
-    .filter((p) => p === 1 || p === totalPages || Math.abs(p - page) <= 1)
-    .reduce<(number | "...")[]>((acc, p, i, arr) => {
-      if (i > 0 && p - (arr[i - 1] as number) > 1) acc.push("...");
-      acc.push(p);
-      return acc;
-    }, []);
-
   const labelClass = "block text-sm font-medium text-text-primary mb-1";
 
   return (
@@ -335,48 +327,41 @@ export default function FoliosPage() {
         ) : (
           <>
             {/* Toolbar */}
-            <div className="px-4 sm:px-6 py-3 flex flex-col sm:flex-row gap-3">
-              <div className="relative flex-1">
-                <MdSearch className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
-                <input
-                  type="text"
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  placeholder="Buscar por código u observación..."
-                  className="w-full pl-9 pr-4 py-2.5 text-sm rounded-xl border border-border bg-bg-card text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-primary/30"
-                />
-              </div>
-              <select
-                value={estadoFilter === undefined ? "" : String(estadoFilter)}
-                onChange={(e) => { const v = e.target.value; changeEstado(v === "" ? undefined : v === "true"); }}
-                className="text-sm rounded-xl border border-border bg-bg-card text-text-primary px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary/30 shrink-0"
-              >
-                <option value="">Todos los estados</option>
-                <option value="true">Abiertos</option>
-                <option value="false">Cerrados</option>
-              </select>
-              <div className="flex items-center gap-2 shrink-0">
-                <span className="text-xs text-text-muted hidden sm:block">Mostrar</span>
-                <select value={limit} onChange={(e) => changeLimit(Number(e.target.value))}
-                  className="text-sm rounded-xl border border-border bg-bg-card text-text-primary px-2 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary/30">
-                  {[5, 10, 25, 50].map((n) => <option key={n} value={n}>{n}</option>)}
+            <CrudToolbar
+              searchValue={search}
+              onSearchChange={(v) => setSearch(v)}
+              searchPlaceholder="Buscar por código u observación..."
+              pageSizeValue={limit}
+              onPageSizeChange={(v) => changeLimit(v)}
+              pageSizeOptions={[5, 10, 25, 50]}
+              filters={
+                <select
+                  value={estadoFilter === undefined ? "" : String(estadoFilter)}
+                  onChange={(e) => {
+                    const v = e.target.value;
+                    changeEstado(v === "" ? undefined : v === "true");
+                  }}
+                  className="text-base rounded-xl border border-border bg-bg-card text-text-primary px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary/30"
+                >
+                  <option value="">Todos los estados</option>
+                  <option value="true">Abiertos</option>
+                  <option value="false">Cerrados</option>
                 </select>
-                <span className="text-xs text-text-muted hidden sm:block">filas</span>
-              </div>
-            </div>
+              }
+            />
 
             {/* Table */}
             <div className="overflow-x-auto px-4 sm:px-6">
-              <table className="w-full text-sm">
+              <table className="w-full text-base">
                 <thead>
                   <tr className="border-b border-border">
-                    <th className="text-left py-3 px-2 text-xs font-semibold text-text-muted uppercase tracking-wide">Código</th>
-                    <th className="text-left py-3 px-2 text-xs font-semibold text-text-muted uppercase tracking-wide">Huésped</th>
-                    <th className="text-left py-3 px-2 text-xs font-semibold text-text-muted uppercase tracking-wide">Estado</th>
-                    <th className="text-left py-3 px-2 text-xs font-semibold text-text-muted uppercase tracking-wide hidden md:table-cell">Observación</th>
-                    <th className="text-left py-3 px-2 text-xs font-semibold text-text-muted uppercase tracking-wide hidden lg:table-cell">Cerrado en</th>
-                    <th className="text-center py-3 px-2 text-xs font-semibold text-text-muted uppercase tracking-wide hidden sm:table-cell">Promociones</th>
-                    <th className="py-3 px-2 text-right text-xs font-semibold text-text-muted uppercase tracking-wide">Acciones</th>
+                    <th className="text-left py-3 px-2 text-sm font-semibold text-text-muted uppercase tracking-wide">Código</th>
+                    <th className="text-left py-3 px-2 text-sm font-semibold text-text-muted uppercase tracking-wide">Huésped</th>
+                    <th className="text-left py-3 px-2 text-sm font-semibold text-text-muted uppercase tracking-wide">Estado</th>
+                    <th className="text-left py-3 px-2 text-sm font-semibold text-text-muted uppercase tracking-wide hidden md:table-cell">Observación</th>
+                    <th className="text-left py-3 px-2 text-sm font-semibold text-text-muted uppercase tracking-wide hidden lg:table-cell">Cerrado en</th>
+                    <th className="text-center py-3 px-2 text-sm font-semibold text-text-muted uppercase tracking-wide hidden sm:table-cell">Promociones</th>
+                    <th className="py-3 px-2 text-right text-sm font-semibold text-text-muted uppercase tracking-wide">Acciones</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -384,7 +369,7 @@ export default function FoliosPage() {
                     <tr><td colSpan={7} className="text-center py-10 text-text-muted">Sin resultados</td></tr>
                   ) : filtered.map((f) => (
                     <tr key={f.id} className="border-b border-border/50 last:border-0 hover:bg-accent-primary/5 transition-colors">
-                      <td className="py-3 px-2 text-xs font-mono text-text-primary font-medium">{f.codigo}</td>
+                      <td className="py-3 px-2 text-sm font-mono text-text-primary font-medium">{f.codigo}</td>
                       <td className="py-3 px-2 text-sm text-text-primary font-medium">
                         {estanciaMap.get(f.estanciaId) ?? (
                           <span className="text-xs text-text-muted font-mono" title={f.estanciaId}>
@@ -426,7 +411,7 @@ export default function FoliosPage() {
                             className="p-1.5 rounded-lg text-text-muted hover:text-primary hover:bg-primary/10 transition-all">
                             <MdEdit className="w-4 h-4" />
                           </button>
-                          <button onClick={() => handleDelete(f)} disabled={deleting} title="Eliminar"
+                          <button onClick={() => setDeleteTarget(f)} disabled={deleting} title="Eliminar"
                             className="p-1.5 rounded-lg text-text-muted hover:text-danger hover:bg-danger/10 transition-all disabled:opacity-40">
                             <MdDelete className="w-4 h-4" />
                           </button>
@@ -439,21 +424,13 @@ export default function FoliosPage() {
             </div>
 
             {/* Pagination */}
-            <div className="flex items-center justify-between text-xs text-text-muted px-4 sm:px-6 py-4 border-t border-border/50">
-              <span>{total === 0 ? "Sin resultados" : `${from}–${to} de ${total} folio${total !== 1 ? "s" : ""}`}</span>
-              <div className="flex items-center gap-1">
-                <button onClick={() => goToPage(1)} disabled={page === 1} className={cn("px-2 py-1.5 rounded-lg border transition-all", page === 1 ? "border-border text-text-muted/30 cursor-not-allowed" : "border-border hover:border-primary/50 hover:text-primary")}>«</button>
-                <button onClick={() => goToPage(page - 1)} disabled={page === 1} className={cn("px-3 py-1.5 rounded-lg border transition-all", page === 1 ? "border-border text-text-muted/30 cursor-not-allowed" : "border-border hover:border-primary/50 hover:text-primary")}>Anterior</button>
-                {pageNumbers.map((p, i) =>
-                  p === "..." ? <span key={`e-${i}`} className="px-1">…</span> : (
-                    <button key={p} onClick={() => goToPage(p as number)}
-                      className={cn("w-8 h-8 rounded-lg border text-xs transition-all", p === page ? "bg-primary text-white border-primary" : "border-border hover:border-primary/50 hover:text-primary")}>{p}</button>
-                  )
-                )}
-                <button onClick={() => goToPage(page + 1)} disabled={!hasNextPage} className={cn("px-3 py-1.5 rounded-lg border transition-all", !hasNextPage ? "border-border text-text-muted/30 cursor-not-allowed" : "border-border hover:border-primary/50 hover:text-primary")}>Siguiente</button>
-                <button onClick={() => goToPage(totalPages)} disabled={page === totalPages} className={cn("px-2 py-1.5 rounded-lg border transition-all", page === totalPages ? "border-border text-text-muted/30 cursor-not-allowed" : "border-border hover:border-primary/50 hover:text-primary")}>»</button>
-              </div>
-            </div>
+            <Pagination
+              page={page}
+              totalPages={totalPages}
+              hasNextPage={hasNextPage}
+              onPageChange={goToPage}
+              label={total === 0 ? "Sin resultados" : `${from}–${to} de ${total} folio${total !== 1 ? "s" : ""}`}
+            />
           </>
         )}
       </PanelHeader>
@@ -478,7 +455,7 @@ export default function FoliosPage() {
                   placeholder="Buscar por huésped o habitación..."
                   className={cn(
                     "w-full pl-9 pr-4 py-3 text-sm rounded-xl border bg-bg-card text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-primary/30",
-                    estanciaSelected ? "border-emerald-500/50 bg-success/5" : "border-border"
+                    estanciaSelected ? "border-success/40 bg-success-bg/40" : "border-border"
                   )}
                   required
                 />
@@ -619,7 +596,7 @@ export default function FoliosPage() {
                 placeholder="Buscar por nombre o código..."
                 className={cn(
                   "w-full pl-9 pr-4 py-3 text-sm rounded-xl border bg-bg-card text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-primary/30",
-                  productoSelected ? "border-emerald-500/50 bg-success/5" : "border-border"
+                  productoSelected ? "border-success/40 bg-success-bg/40" : "border-border"
                 )}
               />
             </div>
@@ -749,6 +726,23 @@ export default function FoliosPage() {
           </div>
         </div>
       </Modal>
+
+      <ConfirmDialog
+        isOpen={!!deleteTarget}
+        onClose={() => setDeleteTarget(null)}
+        title="Eliminar folio"
+        description={deleteTarget ? `¿Eliminar el folio "${deleteTarget.codigo}"?` : undefined}
+        confirmText="Eliminar"
+        cancelText="Cancelar"
+        confirmVariant="danger"
+        isConfirmLoading={deleting}
+        onConfirm={async () => {
+          if (!deleteTarget) return;
+          const target = deleteTarget;
+          setDeleteTarget(null);
+          await handleDelete(target);
+        }}
+      />
     </>
   );
 }

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { PanelHeader, Button, EmptyState, Loading, Modal } from "@/components";
+import { PanelHeader, Button, EmptyState, Loading, Modal, ConfirmDialog } from "@/components";
 import { useHabitaciones } from "@/features/rooms/hooks/useRooms";
 import { MuebleCard } from "./MuebleCard";
 import { MuebleModal } from "./MuebleModal";
@@ -19,6 +19,7 @@ export default function MueblesPage() {
   const [editingMueble, setEditingMueble] = useState<Mueble | null>(null);
   const [selectedMueble, setSelectedMueble] = useState<Mueble | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
   const [filterCondicion, setFilterCondicion] = useState<MuebleCondition | "">("");
 
   if (loading) return <div className="flex items-center justify-center min-h-[60vh]"><Loading text="Cargando muebles..." /></div>;
@@ -31,8 +32,6 @@ export default function MueblesPage() {
 
   const handleDelete = async () => {
     if (!selectedMueble) return;
-    const confirmed = window.confirm(`¿Eliminar el mueble "${selectedMueble.nombre}"?`);
-    if (!confirmed) return;
     setDeleting(true);
     try {
       await deleteMueble(selectedMueble.id);
@@ -184,12 +183,27 @@ export default function MueblesPage() {
               )}
               <div className="flex gap-3 pt-2">
                 <button onClick={() => openEdit(selectedMueble)} className="flex-1 py-3 bg-accent-primary/10 text-accent-primary font-medium rounded-xl hover:bg-accent-primary/20 transition-all border border-accent-primary/20">Editar</button>
-                <button onClick={handleDelete} disabled={deleting} className="flex-1 py-3 bg-danger-bg text-danger font-medium rounded-xl hover:bg-danger-bg transition-all border border-danger/20 disabled:opacity-50">{deleting ? "..." : "Eliminar"}</button>
+                <button onClick={() => setDeleteOpen(true)} disabled={deleting} className="flex-1 py-3 bg-danger-bg text-danger font-medium rounded-xl hover:bg-danger-bg transition-all border border-danger/20 disabled:opacity-50">{deleting ? "..." : "Eliminar"}</button>
               </div>
           </div>
           </div>
         </Modal>
       )}
+
+      <ConfirmDialog
+        isOpen={deleteOpen}
+        onClose={() => setDeleteOpen(false)}
+        title="Eliminar mueble"
+        description={selectedMueble ? `¿Eliminar el mueble "${selectedMueble.nombre}"?` : undefined}
+        confirmText="Eliminar"
+        cancelText="Cancelar"
+        confirmVariant="danger"
+        isConfirmLoading={deleting}
+        onConfirm={async () => {
+          setDeleteOpen(false);
+          await handleDelete();
+        }}
+      />
     </>
   );
 }
