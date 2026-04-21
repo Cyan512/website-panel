@@ -1,9 +1,9 @@
 import { useState } from "react";
-import { authClient } from "@/config/authClient";
+import { authClient } from "@/shared/lib/auth";
 import { PanelHeader, Button } from "@/components";
 import { sileo } from "sileo";
 import { MdLock, MdPalette, MdLanguage, MdNotifications, MdCheck } from "react-icons/md";
-import { cn } from "@/utils/cn";
+import { cn } from "@/shared/utils/cn";
 
 const ACCENT_COLORS = [
   { label: "Azul", value: "#3a6baf" },

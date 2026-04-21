@@ -5,15 +5,15 @@ import { RoomModal } from "./RoomModal";
 import { ImageCarousel } from "./ImageCarousel";
 import { RoomCalendar } from "./RoomCalendar";
 import { PanelHeader, Button, Modal } from "@/components";
-import { cn } from "@/utils/cn";
+import { cn } from "@/shared/utils/cn";
 import { sileo } from "sileo";
-import { isHandledError } from "@/utils/error.utils";
+import { isHandledError } from "@/shared/utils/error";
 import { MdSearch } from "react-icons/md";
-import { obtenerEstadoHabitacion, estadoHabitacionColors } from "@/utils/habitacion.utils";
+import { obtenerEstadoHabitacion, estadoHabitacionColors } from "@/shared/utils/habitacion";
 import type { Habitacion, FechaReserva } from "../types";
 import { roomsApi } from "../api";
 import { usePromociones } from "@/features/promotions/hooks/usePromociones";
-import { formatUTCDate } from "@/utils/format.utils";
+import { formatUTCDate } from "@/shared/utils/format";
 
 export default function RoomsPage() {
   const {

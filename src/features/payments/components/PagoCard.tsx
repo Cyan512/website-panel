@@ -1,8 +1,8 @@
 import type { Pago } from "../types";
 import { estadoPagoLabels, metodoPagoLabels } from "../types";
-import { cn } from "@/utils/cn";
+import { cn } from "@/shared/utils/cn";
 import { MdPayment, MdCalendarToday, MdPerson } from "react-icons/md";
-import { formatUTCDate } from "@/utils/format.utils";
+import { formatUTCDate } from "@/shared/utils/format";
 
 interface PagoCardProps {
   pago: Pago;

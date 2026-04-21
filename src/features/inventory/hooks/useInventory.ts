@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { authClient } from "@/config/authClient";
+import { authClient } from "@/shared/lib/auth";
 import { inventoryApi } from "../api";
 import type { Mueble, CreateMuebleDto, UpdateMuebleDto } from "../types";
 

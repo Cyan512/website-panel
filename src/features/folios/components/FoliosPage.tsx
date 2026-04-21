@@ -1,9 +1,9 @@
 import { useState, useRef, useEffect } from "react";
-import { authClient } from "@/config/authClient";
+import { authClient } from "@/shared/lib/auth";
 import { PanelHeader, Button, EmptyState, Loading, Modal } from "@/components";
 import { sileo } from "sileo";
-import { isHandledError } from "@/utils/error.utils";
-import { cn } from "@/utils/cn";
+import { isHandledError } from "@/shared/utils/error";
+import { cn } from "@/shared/utils/cn";
 import { MdReceipt, MdEdit, MdDelete, MdSearch, MdAdd, MdClose, MdShoppingCart, MdRoomService } from "react-icons/md";
 import { useFolios } from "../hooks/useFolios";
 import type { Folio, CreateFolio, UpdateFolio } from "../types";
@@ -11,7 +11,7 @@ import type { Estancia } from "@/features/stays/types";
 import { estadoEstadiaColors } from "@/features/stays/types";
 import type { Promocion } from "@/features/promotions/types";
 import type { Producto } from "@/features/products/types";
-import { formatUTCDate } from "@/utils/format.utils";
+import { formatUTCDate } from "@/shared/utils/format";
 
 type ModalMode = "create" | "edit";
 
@@ -330,7 +330,7 @@ export default function FoliosPage() {
             icon={<MdReceipt className="w-10 h-10 text-text-muted/50" />}
             title="Sin folios"
             description="Crea el primer folio de estancia"
-            action={{ label: "Nuevo Folio", onClick: openCreate }}
+            action={<Button onClick={openCreate }>Nuevo Folio</Button>}
           />
         ) : (
           <>

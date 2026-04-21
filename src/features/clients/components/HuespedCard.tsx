@@ -1,5 +1,5 @@
 import type { Huesped } from "../types";
-import { cn } from "@/utils/cn";
+import { cn } from "@/shared/utils/cn";
 import { MdEmail, MdPhone, MdPerson } from "react-icons/md";
 
 interface HuespedCardProps {

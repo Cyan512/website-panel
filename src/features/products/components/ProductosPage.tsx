@@ -1,9 +1,9 @@
 import { useState } from "react";
-import { authClient } from "@/config/authClient";
+import { authClient } from "@/shared/lib/auth";
 import { PanelHeader, Button, EmptyState, Loading, Modal, InputField } from "@/components";
 import { sileo } from "sileo";
-import { isHandledError } from "@/utils/error.utils";
-import { cn } from "@/utils/cn";
+import { isHandledError } from "@/shared/utils/error";
+import { cn } from "@/shared/utils/cn";
 import { MdShoppingCart, MdEdit, MdDelete, MdSearch, MdAdd } from "react-icons/md";
 import { useProductos } from "../hooks/useProductos";
 import type { Producto, CreateProducto, UpdateProducto } from "../types";
@@ -166,7 +166,7 @@ export default function ProductosPage() {
             icon={<MdShoppingCart className="w-10 h-10 text-text-muted/50" />}
             title="Sin productos"
             description="Registra tu primer producto"
-            action={isAdmin ? { label: "Nuevo Producto", onClick: openCreate } : undefined}
+            action={isAdmin ? <Button onClick={openCreate}>Nuevo Producto</Button> : undefined}
           />
         ) : (
           <>

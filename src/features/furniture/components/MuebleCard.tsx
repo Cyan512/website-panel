@@ -1,4 +1,4 @@
-import { cn } from "@/utils/cn";
+import { cn } from "@/shared/utils/cn";
 import { muebleConditionLabels, muebleConditionColors } from "../types";
 import type { Mueble } from "../types";
 

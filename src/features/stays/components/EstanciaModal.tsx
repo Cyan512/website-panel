@@ -4,9 +4,9 @@ import { sileo } from "sileo";
 import { estadoEstadiaLabels } from "../types";
 import type { Estancia, CreateEstancia, EstadoEstadia } from "../types";
 import type { Reserva } from "@/features/reservations/types";
-import { cn } from "@/utils/cn";
-import { isHandledError } from "@/utils/error.utils";
-import { formatUTCDate } from "@/utils/format.utils";
+import { cn } from "@/shared/utils/cn";
+import { isHandledError } from "@/shared/utils/error";
+import { formatUTCDate } from "@/shared/utils/format";
 
 interface Props {
   isOpen: boolean;

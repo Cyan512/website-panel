@@ -1,11 +1,11 @@
 import { useState, useRef, useEffect } from "react";
 import { createPortal } from "react-dom";
 import type { Habitacion, FechaReserva } from "../types";
-import { cn } from "@/utils/cn";
+import { cn } from "@/shared/utils/cn";
 import { RoomCalendar } from "./RoomCalendar";
 import { roomsApi } from "../api";
 import { MdCalendarMonth } from "react-icons/md";
-import { obtenerEstadoHabitacion, estadoHabitacionColors, estadoHabitacionBar } from "@/utils/habitacion.utils";
+import { obtenerEstadoHabitacion, estadoHabitacionColors, estadoHabitacionBar } from "@/shared/utils/habitacion";
 
 type RoomCardProps = {
   room: Habitacion;

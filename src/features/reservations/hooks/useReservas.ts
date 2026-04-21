@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { authClient } from "@/config/authClient";
+import { authClient } from "@/shared/lib/auth";
 import { reservasApi } from "../api";
 import type { Reserva, CreateReserva, UpdateReserva, CancelReserva, UpdateEstadoReserva, PaginationMeta } from "../types";
 

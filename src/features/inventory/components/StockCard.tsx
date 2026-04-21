@@ -1,5 +1,5 @@
 import type { Mueble } from "../types";
-import { cn } from "@/utils/cn";
+import { cn } from "@/shared/utils/cn";
 
 type StockCardProps = {
   mueble: Mueble;

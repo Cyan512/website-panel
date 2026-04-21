@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { authClient } from "@/config/authClient";
+import { authClient } from "@/shared/lib/auth";
 import { roomsApi } from "@/features/rooms/api";
 import { reservasApi } from "@/features/reservations/api";
 import { pagosApi } from "@/features/payments/api";

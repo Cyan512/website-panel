@@ -8,11 +8,11 @@ import { CancelModal } from "./CancelModal";
 import { estadoReservaLabels, estadoReservaColors } from "../types";
 import type { Reserva, CreateReserva, UpdateReserva } from "../types";
 import { sileo } from "sileo";
-import { isHandledError } from "@/utils/error.utils";
+import { isHandledError } from "@/shared/utils/error";
 import { MdEventNote, MdEdit, MdDelete, MdCancel, MdSearch } from "react-icons/md";
-import { cn } from "@/utils/cn";
+import { cn } from "@/shared/utils/cn";
 import { useReservas } from "../hooks/useReservas";
-import { formatUTCDate, formatUTCDateLong } from "@/utils/format.utils";
+import { formatUTCDate, formatUTCDateLong } from "@/shared/utils/format";
 
 export default function ReservationsPage() {
   const {
@@ -87,7 +87,7 @@ export default function ReservationsPage() {
         action={<Button onClick={() => { setEditingReserva(null); setIsModalOpen(true); }}>+ Nueva Reserva</Button>}
       >
         {total === 0 && !search && !tipoSearch ? (
-          <EmptyState icon={<MdEventNote className="w-10 h-10 text-text-muted/50" />} title="Sin reservas" description="Crea la primera reserva" action={{ label: "Nueva Reserva", onClick: () => setIsModalOpen(true) }} />
+          <EmptyState icon={<MdEventNote className="w-10 h-10 text-text-muted/50" />} title="Sin reservas" description="Crea la primera reserva" action={<Button onClick={() => setIsModalOpen(true) }>Nueva Reserva</Button>} />
         ) : (
           <>
             {/* Stats */}

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { cn } from "@/utils/cn";
+import { cn } from "@/shared/utils/cn";
 import { MdChevronLeft, MdChevronRight } from "react-icons/md";
 import type { FechaReserva } from "../types";
 

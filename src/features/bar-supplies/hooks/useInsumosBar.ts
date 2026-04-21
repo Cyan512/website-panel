@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { authClient } from "@/config/authClient";
+import { authClient } from "@/shared/lib/auth";
 import { insumosBarApi, movimientosBarApi } from "../api";
 import type { InsumoBar, CreateInsumoBar, UpdateInsumoBar, MovimientoBar, CreateMovimientoBar } from "../types";
 

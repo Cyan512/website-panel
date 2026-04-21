@@ -5,12 +5,12 @@ import { CheckoutModal } from "./CheckoutModal";
 import { estadoEstadiaLabels, estadoEstadiaColors } from "../types";
 import type { Estancia, CreateEstancia, EstadoEstadia } from "../types";
 import { sileo } from "sileo";
-import { isHandledError } from "@/utils/error.utils";
+import { isHandledError } from "@/shared/utils/error";
 import { MdHotel, MdEdit, MdDelete, MdSearch, MdLogout } from "react-icons/md";
-import { cn } from "@/utils/cn";
+import { cn } from "@/shared/utils/cn";
 import { useEstancias } from "../hooks/useEstancias";
-import { authClient } from "@/config/authClient";
-import { formatUTCDate, formatUTCDateLong } from "@/utils/format.utils";
+import { authClient } from "@/shared/lib/auth";
+import { formatUTCDate, formatUTCDateLong } from "@/shared/utils/format";
 
 export default function EstanciasPage() {
   const { data: session } = authClient.useSession();
@@ -92,7 +92,7 @@ export default function EstanciasPage() {
             icon={<MdHotel className="w-10 h-10 text-text-muted/50" />}
             title="Sin estancias"
             description="Registra la primera estancia"
-            action={isAdmin ? { label: "Nueva Estancia", onClick: openCreate } : undefined}
+            action={isAdmin ? <Button onClick={openCreate}>Nueva Estancia</Button> : undefined}
           />
         ) : (
           <>

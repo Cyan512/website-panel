@@ -1,7 +1,7 @@
-import { cn } from "@/utils/cn";
+import { cn } from "@/shared/utils/cn";
 import { estadoEstadiaLabels, estadoEstadiaColors } from "../types";
 import type { Estancia } from "../types";
-import { formatUTCDate } from "@/utils/format.utils";
+import { formatUTCDate } from "@/shared/utils/format";
 
 interface Props {
   estancia: Estancia;

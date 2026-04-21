@@ -1,11 +1,11 @@
 import { useState } from "react";
 import { PanelHeader, Button, Modal, InputField } from "@/components";
 import { sileo } from "sileo";
-import { isHandledError } from "@/utils/error.utils";
-import { cn } from "@/utils/cn";
+import { isHandledError } from "@/shared/utils/error";
+import { cn } from "@/shared/utils/cn";
 import { MdEdit, MdDelete, MdSearch, MdAdd, MdSwapVert } from "react-icons/md";
 import { useInsumosBar } from "../hooks/useInsumosBar";
-import { authClient } from "@/config/authClient";
+import { authClient } from "@/shared/lib/auth";
 import {
   UnidadInsumo, TipoMovimiento, MotivoEntrada, MotivoSalida,
 } from "../types";

@@ -2,10 +2,10 @@ import { useState } from "react";
 import { PanelHeader, Button, EmptyState, Loading } from "@/components";
 import { useCategoriasMueble } from "../hooks/useCategoriasMueble";
 import { CategoriaMuebleModal } from "./CategoriaMuebleModal";
-import { cn } from "@/utils/cn";
+import { cn } from "@/shared/utils/cn";
 import type { CategoriaMueble, CreateCategoriaMueble } from "../types";
 import { sileo } from "sileo";
-import { isHandledError } from "@/utils/error.utils";
+import { isHandledError } from "@/shared/utils/error";
 import { MdCategory, MdSearch } from "react-icons/md";
 
 export default function CategoriasMueblePage() {
@@ -70,7 +70,7 @@ export default function CategoriasMueblePage() {
             icon={<MdCategory className="w-10 h-10 text-text-muted/50" />}
             title="Sin categorías"
             description="Crea la primera categoría de muebles"
-            action={{ label: "Nueva Categoría", onClick: openCreate }}
+            action={<Button onClick={openCreate }>Nueva Categoría</Button>}
           />
         ) : (
           <>

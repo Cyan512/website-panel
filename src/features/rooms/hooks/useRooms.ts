@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { authClient } from "@/config/authClient";
+import { authClient } from "@/shared/lib/auth";
 import { roomsApi, tiposHabitacionApi } from "../api";
 import type { Habitacion, TipoHabitacion, CreateHabitacion, UpdateEstadoHabitacion, PaginatedHabitaciones } from "../types";
 

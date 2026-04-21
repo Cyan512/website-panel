@@ -1,4 +1,4 @@
-import { cn } from "@/utils/cn";
+import { cn } from "@/shared/utils/cn";
 import { tipoCanalLabels, tipoCanalColors } from "../types";
 import type { Canal } from "../types";
 

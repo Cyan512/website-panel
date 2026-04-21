@@ -1,16 +1,16 @@
 import { useState } from "react";
-import { authClient } from "@/config/authClient";
+import { authClient } from "@/shared/lib/auth";
 import { PanelHeader, Button, EmptyState, Loading, Modal } from "@/components";
 import { PagoModal } from "./PagoModal";
 import { sileo } from "sileo";
-import { isHandledError } from "@/utils/error.utils";
-import { cn } from "@/utils/cn";
+import { isHandledError } from "@/shared/utils/error";
+import { cn } from "@/shared/utils/cn";
 import { estadoPagoLabels, metodoPagoLabels } from "../types";
 import type { Pago, EstadoPago } from "../types";
 import { MdPayment, MdEdit, MdDelete, MdSearch } from "react-icons/md";
 import { utils, writeFile } from "xlsx";
 import { usePagos } from "../hooks/usePagos";
-import { formatUTCDate, formatUTCDateLong } from "@/utils/format.utils";
+import { formatUTCDate, formatUTCDateLong } from "@/shared/utils/format";
 
 const estadoColors: Record<string, string> = {
   CONFIRMADO: "bg-emerald-100 text-emerald-700",
@@ -105,7 +105,7 @@ export default function PagosPage() {
         }
       >
         {pagos.length === 0 ? (
-          <EmptyState icon={<MdPayment className="w-10 h-10 text-text-muted/50" />} title="Sin pagos" description="Registra tu primer pago" action={isAdmin ? { label: "Registrar Pago", onClick: () => setIsModalOpen(true) } : undefined} />
+          <EmptyState icon={<MdPayment className="w-10 h-10 text-text-muted/50" />} title="Sin pagos" description="Registra tu primer pago" action={isAdmin ? <Button onClick={() => setIsModalOpen(true)}>Registrar Pago</Button> : undefined} />
         ) : (
           <>
             {/* Stats */}

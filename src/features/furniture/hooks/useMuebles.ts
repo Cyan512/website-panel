@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { authClient } from "@/config/authClient";
+import { authClient } from "@/shared/lib/auth";
 import { mueblesApi, categoriasApi } from "../api";
 import type { Mueble, CreateMueble, UpdateMueble } from "../types";
 import type { CategoriaMueble } from "@/features/furniture-categories/types";

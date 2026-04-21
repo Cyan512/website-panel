@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { Modal, Button, InputField } from "@/components";
 import { sileo } from "sileo";
-import { isHandledError } from "@/utils/error.utils";
+import { isHandledError } from "@/shared/utils/error";
 import type { Estancia, CheckoutEstancia } from "../types";
-import { formatUTCDateLong } from "@/utils/format.utils";
+import { formatUTCDateLong } from "@/shared/utils/format";
 
 interface Props {
   isOpen: boolean;

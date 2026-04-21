@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { authClient } from "@/config/authClient";
+import { authClient } from "@/shared/lib/auth";
 import { pagosApi } from "../api";
 import type { Pago, CreatePago, UpdatePago } from "../types";
 

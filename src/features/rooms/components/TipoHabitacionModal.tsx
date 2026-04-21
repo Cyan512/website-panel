@@ -4,7 +4,7 @@ import type { CreateTipoHabitacion, UpdateTipoHabitacion, TipoHabitacion } from 
 import { Modal, Button } from "@/components";
 import { InputField } from "@/components";
 import { sileo } from "sileo";
-import { isHandledError } from "@/utils/error.utils";
+import { isHandledError } from "@/shared/utils/error";
 
 interface TipoHabitacionModalProps {
     isOpen: boolean;

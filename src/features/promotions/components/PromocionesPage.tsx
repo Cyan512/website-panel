@@ -1,14 +1,14 @@
 import { useState } from "react";
 import { PanelHeader, Button, Modal, InputField } from "@/components";
 import { sileo } from "sileo";
-import { isHandledError } from "@/utils/error.utils";
-import { cn } from "@/utils/cn";
+import { isHandledError } from "@/shared/utils/error";
+import { cn } from "@/shared/utils/cn";
 import { MdEdit, MdDelete, MdSearch, MdAdd, MdClose } from "react-icons/md";
 import { usePromociones } from "../hooks/usePromociones";
 import { useHabitaciones } from "@/features/rooms/hooks/useRooms";
-import { authClient } from "@/config/authClient";
+import { authClient } from "@/shared/lib/auth";
 import type { Promocion, CreatePromocion, UpdatePromocion } from "../types";
-import { formatUTCDate } from "@/utils/format.utils";
+import { formatUTCDate } from "@/shared/utils/format";
 
 // ─── helpers ────────────────────────────────────────────────────────────────
 

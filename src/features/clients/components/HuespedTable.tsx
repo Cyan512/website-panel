@@ -1,6 +1,6 @@
 import type { Huesped, PaginationMeta } from "../types";
 import { MdSearch, MdEmail, MdPhone, MdEdit, MdDelete } from "react-icons/md";
-import { cn } from "@/utils/cn";
+import { cn } from "@/shared/utils/cn";
 import { useState } from "react";
 
 interface Props {

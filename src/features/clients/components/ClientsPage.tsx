@@ -1,9 +1,9 @@
 import { useState } from "react";
-import { authClient } from "@/config/authClient";
+import { authClient } from "@/shared/lib/auth";
 import { PanelHeader, Button, EmptyState, Loading, Modal } from "@/components";
 import { HuespedModal } from "./HuespedModal";
 import { sileo } from "sileo";
-import { isHandledError } from "@/utils/error.utils";
+import { isHandledError } from "@/shared/utils/error";
 import type { Huesped } from "../types";
 import { MdPeople, MdEmail, MdPhone, MdPerson, MdNotes } from "react-icons/md";
 import { HuespedTable } from "./HuespedTable";
@@ -79,7 +79,7 @@ export default function ClientsPage() {
             icon={<MdPeople className="w-10 h-10 text-text-muted/50" />}
             title="Sin huéspedes"
             description="Comienza agregando tu primer huésped"
-            action={{ label: "Agregar Huésped", onClick: () => setIsModalOpen(true) }}
+            action={<Button onClick={() => setIsModalOpen(true) }>Agregar Huésped</Button>}
           />
         ) : (
           <div className="p-4 sm:p-6">

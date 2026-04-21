@@ -6,9 +6,9 @@ import { TarifaCard } from "./TarifaCard";
 import { TarifaModal } from "./TarifaModal";
 import type { Tarifa, CreateTarifa } from "../types";
 import { sileo } from "sileo";
-import { isHandledError } from "@/utils/error.utils";
+import { isHandledError } from "@/shared/utils/error";
 import { MdLocalOffer } from "react-icons/md";
-import { authClient } from "@/config/authClient";
+import { authClient } from "@/shared/lib/auth";
 
 export default function TarifasPage() {
   const { data: session } = authClient.useSession();
@@ -59,7 +59,7 @@ export default function TarifasPage() {
             icon={<MdLocalOffer className="w-10 h-10 text-text-muted/50" />}
             title="Sin tarifas"
             description="Crea tu primera tarifa"
-            action={isAdmin ? { label: "Crear Tarifa", onClick: openCreate } : undefined}
+            action={isAdmin ? <Button onClick={openCreate}>Crear Tarifa</Button> : undefined}
           />
         ) : (
           <>

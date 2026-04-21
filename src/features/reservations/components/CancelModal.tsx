@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Modal, Button } from "@/components";
 import { sileo } from "sileo";
-import { isHandledError } from "@/utils/error.utils";
+import { isHandledError } from "@/shared/utils/error";
 import type { Reserva, CancelReserva } from "../types";
 
 interface Props {

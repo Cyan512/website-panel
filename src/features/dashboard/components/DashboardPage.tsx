@@ -1,9 +1,9 @@
-import { authClient } from "@/config/authClient";
+import { authClient } from "@/shared/lib/auth";
 import { Card, CardBody, Loading } from "@/components";
 import { MdHotel, MdLogin, MdLogout, MdAttachMoney, MdTrendingUp, MdTrendingDown } from "react-icons/md";
 import { useDashboard } from "../hooks/useDashboard";
 import Ingresos from "./Ingresos";
-import { cn } from "@/utils/cn";
+import { cn } from "@/shared/utils/cn";
 
 function formatTimeAgo(date: Date): string {
   const now = new Date();

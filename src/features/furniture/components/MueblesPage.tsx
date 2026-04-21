@@ -6,11 +6,11 @@ import { MuebleModal } from "./MuebleModal";
 import { muebleConditionLabels, muebleConditionColors } from "../types";
 import type { Mueble, CreateMueble, MuebleCondition } from "../types";
 import { sileo } from "sileo";
-import { isHandledError } from "@/utils/error.utils";
+import { isHandledError } from "@/shared/utils/error";
 import { MdChair } from "react-icons/md";
-import { cn } from "@/utils/cn";
+import { cn } from "@/shared/utils/cn";
 import { useMuebles } from "../hooks/useMuebles";
-import { formatUTCDate } from "@/utils/format.utils";
+import { formatUTCDate } from "@/shared/utils/format";
 
 export default function MueblesPage() {
   const { muebles, categorias, loading, error, fetchMuebles, createMueble, updateMueble, deleteMueble } = useMuebles();
@@ -66,7 +66,7 @@ export default function MueblesPage() {
             icon={<MdChair className="w-10 h-10 text-text-muted/50" />}
             title="Sin muebles"
             description="Registra el primer mueble"
-            action={{ label: "Nuevo Mueble", onClick: openCreate }}
+            action={<Button onClick={openCreate }>Nuevo Mueble</Button>}
           />
         ) : (
           <>

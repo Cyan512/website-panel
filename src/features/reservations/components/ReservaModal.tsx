@@ -1,13 +1,13 @@
 import { useState, useEffect } from "react";
 import { Modal, Button, InputField } from "@/components";
 import { sileo } from "sileo";
-import { isHandledError } from "@/utils/error.utils";
+import { isHandledError } from "@/shared/utils/error";
 import type { Reserva, CreateReserva, UpdateReserva, EstadoReserva } from "../types";
 import { estadoReservaLabels } from "../types";
 import type { Huesped } from "@/features/clients/types";
 import type { Habitacion } from "@/features/rooms/types";
 import type { Tarifa } from "@/features/rates/types";
-import { authClient } from "@/config/authClient";
+import { authClient } from "@/shared/lib/auth";
 
 interface Props {
   isOpen: boolean;

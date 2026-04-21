@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { authClient } from "@/config/authClient";
+import { authClient } from "@/shared/lib/auth";
 import { estanciasApi } from "../api";
 import type { Estancia, CreateEstancia, UpdateEstancia, CheckoutEstancia } from "../types";
 

@@ -6,9 +6,9 @@ import { InputField } from "@/components";
 import { sileo } from "sileo";
 import type { Reserva } from "@/features/reservations/types";
 import type { Folio, FolioWithConsumos } from "@/features/folios/types";
-import { cn } from "@/utils/cn";
+import { cn } from "@/shared/utils/cn";
 import { MdSearch, MdShoppingCart, MdRoomService } from "react-icons/md";
-import { authClient } from "@/config/authClient";
+import { authClient } from "@/shared/lib/auth";
 
 const defaultFormData = {
   concepto: "RESERVA" as ConceptoPago,

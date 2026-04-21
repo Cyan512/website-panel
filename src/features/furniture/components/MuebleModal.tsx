@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { Modal, Button, InputField } from "@/components";
 import { sileo } from "sileo";
-import { isHandledError } from "@/utils/error.utils";
+import { isHandledError } from "@/shared/utils/error";
 import { muebleConditionLabels } from "../types";
 import type { Mueble, CreateMueble, MuebleCondition } from "../types";
 import type { Habitacion } from "@/features/rooms/types";

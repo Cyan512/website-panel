@@ -4,7 +4,7 @@ import { TipoHabitacionCard } from "./TipoHabitacionCard";
 import { TipoHabitacionModal } from "./TipoHabitacionModal";
 import { PanelHeader, Button, Modal } from "@/components";
 import { sileo } from "sileo";
-import { isHandledError } from "@/utils/error.utils";
+import { isHandledError } from "@/shared/utils/error";
 import type { TipoHabitacion } from "../types";
 
 export default function TipoHabitacionPage() {

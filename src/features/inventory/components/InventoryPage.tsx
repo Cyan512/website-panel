@@ -5,11 +5,11 @@ import { StockModal } from "./StockModal";
 import { ImportModal } from "./ImportModal";
 import { PanelHeader, Button } from "@/components";
 import { FaFileImport, FaFileExport } from "react-icons/fa";
-import { cn } from "@/utils/cn";
+import { cn } from "@/shared/utils/cn";
 import { sileo } from "sileo";
 import { utils, writeFile } from "xlsx";
 import type { Mueble } from "../types";
-import { formatUTCDate } from "@/utils/format.utils";
+import { formatUTCDate } from "@/shared/utils/format";
 
 export default function InventoryPage() {
   const { muebles, loading, error, fetchMuebles, deleteMueble } = useInventory();

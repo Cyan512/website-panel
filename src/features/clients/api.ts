@@ -1,4 +1,4 @@
-import axiosInstance from "@/config/axios/axios.instance";
+import axiosInstance from "@/shared/lib/axios";
 import type { Huesped, CreateHuesped, UpdateHuesped, PaginatedHuespedes } from "./types";
 
 export const huespedesApi = {

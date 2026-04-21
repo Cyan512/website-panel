@@ -5,11 +5,11 @@ import { CanalModal } from "./CanalModal";
 import { tipoCanalLabels, tipoCanalColors } from "../types";
 import type { Canal, CreateCanal } from "../types";
 import { sileo } from "sileo";
-import { isHandledError } from "@/utils/error.utils";
+import { isHandledError } from "@/shared/utils/error";
 import { MdHub } from "react-icons/md";
-import { cn } from "@/utils/cn";
+import { cn } from "@/shared/utils/cn";
 import { useCanales } from "../hooks/useCanales";
-import { authClient } from "@/config/authClient";
+import { authClient } from "@/shared/lib/auth";
 
 export default function CanalesPage() {
   const { data: session } = authClient.useSession();
@@ -61,7 +61,7 @@ export default function CanalesPage() {
             icon={<MdHub className="w-10 h-10 text-text-muted/50" />}
             title="Sin canales"
             description="Crea tu primer canal de distribución"
-            action={isAdmin ? { label: "Crear Canal", onClick: openCreate } : undefined}
+            action={isAdmin ? <Button onClick={openCreate}>Crear Canal</Button> : undefined}
           />
         ) : (
           <>

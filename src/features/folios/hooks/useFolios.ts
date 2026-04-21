@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { authClient } from "@/config/authClient";
+import { authClient } from "@/shared/lib/auth";
 import { foliosApi } from "../api";
 import type { Folio, CreateFolio, UpdateFolio, PaginationMeta, CreateFolioProductoDto, CreateFolioServicio } from "../types";
 

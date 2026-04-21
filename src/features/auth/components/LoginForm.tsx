@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { authClient } from "@/config/authClient";
+import { authClient } from "@/shared/lib/auth";
 import { InputField } from "@/components";
 import { Button } from "@/components";
 import { sileo } from "sileo";
