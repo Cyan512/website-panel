@@ -26,3 +26,9 @@ dist-ssr
 docs
 .env
 opencode.json
+
+#agents
+.agents
+.kiro
+.windsurf
+skills-lock.json
