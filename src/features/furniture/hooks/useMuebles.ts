@@ -1,16 +1,16 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { authClient } from "@/shared/lib/auth";
-import { mueblesApi, categoriasApi } from "../api";
+import { mueblesApi, categoriasMuebleApi } from "../api";
 import type { Mueble, CreateMueble, UpdateMueble, PaginationMeta, MuebleCondition } from "../types";
-import type { CategoriaMueble } from "@/features/furniture-categories/types";
+import type { CategoriaMueble, CreateCategoriaMueble, UpdateCategoriaMueble } from "@/features/furniture-categories/types";
 
 interface Filters {
-  nombre?: string;
+  codigo?: string;
   categoria?: string;
   condicion?: MuebleCondition;
 }
 
-export function useMuebles(initialPage = 1, initialLimit = 12) {
+export function useMuebles(initialPage = 1, initialLimit = 10) {
   const { data: session } = authClient.useSession();
   const [muebles, setMuebles] = useState<Mueble[]>([]);
   const [pagination, setPagination] = useState<PaginationMeta>({
@@ -25,12 +25,11 @@ export function useMuebles(initialPage = 1, initialLimit = 12) {
   const [page, setPage] = useState(initialPage);
   const [limit, setLimit] = useState(initialLimit);
   const [filters, setFilters] = useState<Filters>({});
-  const [searchInput, setSearchInput] = useState(""); // Estado local para el input
+  const [searchInput, setSearchInput] = useState("");
   const [loading, setLoading] = useState(true);
   const [searching, setSearching] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Refs para control de búsqueda
   const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
 
@@ -39,15 +38,10 @@ export function useMuebles(initialPage = 1, initialLimit = 12) {
       try {
         setLoading(true);
         setError(null);
-        const [data, categoriasData] = await Promise.all([
-          mueblesApi.getPage(p, l, f.nombre, f.categoria, f.condicion, signal),
-          categoriasApi.getAll(),
-        ]);
+        const data = await mueblesApi.getPage(p, l, f.codigo, f.categoria, f.condicion, signal);
         setMuebles(data.list);
         setPagination(data.pagination);
-        setCategorias(categoriasData);
       } catch (err: any) {
-        // Ignorar errores de cancelación
         if (err.name !== "AbortError" && err.name !== "CanceledError") {
           setError("Error al cargar muebles");
         }
@@ -59,20 +53,25 @@ export function useMuebles(initialPage = 1, initialLimit = 12) {
     [page, limit, filters],
   );
 
+  const fetchCategorias = useCallback(async () => {
+    try {
+      const data = await categoriasMuebleApi.getAll();
+      setCategorias(data);
+    } catch (err) {
+      console.error("Error al cargar categorías", err);
+    }
+  }, []);
+
   useEffect(() => {
     if (session) {
-      // Cancelar request anterior si existe
       if (abortControllerRef.current) {
         abortControllerRef.current.abort();
       }
-
-      // Crear nuevo AbortController
       abortControllerRef.current = new AbortController();
-
       fetchMuebles(page, limit, filters, abortControllerRef.current.signal);
+      fetchCategorias();
     }
 
-    // Cleanup: cancelar request al desmontar
     return () => {
       if (abortControllerRef.current) {
         abortControllerRef.current.abort();
@@ -86,32 +85,25 @@ export function useMuebles(initialPage = 1, initialLimit = 12) {
     setPage(1);
   };
 
-  // Búsqueda mejorada con debounce, mínimo de caracteres y cancelación
   const changeSearch = (q: string) => {
-    // Actualizar el input inmediatamente para que sea responsive
     setSearchInput(q);
 
-    // Limpiar timer anterior
     if (debounceTimerRef.current) {
       clearTimeout(debounceTimerRef.current);
     }
 
-    // Si el campo está vacío, buscar inmediatamente
     if (!q || q.trim() === "") {
       setSearching(false);
-      setFilters((prev) => ({ ...prev, nombre: undefined }));
+      setFilters((prev) => ({ ...prev, codigo: undefined }));
       setPage(1);
       return;
     }
 
-    // Mostrar indicador de búsqueda
     setSearching(true);
 
-    // Aplicar debounce de 500ms
     debounceTimerRef.current = setTimeout(() => {
-      // Solo buscar si tiene al menos 2 caracteres
       if (q.trim().length >= 2) {
-        setFilters((prev) => ({ ...prev, nombre: q.trim() }));
+        setFilters((prev) => ({ ...prev, codigo: q.trim() }));
         setPage(1);
       } else {
         setSearching(false);
@@ -119,7 +111,6 @@ export function useMuebles(initialPage = 1, initialLimit = 12) {
     }, 500);
   };
 
-  // Filtros de categoría y condición (selección única)
   const changeCategoria = (catId: string | null) => {
     setFilters((prev) => ({ ...prev, categoria: catId || undefined }));
     setPage(1);
@@ -131,7 +122,6 @@ export function useMuebles(initialPage = 1, initialLimit = 12) {
   };
 
   const clearFilters = () => {
-    // Limpiar también el input de búsqueda
     setSearchInput("");
     setSearching(false);
     setFilters({});
@@ -159,6 +149,23 @@ export function useMuebles(initialPage = 1, initialLimit = 12) {
     if (targetPage !== page) setPage(targetPage);
   };
 
+  const createCategoria = async (data: CreateCategoriaMueble): Promise<CategoriaMueble> => {
+    const categoria = await categoriasMuebleApi.create(data);
+    setCategorias((prev) => [...prev, categoria]);
+    return categoria;
+  };
+
+  const updateCategoria = async (id: string, data: UpdateCategoriaMueble): Promise<CategoriaMueble> => {
+    const categoria = await categoriasMuebleApi.update(id, data);
+    setCategorias((prev) => prev.map((c) => (c.id === id ? categoria : c)));
+    return categoria;
+  };
+
+  const deleteCategoria = async (id: string): Promise<void> => {
+    await categoriasMuebleApi.delete(id);
+    setCategorias((prev) => prev.filter((c) => c.id !== id));
+  };
+
   return {
     muebles,
     pagination,
@@ -180,5 +187,8 @@ export function useMuebles(initialPage = 1, initialLimit = 12) {
     createMueble,
     updateMueble,
     deleteMueble,
+    createCategoria,
+    updateCategoria,
+    deleteCategoria,
   };
 }

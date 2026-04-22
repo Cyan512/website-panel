@@ -1,65 +1,59 @@
 import { cn } from "@/shared/utils/cn";
 import { muebleConditionLabels, muebleConditionColors } from "../types";
 import type { Mueble } from "../types";
-import { MdEdit, MdDelete } from "react-icons/md";
+import { MdEdit, MdDelete, MdImage } from "react-icons/md";
 
 interface Props {
   mueble: Mueble;
-  onClick: () => void;
   onEdit: (e: React.MouseEvent) => void;
   onDelete: (e: React.MouseEvent) => void;
-  categoriaNombre?: string;
+  onViewImage: () => void;
   habitacionNro?: string;
 }
 
-export function MuebleCard({ mueble, onClick, onEdit, onDelete, categoriaNombre, habitacionNro }: Props) {
+export function MuebleCard({ mueble, onEdit, onDelete, onViewImage, habitacionNro }: Props) {
   const condicion = mueble.condicion as keyof typeof muebleConditionColors;
+  const hasImage = !!mueble.url_imagen || (mueble.imagenes && mueble.imagenes.length > 0);
 
   return (
     <div className="rounded-2xl border border-border bg-bg-card overflow-hidden transition-all hover:shadow-md hover:-translate-y-0.5">
-      {/* Contenido principal clickeable */}
-      <div onClick={onClick} className="p-4 cursor-pointer">
-        {mueble.url_imagen && (
-          <div className="w-full h-28 rounded-xl overflow-hidden mb-3 bg-paper-medium/20">
-            <img src={mueble.url_imagen} alt={mueble.nombre} className="w-full h-full object-cover" />
-          </div>
-        )}
-
+      <div className="p-4">
         <div className="flex items-start justify-between gap-2 mb-2">
-          <div className="min-w-0">
+          <div className="min-w-0 flex-1">
             <p className="font-semibold text-text-primary text-sm truncate">{mueble.nombre}</p>
             <p className="text-xs text-text-muted mt-0.5">{mueble.codigo}</p>
           </div>
-          <span
-            className={cn("text-xs font-medium px-2 py-0.5 rounded-full shrink-0", muebleConditionColors[condicion])}
-          >
-            {muebleConditionLabels[condicion]}
-          </span>
+          <div className="flex flex-col justify-between items-end gap-1 shrink-0 h-full">
+            <span className={cn("text-xs font-medium px-2 py-0.5 rounded-full", muebleConditionColors[condicion])}>
+              {muebleConditionLabels[condicion]}
+            </span>
+            {hasImage && (
+              <button
+                onClick={onViewImage}
+                className="p-1.5 rounded-lg bg-info/10 text-info border border-info/20 hover:bg-info/20 transition-all"
+                title="Ver imagen"
+              >
+                <MdImage className="w-3.5 h-3.5" />
+              </button>
+            )}
+          </div>
         </div>
 
         <div className="space-y-0.5 text-xs text-text-muted">
-          {(categoriaNombre || mueble.categoria_id) && (
+          {habitacionNro && (
             <p>
-              Categoría:{" "}
-              <span className="text-text-primary font-medium">
-                {categoriaNombre ?? mueble.categoria_id.slice(0, 8) + "…"}
-              </span>
+              Habitación: <span className="text-text-primary font-medium">Nro. {habitacionNro}</span>
             </p>
           )}
-          {(habitacionNro || mueble.habitacion_id) && (
+          {mueble.categoria?.nombre && (
             <p>
-              Habitación:{" "}
-              <span className="text-text-primary font-medium">
-                {habitacionNro ? `Nro. ${habitacionNro}` : mueble.habitacion_id!.slice(0, 8) + "…"}
-              </span>
+              Categoría: <span className="text-text-primary font-medium">{mueble.categoria.nombre}</span>
             </p>
           )}
         </div>
       </div>
 
-      {/* Sección de acciones */}
       <div className="border-t border-border-light/50 bg-paper-medium/10 px-4 py-2.5">
-        <p className="text-xs text-text-muted font-medium uppercase tracking-wider mb-2">Acciones</p>
         <div className="flex gap-2">
           <button
             onClick={onEdit}

@@ -3,9 +3,8 @@ import { Modal, Button, InputField } from "@/components";
 import { sileo } from "sileo";
 import { isHandledError } from "@/shared/utils/error";
 import { muebleConditionLabels } from "../types";
-import type { Mueble, CreateMueble, MuebleCondition } from "../types";
+import type { Mueble, CreateMueble, MuebleCondition, CategoriaMueble } from "../types";
 import type { Habitacion } from "@/features/rooms/types";
-import type { CategoriaMueble } from "@/features/furniture-categories/types";
 import { MdUpload, MdClose } from "react-icons/md";
 import { mueblesApi } from "../api";
 
@@ -14,8 +13,8 @@ interface Props {
   onClose: () => void;
   onSuccess: () => void;
   mueble?: Mueble | null;
-  categorias: CategoriaMueble[];
   habitaciones: Habitacion[];
+  categorias: CategoriaMueble[];
 }
 
 const selectClass =
@@ -33,7 +32,7 @@ const defaultForm = {
   habitacion_id: "",
 };
 
-export function MuebleModal({ isOpen, onClose, onSuccess, mueble, categorias, habitaciones }: Props) {
+export function MuebleModal({ isOpen, onClose, onSuccess, mueble, habitaciones, categorias }: Props) {
   const [form, setForm] = useState(defaultForm);
   const [saving, setSaving] = useState(false);
   const [imageFiles, setImageFiles] = useState<File[]>([]);
@@ -45,7 +44,7 @@ export function MuebleModal({ isOpen, onClose, onSuccess, mueble, categorias, ha
         codigo: mueble.codigo,
         nombre: mueble.nombre,
         descripcion: mueble.descripcion ?? "",
-        categoria_id: mueble.categoria_id,
+        categoria_id: mueble.categoria_id ?? "",
         condicion: mueble.condicion as MuebleCondition,
         fecha_adquisicion: mueble.fecha_adquisicion ?? "",
         ultima_revision: mueble.ultima_revision ?? "",
@@ -53,24 +52,22 @@ export function MuebleModal({ isOpen, onClose, onSuccess, mueble, categorias, ha
       });
       setImageFiles([]);
     } else {
-      setForm({ ...defaultForm, categoria_id: categorias[0]?.id ?? "", habitacion_id: habitaciones[0]?.id ?? "" });
+      setForm(defaultForm);
       setImageFiles([]);
     }
-  }, [mueble, isOpen, categorias, habitaciones]);
+  }, [mueble, isOpen]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.codigo.trim()) return sileo.error({ title: "Error", description: "El código es requerido" });
     if (!form.nombre.trim()) return sileo.error({ title: "Error", description: "El nombre es requerido" });
-    if (!form.categoria_id) return sileo.error({ title: "Error", description: "Selecciona una categoría" });
-    if (!form.habitacion_id) return sileo.error({ title: "Error", description: "Selecciona una habitación" });
 
     const payload: CreateMueble = {
       codigo: form.codigo.trim(),
       nombre: form.nombre.trim(),
-      categoria_id: form.categoria_id,
-      habitacion_id: form.habitacion_id,
-      condicion: form.condicion,
+      ...(form.categoria_id && { categoria_id: form.categoria_id }),
+      ...(form.habitacion_id && { habitacion_id: form.habitacion_id }),
+      ...(form.condicion && { condicion: form.condicion }),
       ...(form.descripcion.trim() && { descripcion: form.descripcion.trim() }),
       ...(imageFiles.length > 0 && { imagen: imageFiles }),
       ...(form.fecha_adquisicion && { fecha_adquisicion: form.fecha_adquisicion }),
@@ -120,14 +117,13 @@ export function MuebleModal({ isOpen, onClose, onSuccess, mueble, categorias, ha
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className={labelClass}>Categoría</label>
+              <label className={labelClass}>Categoría (opcional)</label>
               <select
                 value={form.categoria_id}
                 onChange={(e) => setForm((f) => ({ ...f, categoria_id: e.target.value }))}
                 className={selectClass}
-                required
               >
-                <option value="">Seleccionar...</option>
+                <option value="">Sin categoría</option>
                 {categorias.map((c) => (
                   <option key={c.id} value={c.id}>
                     {c.nombre}
@@ -136,14 +132,13 @@ export function MuebleModal({ isOpen, onClose, onSuccess, mueble, categorias, ha
               </select>
             </div>
             <div>
-              <label className={labelClass}>Habitación</label>
+              <label className={labelClass}>Habitación (opcional)</label>
               <select
                 value={form.habitacion_id}
                 onChange={(e) => setForm((f) => ({ ...f, habitacion_id: e.target.value }))}
                 className={selectClass}
-                required
               >
-                <option value="">Seleccionar...</option>
+                <option value="">Sin habitación</option>
                 {habitaciones.map((h) => (
                   <option key={h.id} value={h.id}>
                     Hab. {h.nro_habitacion} — Piso {h.piso}
@@ -179,7 +174,6 @@ export function MuebleModal({ isOpen, onClose, onSuccess, mueble, categorias, ha
             />
           </div>
 
-          {/* Imagen */}
           <div>
             <label className={labelClass}>Imagen (opcional)</label>
             <input

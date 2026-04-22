@@ -6,6 +6,7 @@ export { Badge } from "./badge";
 export { Card, CardHeader, CardBody, CardFooter } from "./card";
 export { InputField } from "./input";
 export { Checkbox } from "./checkbox";
+export { CheckboxDropdown } from "./checkbox-dropdown";
 export { CrudToolbar } from "./crud-toolbar";
 export { Pagination } from "./pagination";
 export { ConfirmDialog } from "./confirm-dialog";

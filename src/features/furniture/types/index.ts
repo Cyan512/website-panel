@@ -1,4 +1,5 @@
 export type MuebleCondition = "BUENO" | "REGULAR" | "DANADO" | "FALTANTE";
+export type { CategoriaMueble, CreateCategoriaMueble } from "@/features/furniture-categories/types";
 
 export const muebleConditionLabels: Record<MuebleCondition, string> = {
   BUENO: "Bueno",
@@ -33,7 +34,7 @@ export interface Mueble {
   codigo: string;
   nombre: string;
   descripcion: string | null;
-  categoria_id: string;
+  categoria_id: string | null;
   categoria?: {
     id: string;
     nombre: string;
@@ -43,6 +44,7 @@ export interface Mueble {
     updated_at: string;
   };
   url_imagen: string | null;
+  imagenes?: string[];
   condicion: MuebleCondition;
   fecha_adquisicion: string | null;
   ultima_revision: string | null;
@@ -55,12 +57,12 @@ export interface CreateMueble {
   codigo: string;
   nombre: string;
   descripcion?: string;
-  categoria_id: string;
+  categoria_id?: string;
   imagen?: File[];
   condicion?: MuebleCondition;
   fecha_adquisicion?: string;
   ultima_revision?: string;
-  habitacion_id: string;
+  habitacion_id?: string;
 }
 
 export interface UpdateMueble {

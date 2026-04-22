@@ -17,7 +17,7 @@ export default function PanelHeader({
   className,
 }: PanelHeaderProps) {
   return (
-    <div className={cn("flex flex-col gap-4", className)}>
+    <div className={cn("flex flex-col gap-4 px-4 sm:px-6", className)}>
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
           <h1 className="text-xl font-bold text-text-primary font-display">
@@ -31,7 +31,7 @@ export default function PanelHeader({
         </div>
         {action && <div className="sm:ml-auto">{action}</div>}
       </div>
-      <div className="overflow-x-auto">{children}</div>
+      {children}
     </div>
   );
 }

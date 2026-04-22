@@ -1,11 +1,27 @@
 import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { authClient } from "@/shared/lib/auth";
 import {
-  MdDashboard, MdEventNote, MdPeople, MdMenu, MdClose,
-  MdPayment, MdLocalOffer, MdHub, MdBedroomParent,
-  MdChair, MdCategory, MdHotel, MdExpandMore, MdExpandLess,
-  MdLogout, MdPerson, MdSettings, MdKeyboardArrowUp,
-  MdShoppingCart, MdReceipt, MdLocalBar, MdKitchen,
+  MdDashboard,
+  MdEventNote,
+  MdPeople,
+  MdMenu,
+  MdClose,
+  MdPayment,
+  MdLocalOffer,
+  MdHub,
+  MdBedroomParent,
+  MdChair,
+  MdHotel,
+  MdExpandMore,
+  MdExpandLess,
+  MdLogout,
+  MdPerson,
+  MdSettings,
+  MdKeyboardArrowUp,
+  MdShoppingCart,
+  MdReceipt,
+  MdLocalBar,
+  MdKitchen,
 } from "react-icons/md";
 import { cn } from "@/shared/utils/cn";
 import { useState, useRef, useEffect, type ComponentType } from "react";
@@ -28,10 +44,7 @@ interface MenuGroup {
   roles?: string[];
 }
 
-type NavItem =
-  | { kind: "link"; item: MenuItem }
-  | { kind: "group"; group: MenuGroup }
-  | { kind: "separator"; label: string };
+type NavItem = { kind: "link"; item: MenuItem } | { kind: "group"; group: MenuGroup } | { kind: "separator"; label: string };
 
 const navItems: NavItem[] = [
   { kind: "separator", label: "Principal" },
@@ -70,20 +83,7 @@ const navItems: NavItem[] = [
       ],
     },
   },
-  {
-    kind: "group",
-    group: {
-      id: "furniture-group",
-      icon: MdChair,
-      label: "Muebles",
-      paths: ["/furniture", "/furniture-categories"],
-      roles: ["ADMIN", "RECEPCIONISTA"],
-      children: [
-        { id: "furniture", icon: MdChair, label: "Muebles", path: "/furniture", roles: ["ADMIN", "RECEPCIONISTA"] },
-        { id: "furniture-categories", icon: MdCategory, label: "Categorías", path: "/furniture-categories", roles: ["ADMIN", "RECEPCIONISTA"] },
-      ],
-    },
-  },
+  { kind: "link", item: { id: "furniture", icon: MdChair, label: "Muebles", path: "/furniture", roles: ["ADMIN", "RECEPCIONISTA"] } },
   { kind: "link", item: { id: "products", icon: MdShoppingCart, label: "Productos", path: "/products", roles: ["ADMIN", "RECEPCIONISTA"] } },
   { kind: "link", item: { id: "folios", icon: MdReceipt, label: "Folios", path: "/folios", roles: ["ADMIN", "RECEPCIONISTA"] } },
   { kind: "link", item: { id: "promotions", icon: MdLocalOffer, label: "Promociones", path: "/promotions", roles: ["ADMIN", "RECEPCIONISTA"] } },
@@ -118,16 +118,20 @@ function GroupItem({ group, userRole, onNavClick }: { group: MenuGroup; userRole
         onClick={() => setOpen((o) => !o)}
         className={cn(
           "w-full flex items-center gap-3 mx-2 px-3 py-2.5 rounded-lg my-0.5 transition-all duration-300 focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:outline-none group relative overflow-hidden",
-          isActive ? "text-accent-light bg-accent/10" : "text-text-secondary hover:bg-white/5 hover:text-text-primary"
+          isActive ? "text-accent-light bg-accent/10" : "text-text-secondary hover:bg-white/5 hover:text-text-primary",
         )}
         style={{ width: "calc(100% - 1rem)" }}
       >
-        <span className={cn(
-          "absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-0 rounded-full bg-accent-light transition-all duration-300",
-          isActive && "h-5 rounded-full"
-        )} />
+        <span
+          className={cn(
+            "absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-0 rounded-full bg-accent-light transition-all duration-300",
+            isActive && "h-5 rounded-full",
+          )}
+        />
         <Icon className={cn("w-5 h-5 shrink-0 transition-transform duration-300", !isActive && "group-hover:translate-x-0.5")} />
-        <span className="text-sm font-medium flex-1 text-left" style={{ fontFamily: 'var(--font-body)' }}>{group.label}</span>
+        <span className="text-sm font-medium flex-1 text-left" style={{ fontFamily: "var(--font-body)" }}>
+          {group.label}
+        </span>
         {open ? <MdExpandLess className="w-4 h-4 shrink-0" /> : <MdExpandMore className="w-4 h-4 shrink-0" />}
       </button>
 
@@ -143,18 +147,22 @@ function GroupItem({ group, userRole, onNavClick }: { group: MenuGroup; userRole
                 className={({ isActive }) =>
                   cn(
                     "flex items-center gap-3 mx-2 px-3 py-2 rounded-lg my-0.5 transition-all duration-300 relative overflow-hidden group",
-                    isActive ? "text-accent-light bg-accent/10" : "text-text-secondary hover:bg-white/5 hover:text-text-primary"
+                    isActive ? "text-accent-light bg-accent/10" : "text-text-secondary hover:bg-white/5 hover:text-text-primary",
                   )
                 }
               >
                 {({ isActive }) => (
                   <>
-                    <span className={cn(
-                      "absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-0 rounded-full bg-accent-light transition-all duration-300",
-                      isActive && "h-4 rounded-full"
-                    )} />
+                    <span
+                      className={cn(
+                        "absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-0 rounded-full bg-accent-light transition-all duration-300",
+                        isActive && "h-4 rounded-full",
+                      )}
+                    />
                     <ChildIcon className={cn("w-4 h-4 transition-transform duration-300", !isActive && "group-hover:translate-x-0.5")} />
-                    <span className="text-sm" style={{ fontFamily: 'var(--font-body)' }}>{child.label}</span>
+                    <span className="text-sm" style={{ fontFamily: "var(--font-body)" }}>
+                      {child.label}
+                    </span>
                   </>
                 )}
               </NavLink>
@@ -215,11 +223,13 @@ export default function Sidebar() {
         />
       )}
 
-      <aside className={cn(
-        "fixed inset-y-0 left-0 z-40 flex flex-col transition-all duration-300 ease-in-out bg-bg-secondary border-r border-border w-64 transform",
-        isMobileOpen ? "translate-x-0" : "-translate-x-full",
-        "lg:translate-x-0"
-      )}>
+      <aside
+        className={cn(
+          "fixed inset-y-0 left-0 z-40 flex flex-col transition-all duration-300 ease-in-out bg-bg-secondary border-r border-border w-64 transform",
+          isMobileOpen ? "translate-x-0" : "-translate-x-full",
+          "lg:translate-x-0",
+        )}
+      >
         <div className="py-5 px-4 border-b border-border shrink-0">
           <div className="flex items-center gap-3">
             <div className="w-12 h-12 rounded-xl overflow-hidden shrink-0 relative">
@@ -227,8 +237,15 @@ export default function Sidebar() {
               <img src="/chakana_sin_fondo.svg" alt="Logo" className="w-full h-full object-cover drop-shadow-lg" />
             </div>
             <div>
-              <h2 className="text-base font-bold text-text-primary" style={{ fontFamily: 'var(--font-display)', letterSpacing: '0.06em' }}>Kori Hotel</h2>
-              <p className="text-[10px] text-text-muted uppercase tracking-widest" style={{ fontFamily: 'var(--font-display)', letterSpacing: '0.14em' }}>Admin Panel</p>
+              <h2 className="text-base font-bold text-text-primary" style={{ fontFamily: "var(--font-display)", letterSpacing: "0.06em" }}>
+                Kori Hotel
+              </h2>
+              <p
+                className="text-[10px] text-text-muted uppercase tracking-widest"
+                style={{ fontFamily: "var(--font-display)", letterSpacing: "0.14em" }}
+              >
+                Admin Panel
+              </p>
             </div>
           </div>
         </div>
@@ -238,7 +255,12 @@ export default function Sidebar() {
             if (navItem.kind === "separator") {
               return (
                 <div key={`sep-${idx}`} className="px-4 pt-4 pb-1">
-                  <p className="text-[10px] font-semibold tracking-wider uppercase text-text-muted" style={{ fontFamily: 'var(--font-display)', letterSpacing: '0.14em' }}>{navItem.label}</p>
+                  <p
+                    className="text-[10px] font-semibold tracking-wider uppercase text-text-muted"
+                    style={{ fontFamily: "var(--font-display)", letterSpacing: "0.14em" }}
+                  >
+                    {navItem.label}
+                  </p>
                 </div>
               );
             }
@@ -254,31 +276,28 @@ export default function Sidebar() {
                   className={({ isActive }) =>
                     cn(
                       "flex items-center gap-3 mx-2 px-3 py-2.5 rounded-lg my-0.5 transition-all duration-300 relative overflow-hidden group",
-                      isActive ? "text-accent-light bg-accent/10" : "text-text-secondary hover:bg-white/5 hover:text-text-primary"
+                      isActive ? "text-accent-light bg-accent/10" : "text-text-secondary hover:bg-white/5 hover:text-text-primary",
                     )
                   }
                 >
                   {({ isActive }) => (
                     <>
-                      <span className={cn(
-                        "absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-0 rounded-full bg-accent-light transition-all duration-300",
-                        isActive && "h-5 rounded-full"
-                      )} />
+                      <span
+                        className={cn(
+                          "absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-0 rounded-full bg-accent-light transition-all duration-300",
+                          isActive && "h-5 rounded-full",
+                        )}
+                      />
                       <Icon className={cn("w-5 h-5 transition-transform duration-300", !isActive && "group-hover:translate-x-0.5")} />
-                      <span className="text-sm font-medium" style={{ fontFamily: 'var(--font-body)' }}>{item.label}</span>
+                      <span className="text-sm font-medium" style={{ fontFamily: "var(--font-body)" }}>
+                        {item.label}
+                      </span>
                     </>
                   )}
                 </NavLink>
               );
             }
-            return (
-              <GroupItem
-                key={navItem.group.id}
-                group={navItem.group}
-                userRole={userRole}
-                onNavClick={handleNavClick}
-              />
-            );
+            return <GroupItem key={navItem.group.id} group={navItem.group} userRole={userRole} onNavClick={handleNavClick} />;
           })}
         </nav>
 
@@ -292,14 +311,20 @@ export default function Sidebar() {
                 </div>
                 <div className="py-1">
                   <button
-                    onClick={() => { setIsProfileOpen(false); navigate("/profile"); }}
+                    onClick={() => {
+                      setIsProfileOpen(false);
+                      navigate("/profile");
+                    }}
                     className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-text-secondary hover:bg-bg-hover hover:text-text-primary transition-colors"
                   >
                     <MdPerson className="w-4 h-4 shrink-0" />
                     Mi perfil
                   </button>
                   <button
-                    onClick={() => { setIsProfileOpen(false); navigate("/settings"); }}
+                    onClick={() => {
+                      setIsProfileOpen(false);
+                      navigate("/settings");
+                    }}
                     className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-text-secondary hover:bg-bg-hover hover:text-text-primary transition-colors"
                   >
                     <MdSettings className="w-4 h-4 shrink-0" />
@@ -322,9 +347,7 @@ export default function Sidebar() {
               onClick={() => setIsProfileOpen((o) => !o)}
               className={cn(
                 "w-full flex items-center gap-3 p-2.5 rounded-xl border transition-all",
-                isProfileOpen
-                  ? "bg-bg-hover border-border-light"
-                  : "bg-bg-tertiary/30 border-border hover:bg-bg-hover"
+                isProfileOpen ? "bg-bg-hover border-border-light" : "bg-bg-tertiary/30 border-border hover:bg-bg-hover",
               )}
             >
               <div className="w-9 h-9 shrink-0 rounded-lg overflow-hidden border border-border">

@@ -11,6 +11,7 @@ export {
   CardFooter,
   InputField,
   Checkbox,
+  CheckboxDropdown,
   CrudToolbar,
   Pagination,
   ConfirmDialog,

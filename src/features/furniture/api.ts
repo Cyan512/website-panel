@@ -1,12 +1,12 @@
 import axiosInstance from "@/shared/lib/axios";
 import type { Mueble, CreateMueble, UpdateMueble } from "./types";
-import type { CategoriaMueble } from "../furniture-categories/types";
+import type { CategoriaMueble, CreateCategoriaMueble, UpdateCategoriaMueble } from "../furniture-categories/types";
 
 export const mueblesApi = {
   getPage: async (
     page: number,
     limit: number,
-    nombre?: string,
+    codigo?: string,
     categoria?: string,
     condicion?: string,
     signal?: AbortSignal,
@@ -24,7 +24,7 @@ export const mueblesApi = {
     const params = new URLSearchParams();
     params.append("page", String(page));
     params.append("limit", String(limit));
-    if (nombre) params.append("nombre", nombre);
+    if (codigo) params.append("codigo", codigo);
     if (categoria) params.append("categoria", categoria);
     if (condicion) params.append("condicion", condicion);
     const response = await axiosInstance.get<{
@@ -59,8 +59,8 @@ export const mueblesApi = {
       const form = new FormData();
       form.append("codigo", data.codigo);
       form.append("nombre", data.nombre);
-      form.append("categoria_id", data.categoria_id);
-      form.append("habitacion_id", data.habitacion_id);
+      if (data.categoria_id) form.append("categoria_id", data.categoria_id);
+      if (data.habitacion_id) form.append("habitacion_id", data.habitacion_id);
       if (data.condicion) form.append("condicion", data.condicion);
       if (data.descripcion) form.append("descripcion", data.descripcion);
       if (data.fecha_adquisicion) form.append("fecha_adquisicion", data.fecha_adquisicion);
@@ -72,9 +72,9 @@ export const mueblesApi = {
     const response = await axiosInstance.post<{ success: boolean; data: Mueble }>("/api/private/muebles", {
       codigo: data.codigo,
       nombre: data.nombre,
-      categoria_id: data.categoria_id,
-      habitacion_id: data.habitacion_id,
-      condicion: data.condicion,
+      ...(data.categoria_id && { categoria_id: data.categoria_id }),
+      ...(data.habitacion_id && { habitacion_id: data.habitacion_id }),
+      ...(data.condicion && { condicion: data.condicion }),
       ...(data.descripcion && { descripcion: data.descripcion }),
       ...(data.fecha_adquisicion && { fecha_adquisicion: data.fecha_adquisicion }),
       ...(data.ultima_revision && { ultima_revision: data.ultima_revision }),
@@ -115,18 +115,23 @@ export const mueblesApi = {
   },
 };
 
-export const categoriasApi = {
-  getPage: async (): Promise<CategoriaMueble[]> => {
-    const response = await axiosInstance.get<{ success: boolean; data: CategoriaMueble[] }>(
-      "/api/private/categorias-mueble",
-    );
+export const categoriasMuebleApi = {
+  getAll: async (): Promise<CategoriaMueble[]> => {
+    const response = await axiosInstance.get<{ success: boolean; data: CategoriaMueble[] }>("/api/private/categorias-mueble");
     return response.data.data;
   },
 
-  getAll: async (): Promise<CategoriaMueble[]> => {
-    const response = await axiosInstance.get<{ success: boolean; data: CategoriaMueble[] }>(
-      "/api/private/categorias-mueble",
-    );
+  create: async (data: CreateCategoriaMueble): Promise<CategoriaMueble> => {
+    const response = await axiosInstance.post<{ success: boolean; data: CategoriaMueble }>("/api/private/categorias-mueble", data);
     return response.data.data;
+  },
+
+  update: async (id: string, data: UpdateCategoriaMueble): Promise<CategoriaMueble> => {
+    const response = await axiosInstance.put<{ success: boolean; data: CategoriaMueble }>(`/api/private/categorias-mueble/${id}`, data);
+    return response.data.data;
+  },
+
+  delete: async (id: string): Promise<void> => {
+    await axiosInstance.delete(`/api/private/categorias-mueble/${id}`);
   },
 };

@@ -18,7 +18,6 @@ import { settingsRoutes } from "@/features/settings";
 import { productsRoutes } from "@/features/products";
 import { foliosRoutes } from "@/features/folios";
 import { furnitureRoutes } from "@/features/furniture";
-import { furnitureCategoriesRoutes } from "@/features/furniture-categories";
 import { barSuppliesRoutes } from "@/features/bar-supplies";
 import { kitchenSuppliesRoutes } from "@/features/kitchen-supplies";
 import { promotionsRoutes } from "@/features/promotions";
@@ -40,7 +39,6 @@ const protectedRoutes: RouteConfig[] = [
   ...productsRoutes,
   ...foliosRoutes,
   ...furnitureRoutes,
-  ...furnitureCategoriesRoutes,
   ...barSuppliesRoutes,
   ...kitchenSuppliesRoutes,
   ...promotionsRoutes,
@@ -58,11 +56,7 @@ export const routes: RouteConfig[] = [
 
 function renderRoutes(routeConfigs: RouteConfig[]) {
   return routeConfigs.map((route, index) => (
-    <Route
-      key={route.path + index}
-      path={route.path}
-      element={<Suspense fallback={<Loading fullScreen />}>{route.element}</Suspense>}
-    >
+    <Route key={route.path + index} path={route.path} element={<Suspense fallback={<Loading fullScreen />}>{route.element}</Suspense>}>
       {route.children && renderRoutes(route.children)}
     </Route>
   ));

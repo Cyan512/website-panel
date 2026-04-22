@@ -2,11 +2,10 @@ import { useState } from "react";
 import { PanelHeader, Button, EmptyState, Loading, CrudToolbar, Pagination, ConfirmDialog } from "@/components";
 import { useCategoriasMueble } from "../hooks/useCategoriasMueble";
 import { CategoriaMuebleModal } from "./CategoriaMuebleModal";
-import { cn } from "@/shared/utils/cn";
 import type { CategoriaMueble, CreateCategoriaMueble } from "../types";
 import { sileo } from "sileo";
 import { isHandledError } from "@/shared/utils/error";
-import { MdCategory, MdSearch } from "react-icons/md";
+import { MdCategory } from "react-icons/md";
 
 export default function CategoriasMueblePage() {
   const { categorias, loading, error, fetchCategorias, createCategoria, updateCategoria, deleteCategoria } = useCategoriasMueble();
@@ -18,8 +17,18 @@ export default function CategoriasMueblePage() {
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState(10);
 
-  if (loading) return <div className="flex items-center justify-center min-h-[60vh]"><Loading text="Cargando categorías..." /></div>;
-  if (error) return <div className="flex items-center justify-center min-h-[60vh]"><div className="text-danger">{error}</div></div>;
+  if (loading)
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <Loading text="Cargando categorías..." />
+      </div>
+    );
+  if (error)
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="text-danger">{error}</div>
+      </div>
+    );
 
   const handleSave = async (data: CreateCategoriaMueble) => {
     if (editingCategoria) return updateCategoria(editingCategoria.id, data);
@@ -31,20 +40,26 @@ export default function CategoriasMueblePage() {
     try {
       await deleteCategoria(cat.id);
     } catch (err) {
-      if (!isHandledError(err)) { sileo.error({ title: "Error", description: "No se pudo eliminar la categoría" }); }
+      if (!isHandledError(err)) {
+        sileo.error({ title: "Error", description: "No se pudo eliminar la categoría" });
+      }
     } finally {
       setDeleting(null);
     }
   };
 
-  const openCreate = () => { setEditingCategoria(null); setIsModalOpen(true); };
-  const openEdit = (cat: CategoriaMueble) => { setEditingCategoria(cat); setIsModalOpen(true); };
-
-  const activas = categorias.filter((c) => c.activo).length;
+  const openCreate = () => {
+    setEditingCategoria(null);
+    setIsModalOpen(true);
+  };
+  const openEdit = (cat: CategoriaMueble) => {
+    setEditingCategoria(cat);
+    setIsModalOpen(true);
+  };
 
   const filtered = categorias.filter((c) => {
     const q = search.toLowerCase();
-    return !q || c.nombre.toLowerCase().includes(q) || (c.descripcion ?? "").toLowerCase().includes(q);
+    return !q || c.nombre.toLowerCase().includes(q);
   });
   const totalPages = Math.max(1, Math.ceil(filtered.length / perPage));
   const paginated = filtered.slice((page - 1) * perPage, page * perPage);
@@ -63,31 +78,29 @@ export default function CategoriasMueblePage() {
             icon={<MdCategory className="w-10 h-10 text-text-muted/50" />}
             title="Sin categorías"
             description="Crea la primera categoría de muebles"
-            action={<Button onClick={openCreate }>Nueva Categoría</Button>}
+            action={<Button onClick={openCreate}>Nueva Categoría</Button>}
           />
         ) : (
           <>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 p-4 sm:p-6">
-              <div className="bg-gradient-to-br from-accent-primary/10 to-accent-light/10 rounded-2xl p-5 border border-accent-primary/20">
+            <div className="p-4 sm:p-6">
+              <div className="bg-linear-to-br from-accent-primary/10 to-accent-light/10 rounded-2xl p-5 border border-accent-primary/20 mb-4">
                 <p className="text-text-muted text-sm">Total</p>
                 <p className="text-2xl font-bold font-display mt-1">{categorias.length}</p>
-              </div>
-              <div className="bg-gradient-to-br from-success/30 to-success-bg rounded-2xl p-5 border border-success/20">
-                <p className="text-text-muted text-sm">Activas</p>
-                <p className="text-2xl font-bold font-display mt-1 text-success">{activas}</p>
-              </div>
-              <div className="bg-gradient-to-br from-paper-medium/20 to-paper-medium/10 rounded-2xl p-5 border border-border-light/50">
-                <p className="text-text-muted text-sm">Inactivas</p>
-                <p className="text-2xl font-bold font-display mt-1">{categorias.length - activas}</p>
               </div>
             </div>
 
             <CrudToolbar
               searchValue={search}
-              onSearchChange={(v) => { setSearch(v); setPage(1); }}
-              searchPlaceholder="Buscar por nombre o descripción..."
+              onSearchChange={(v) => {
+                setSearch(v);
+                setPage(1);
+              }}
+              searchPlaceholder="Buscar por nombre..."
               pageSizeValue={perPage}
-              onPageSizeChange={(v) => { setPerPage(v); setPage(1); }}
+              onPageSizeChange={(v) => {
+                setPerPage(v);
+                setPage(1);
+              }}
               pageSizeOptions={[5, 10, 25, 50]}
             />
 
@@ -96,45 +109,49 @@ export default function CategoriasMueblePage() {
                 <thead>
                   <tr className="border-b border-border">
                     <th className="text-left py-3 px-2 text-text-muted font-semibold text-sm uppercase tracking-wide">Nombre</th>
-                    <th className="text-left py-3 px-2 text-text-muted font-semibold text-sm uppercase tracking-wide hidden sm:table-cell">Descripción</th>
-                    <th className="text-left py-3 px-2 text-text-muted font-semibold text-sm uppercase tracking-wide">Estado</th>
                     <th className="py-3 px-2 text-right text-text-muted font-semibold text-sm uppercase tracking-wide">Acciones</th>
                   </tr>
                 </thead>
                 <tbody>
                   {paginated.length === 0 ? (
-                    <tr><td colSpan={4} className="text-center py-10 text-text-muted">Sin resultados</td></tr>
-                  ) : paginated.map((cat) => (
-                    <tr key={cat.id} className="border-b border-border/50 last:border-0 hover:bg-accent-primary/5 transition-colors">
-                      <td className="py-3 px-2 font-medium text-text-primary">{cat.nombre}</td>
-                      <td className="py-3 px-2 text-text-muted hidden sm:table-cell">{cat.descripcion ?? "—"}</td>
-                      <td className="py-3 px-2">
-                        <span className={cn("text-xs font-medium px-2 py-0.5 rounded-full", cat.activo ? "bg-success-bg text-success" : "bg-bg-tertiary text-text-muted")}>
-                          {cat.activo ? "Activa" : "Inactiva"}
-                        </span>
-                      </td>
-                      <td className="py-3 px-2">
-                        <div className="flex items-center justify-end gap-2">
-                          <button onClick={() => openEdit(cat)} className="text-xs px-3 py-1.5 rounded-lg bg-accent-primary/10 text-accent-primary hover:bg-accent-primary/20 transition-all border border-accent-primary/20">Editar</button>
-                          <button onClick={() => setDeleteTarget(cat)} disabled={deleting === cat.id} className="text-xs px-3 py-1.5 rounded-lg bg-danger-bg text-danger hover:bg-danger-bg transition-all border border-danger/20 disabled:opacity-50">{deleting === cat.id ? "..." : "Eliminar"}</button>
-                        </div>
+                    <tr>
+                      <td colSpan={2} className="text-center py-10 text-text-muted">
+                        Sin resultados
                       </td>
                     </tr>
-                  ))}
+                  ) : (
+                    paginated.map((cat) => (
+                      <tr key={cat.id} className="border-b border-border/50 last:border-0 hover:bg-accent-primary/5 transition-colors">
+                        <td className="py-3 px-2 font-medium text-text-primary">{cat.nombre}</td>
+                        <td className="py-3 px-2">
+                          <div className="flex items-center justify-end gap-2">
+                            <button
+                              onClick={() => openEdit(cat)}
+                              className="text-xs px-3 py-1.5 rounded-lg bg-accent-primary/10 text-accent-primary hover:bg-accent-primary/20 transition-all border border-accent-primary/20"
+                            >
+                              Editar
+                            </button>
+                            <button
+                              onClick={() => setDeleteTarget(cat)}
+                              disabled={deleting === cat.id}
+                              className="text-xs px-3 py-1.5 rounded-lg bg-danger-bg text-danger hover:bg-danger-bg transition-all border border-danger/20 disabled:opacity-50"
+                            >
+                              {deleting === cat.id ? "..." : "Eliminar"}
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))
+                  )}
                 </tbody>
               </table>
             </div>
 
-            {/* Pagination */}
             <Pagination
               page={page}
               totalPages={totalPages}
               onPageChange={setPage}
-              label={
-                filtered.length === 0
-                  ? "Sin resultados"
-                  : `${from}–${to} de ${filtered.length} categoría${filtered.length !== 1 ? "s" : ""}`
-              }
+              label={filtered.length === 0 ? "Sin resultados" : `${from}–${to} de ${filtered.length} categoría${filtered.length !== 1 ? "s" : ""}`}
             />
           </>
         )}
@@ -142,7 +159,10 @@ export default function CategoriasMueblePage() {
 
       <CategoriaMuebleModal
         isOpen={isModalOpen}
-        onClose={() => { setIsModalOpen(false); setEditingCategoria(null); }}
+        onClose={() => {
+          setIsModalOpen(false);
+          setEditingCategoria(null);
+        }}
         onSuccess={fetchCategorias}
         categoria={editingCategoria}
         onSave={handleSave}
