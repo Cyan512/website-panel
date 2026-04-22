@@ -89,19 +89,16 @@ export interface UpdateEstadoHabitacion {
 export interface TipoHabitacion {
   id: string;
   nombre: string;
-  descripcion: string | null;
   created_at?: Date;
   updated_at?: Date;
 }
 
 export interface CreateTipoHabitacion {
   nombre: string;
-  descripcion?: string | null;
   muebles?: string[];
 }
 
 export interface UpdateTipoHabitacion {
   nombre?: string;
-  descripcion?: string | null;
   muebles?: string[];
 }

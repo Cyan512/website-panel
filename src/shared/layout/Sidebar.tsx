@@ -51,19 +51,7 @@ const navItems: NavItem[] = [
   { kind: "link", item: { id: "dashboard", icon: MdDashboard, label: "Dashboard", path: "/dashboard" } },
   { kind: "separator", label: "Operación" },
   { kind: "link", item: { id: "booking", icon: MdEventNote, label: "Reservas", path: "/bookings" } },
-  {
-    kind: "group",
-    group: {
-      id: "rooms-group",
-      icon: MdHotel,
-      label: "Habitaciones",
-      paths: ["/rooms", "/room-types"],
-      children: [
-        { id: "room", icon: MdHotel, label: "Habitaciones", path: "/rooms", roles: ["ADMIN", "RECEPCIONISTA"] },
-        { id: "room-types", icon: MdHotel, label: "Tipos de Habitación", path: "/room-types", roles: ["ADMIN", "RECEPCIONISTA"] },
-      ],
-    },
-  },
+  { kind: "link", item: { id: "rooms", icon: MdHotel, label: "Habitaciones", path: "/rooms", roles: ["ADMIN", "RECEPCIONISTA"] } },
   { kind: "link", item: { id: "client", icon: MdPeople, label: "Huéspedes", path: "/clients", roles: ["ADMIN", "RECEPCIONISTA"] } },
   { kind: "link", item: { id: "stays", icon: MdBedroomParent, label: "Estancias", path: "/stays", roles: ["ADMIN", "RECEPCIONISTA"] } },
   { kind: "separator", label: "Gestión" },

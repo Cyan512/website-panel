@@ -19,19 +19,14 @@ export function TipoHabitacionModal({ isOpen, onClose, onSuccess, tipo }: TipoHa
     const [loading, setLoading] = useState(false);
     const [formData, setFormData] = useState<CreateTipoHabitacion>({
         nombre: "",
-        descripcion: null,
-        muebles: [],
     });
 
     useEffect(() => {
         if (isOpen) {
             if (tipo) {
-                setFormData({
-                    nombre: tipo.nombre,
-                    descripcion: tipo.descripcion,
-                });
+                setFormData({ nombre: tipo.nombre });
             } else {
-                setFormData({ nombre: "", descripcion: null });
+                setFormData({ nombre: "" });
             }
         }
     }, [isOpen, tipo]);
@@ -41,10 +36,7 @@ export function TipoHabitacionModal({ isOpen, onClose, onSuccess, tipo }: TipoHa
         setLoading(true);
         try {
             if (isEditing && tipo) {
-                const updateData: UpdateTipoHabitacion = {
-                    nombre: formData.nombre,
-                    descripcion: formData.descripcion,
-                };
+                const updateData: UpdateTipoHabitacion = { nombre: formData.nombre };
                 await updateTipo(tipo.id, updateData);
             } else {
                 await createTipo(formData);
@@ -69,17 +61,6 @@ export function TipoHabitacionModal({ isOpen, onClose, onSuccess, tipo }: TipoHa
                     placeholder="Ej: Suite Deluxe"
                     required
                 />
-
-                <div className="mb-5">
-                    <label className="field-label block mb-2 text-text-secondary font-medium">Descripción (opcional)</label>
-                    <textarea
-                        value={formData.descripcion || ""}
-                        onChange={(e) => setFormData({ ...formData, descripcion: e.target.value || null })}
-                        placeholder="Descripción del tipo de habitación..."
-                        className="field-input w-full rounded-xl py-3.5 text-sm px-3.5 focus:outline-none focus:ring-2 focus:ring-accent-primary/30 focus:border-accent-primary border border-border-light/50 resize-none"
-                        rows={3}
-                    />
-                </div>
 
                 <div className="flex gap-3 pt-4">
                     <Button type="button" variant="secondary" onClick={onClose} className="flex-1">Cancelar</Button>

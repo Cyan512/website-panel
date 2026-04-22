@@ -8,20 +8,19 @@ import { PanelHeader, Button, Modal, CrudToolbar, Pagination, ConfirmDialog } fr
 import { cn } from "@/shared/utils/cn";
 import { sileo } from "sileo";
 import { isHandledError } from "@/shared/utils/error";
-import { MdSearch } from "react-icons/md";
+import { MdCategory, MdEdit, MdDelete } from "react-icons/md";
 import { obtenerEstadoHabitacion, estadoHabitacionColors } from "@/shared/utils/habitacion";
-import type { Habitacion, FechaReserva } from "../types";
+import type { Habitacion, FechaReserva, TipoHabitacion } from "../types";
 import { roomsApi } from "../api";
 import { usePromociones } from "@/features/promotions/hooks/usePromociones";
 import { formatUTCDate } from "@/shared/utils/format";
+import { useTiposHabitacion } from "@/features/room-types/hooks/useTiposHabitacion";
 
 export default function RoomsPage() {
-  const {
-    habitaciones, pagination, page, limit, loading, error,
-    fetchHabitaciones, goToPage, changeLimit, changeTipo,
-    deleteHabitacion,
-  } = useHabitaciones();
+  const { habitaciones, pagination, page, limit, loading, error, fetchHabitaciones, goToPage, changeLimit, changeTipo, deleteHabitacion } =
+    useHabitaciones();
 
+  const { tipos, createTipo, updateTipo, deleteTipo } = useTiposHabitacion();
   const { promociones } = usePromociones();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -36,6 +35,11 @@ export default function RoomsPage() {
   const [loadingFechas, setLoadingFechas] = useState(false);
   const [calendarOpen, setCalendarOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
+  const [isTipoModalOpen, setIsTipoModalOpen] = useState(false);
+  const [editingTipo, setEditingTipo] = useState<TipoHabitacion | null>(null);
+  const [tipoForm, setTipoForm] = useState({ nombre: "" });
+  const [savingTipo, setSavingTipo] = useState(false);
+  const [deleteTipoTarget, setDeleteTipoTarget] = useState<TipoHabitacion | null>(null);
 
   const handleSelectHabitacion = async (hab: Habitacion) => {
     setSelectedHabitacion(hab);
@@ -75,6 +79,48 @@ export default function RoomsPage() {
     setIsModalOpen(true);
   };
 
+  const handleSaveTipo = async () => {
+    if (!tipoForm.nombre.trim()) {
+      return sileo.error({ title: "Error", description: "El nombre es requerido" });
+    }
+    setSavingTipo(true);
+    try {
+      if (editingTipo) {
+        await updateTipo(editingTipo.id, { nombre: tipoForm.nombre.trim() });
+        sileo.success({ title: "Tipo actualizado", description: tipoForm.nombre });
+      } else {
+        await createTipo({ nombre: tipoForm.nombre.trim() });
+        sileo.success({ title: "Tipo creado", description: tipoForm.nombre });
+      }
+      setTipoForm({ nombre: "" });
+      setEditingTipo(null);
+    } catch (err) {
+      if (!isHandledError(err)) {
+        sileo.error({ title: "Error", description: "No se pudo guardar el tipo de habitación" });
+      }
+    } finally {
+      setSavingTipo(false);
+    }
+  };
+
+  const handleEditTipo = (tipo: TipoHabitacion) => {
+    setEditingTipo(tipo);
+    setTipoForm({ nombre: tipo.nombre });
+  };
+
+  const handleDeleteTipo = async () => {
+    if (!deleteTipoTarget) return;
+    try {
+      await deleteTipo(deleteTipoTarget.id);
+      sileo.success({ title: "Tipo eliminado", description: deleteTipoTarget.nombre });
+    } catch (err) {
+      if (!isHandledError(err)) {
+        sileo.error({ title: "Error", description: "No se pudo eliminar el tipo de habitación" });
+      }
+    }
+    setDeleteTipoTarget(null);
+  };
+
   const { total, totalPages, hasNextPage } = pagination;
   const from = total === 0 ? 0 : (page - 1) * limit + 1;
   const to = Math.min(page * limit, total);
@@ -84,16 +130,30 @@ export default function RoomsPage() {
       <PanelHeader
         title="Habitaciones"
         subtitle="Gestión y estado de habitaciones"
-        action={<Button onClick={() => { setEditingHabitacion(null); setIsModalOpen(true); }}>+ Nueva Habitación</Button>}
+        action={
+          <div className="flex gap-2">
+            <Button variant="secondary" onClick={() => setIsTipoModalOpen(true)}>
+              <MdCategory className="w-4 h-4 mr-1" />
+              Tipos
+            </Button>
+            <Button
+              onClick={() => {
+                setEditingHabitacion(null);
+                setIsModalOpen(true);
+              }}
+            >
+              + Nueva Habitación
+            </Button>
+          </div>
+        }
       >
         <CrudToolbar
           searchValue={tipoSearch}
-          onSearchChange={(v) => { setTipoSearch(v); changeTipo(v); }}
+          onSearchChange={(v) => {
+            setTipoSearch(v);
+            changeTipo(v);
+          }}
           searchPlaceholder="Filtrar por tipo (ej: suite, estándar...)"
-          pageSizeValue={limit}
-          onPageSizeChange={(v) => changeLimit(v)}
-          pageSizeOptions={[12, 24, 48]}
-          pageSizeSuffix="hab."
         />
 
         {loading ? (
@@ -113,192 +173,228 @@ export default function RoomsPage() {
               ))}
             </div>
 
-            {/* Pagination */}
             <Pagination
               page={page}
               totalPages={totalPages}
               hasNextPage={hasNextPage}
               onPageChange={goToPage}
               label={total === 0 ? "Sin resultados" : `${from}–${to} de ${total} habitación${total !== 1 ? "es" : ""}`}
+              pageSizeValue={limit}
+              onPageSizeChange={changeLimit}
+              pageSizeOptions={[5, 10, 25, 50]}
+              className="px-0"
             />
           </>
         )}
       </PanelHeader>
 
-      <RoomModal isOpen={isModalOpen} onClose={() => { setIsModalOpen(false); setEditingHabitacion(null); }} onSuccess={fetchHabitaciones} habitacion={editingHabitacion} />
+      <RoomModal
+        isOpen={isModalOpen}
+        onClose={() => {
+          setIsModalOpen(false);
+          setEditingHabitacion(null);
+        }}
+        onSuccess={fetchHabitaciones}
+        habitacion={editingHabitacion}
+      />
 
       {selectedHabitacion && (
         <Modal isOpen={!!selectedHabitacion} onClose={() => setSelectedHabitacion(null)} title={`Habitación ${selectedHabitacion.nro_habitacion}`}>
           <div className="max-h-[70vh] overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-
-          <div className="space-y-4">
-            <div className="flex items-center gap-4">
-              <div className={cn("w-14 h-14 rounded-xl flex items-center justify-center text-xl font-bold", estadoHabitacionColors[obtenerEstadoHabitacion(selectedHabitacion.estado, fechasReserva)])}>
-                {selectedHabitacion.nro_habitacion}
-              </div>
-              <div>
-                <p className="text-2xl font-bold font-display">{selectedHabitacion.nro_habitacion}</p>
-                <p className="text-text-muted text-sm">Piso {selectedHabitacion.piso} • {selectedHabitacion.tipo_habitacion?.nombre}</p>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-3">
-              <div className="bg-paper-medium/20 rounded-xl p-3">
-                <p className="text-text-muted text-xs">Estado físico</p>
-                <span className={cn("inline-block px-2 py-0.5 text-xs font-semibold rounded-full mt-1", selectedHabitacion.estado ? "bg-success-bg text-success" : "bg-bg-tertiary text-text-muted")}>
-                  {selectedHabitacion.estado ? "Disponible" : "No disponible"}
-                </span>
-              </div>
-              <div className="bg-paper-medium/20 rounded-xl p-3">
-                <p className="text-text-muted text-xs">Tipo</p>
-                <p className="text-sm font-medium mt-1">{selectedHabitacion.tipo_habitacion?.nombre ?? "—"}</p>
-              </div>
-            </div>
-
-            {/* Reservas vinculadas */}
-            {fechasReserva.length > 0 && (
-              <div>
-                <p className="text-text-muted text-xs font-semibold uppercase tracking-wide mb-2">Reservas vinculadas</p>
-                <div className="space-y-2">
-                  {fechasReserva.map((r, i) => {
-                    const colorMap: Record<string, string> = {
-                      CONFIRMADA:  "bg-success-bg text-success border-success/20",
-                      EN_CASA:     "bg-info-bg text-info border-info/20",
-                      TENTATIVA:   "bg-warning-bg text-warning border-warning/20",
-                      COMPLETADA:  "bg-accent-primary/10 text-accent-primary border-accent-primary/20",
-                      CANCELADA:   "bg-danger-bg text-danger border-danger/20",
-                      NO_LLEGO:    "bg-bg-tertiary text-text-muted border-border",
-                    };
-                    const labelMap: Record<string, string> = {
-                      CONFIRMADA: "Confirmada", EN_CASA: "En Casa", TENTATIVA: "Tentativa",
-                      COMPLETADA: "Completada", CANCELADA: "Cancelada", NO_LLEGO: "No Llegó",
-                    };
-                    const color = colorMap[r.estado] ?? "bg-bg-tertiary text-text-muted border-border/50";
-                    return (
-                      <div key={i} className={cn("flex items-center justify-between rounded-xl px-3 py-2.5 border text-xs", color)}>
-                        <span className="font-medium">
-                          {formatUTCDate(r.fecha_inicio)}
-                          {" → "}
-                          {formatUTCDate(r.fecha_fin)}
-                        </span>
-                        <span className="font-semibold uppercase tracking-wide">{labelMap[r.estado] ?? r.estado}</span>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-
-            {loadingFechas && (
-              <p className="text-xs text-text-muted text-center py-2">Cargando reservas...</p>
-            )}
-
-            {/* Muebles */}
-            {muebles.length > 0 && (
-              <div>
-                <p className="text-text-muted text-xs font-semibold uppercase tracking-wide mb-2">
-                  Muebles ({muebles.length})
-                </p>
-                <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
-                  {muebles.map((m) => (
-                    <div key={m.id} className="flex items-center gap-3 bg-paper-medium/10 rounded-xl px-3 py-2.5">
-                      {m.url_imagen ? (
-                        <img src={m.url_imagen} alt={m.nombre} className="w-10 h-10 rounded-lg object-cover shrink-0 border border-border" />
-                      ) : (
-                        <div className="w-10 h-10 rounded-lg bg-bg-tertiary/50 flex items-center justify-center shrink-0 text-text-muted text-xs font-bold">
-                          {m.codigo.slice(0, 3)}
-                        </div>
-                      )}
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-text-primary truncate">{m.nombre}</p>
-                        <p className="text-xs text-text-muted">{m.categoria?.nombre ?? "—"} · {m.condicion}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {selectedHabitacion.descripcion && (
-              <div className="bg-paper-medium/10 rounded-xl p-3">
-                <p className="text-text-muted text-xs">Descripción</p>
-                <p className="text-sm mt-1">{selectedHabitacion.descripcion}</p>
-              </div>
-            )}
-
-            {/* Promociones */}
-            {selectedHabitacion.promociones && selectedHabitacion.promociones.length > 0 && (
-              <div className="bg-paper-medium/10 rounded-xl p-3">
-                <p className="text-text-muted text-xs font-semibold uppercase tracking-wide mb-2">
-                  Promociones ({selectedHabitacion.promociones.length})
-                </p>
-                <div className="flex flex-wrap gap-1.5">
-                  {selectedHabitacion.promociones.map((id) => {
-                    const promo = promociones.find((p) => p.id === id);
-                    return (
-                      <span key={id} className="text-xs font-mono px-2 py-0.5 rounded-full bg-accent/10 text-accent border border-accent/20">
-                        {promo ? promo.codigo : id.slice(0, 8) + "…"}
-                      </span>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-
-            {/* Calendario de disponibilidad */}
-            <div className="bg-paper-medium/10 rounded-xl overflow-hidden">
-              <button
-                onClick={() => setCalendarOpen((o) => !o)}
-                className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-paper-medium/20 transition-colors"
-              >
-                <p className="text-text-muted text-xs font-semibold uppercase tracking-wide">Disponibilidad</p>
-                <span className="text-text-muted text-xs">{calendarOpen ? "▲ Ocultar" : "▼ Ver calendario"}</span>
-              </button>
-              {calendarOpen && (
-                <div className="px-4 pb-4">
-                  {loadingFechas ? (
-                    <p className="text-xs text-text-muted text-center py-4">Cargando fechas...</p>
-                  ) : (
-                    <RoomCalendar fechasReserva={fechasReserva} />
+            <div className="space-y-4">
+              <div className="flex items-center gap-4">
+                <div
+                  className={cn(
+                    "w-14 h-14 rounded-xl flex items-center justify-center text-xl font-bold",
+                    estadoHabitacionColors[obtenerEstadoHabitacion(selectedHabitacion.estado, fechasReserva)],
                   )}
+                >
+                  {selectedHabitacion.nro_habitacion}
+                </div>
+                <div>
+                  <p className="text-2xl font-bold font-display">{selectedHabitacion.nro_habitacion}</p>
+                  <p className="text-text-muted text-sm">
+                    Piso {selectedHabitacion.piso} • {selectedHabitacion.tipo_habitacion?.nombre}
+                  </p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div className="bg-paper-medium/20 rounded-xl p-3">
+                  <p className="text-text-muted text-xs">Estado físico</p>
+                  <span
+                    className={cn(
+                      "inline-block px-2 py-0.5 text-xs font-semibold rounded-full mt-1",
+                      selectedHabitacion.estado ? "bg-success-bg text-success" : "bg-bg-tertiary text-text-muted",
+                    )}
+                  >
+                    {selectedHabitacion.estado ? "Disponible" : "No disponible"}
+                  </span>
+                </div>
+                <div className="bg-paper-medium/20 rounded-xl p-3">
+                  <p className="text-text-muted text-xs">Tipo</p>
+                  <p className="text-sm font-medium mt-1">{selectedHabitacion.tipo_habitacion?.nombre ?? "—"}</p>
+                </div>
+              </div>
+
+              {fechasReserva.length > 0 && (
+                <div>
+                  <p className="text-text-muted text-xs font-semibold uppercase tracking-wide mb-2">Reservas vinculadas</p>
+                  <div className="space-y-2">
+                    {fechasReserva.map((r, i) => {
+                      const colorMap: Record<string, string> = {
+                        CONFIRMADA: "bg-success-bg text-success border-success/20",
+                        EN_CASA: "bg-info-bg text-info border-info/20",
+                        TENTATIVA: "bg-warning-bg text-warning border-warning/20",
+                        COMPLETADA: "bg-accent-primary/10 text-accent-primary border-accent-primary/20",
+                        CANCELADA: "bg-danger-bg text-danger border-danger/20",
+                        NO_LLEGO: "bg-bg-tertiary text-text-muted border-border",
+                      };
+                      const labelMap: Record<string, string> = {
+                        CONFIRMADA: "Confirmada",
+                        EN_CASA: "En Casa",
+                        TENTATIVA: "Tentativa",
+                        COMPLETADA: "Completada",
+                        CANCELADA: "Cancelada",
+                        NO_LLEGO: "No Llegó",
+                      };
+                      const color = colorMap[r.estado] ?? "bg-bg-tertiary text-text-muted border-border/50";
+                      return (
+                        <div key={i} className={cn("flex items-center justify-between rounded-xl px-3 py-2.5 border text-xs", color)}>
+                          <span className="font-medium">
+                            {formatUTCDate(r.fecha_inicio)}
+                            {" → "}
+                            {formatUTCDate(r.fecha_fin)}
+                          </span>
+                          <span className="font-semibold uppercase tracking-wide">{labelMap[r.estado] ?? r.estado}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
                 </div>
               )}
-            </div>
 
-            {selectedHabitacion.url_imagen && selectedHabitacion.url_imagen.length > 0 && (
-              <div>
-                <p className="text-text-muted text-xs mb-2">Imágenes ({selectedHabitacion.url_imagen.length})</p>
-                <div className="flex gap-2 overflow-x-auto pb-1">
-                  {selectedHabitacion.url_imagen.map((url, i) => (
-                    <button key={i} onClick={() => { setCarouselIndex(i); setCarouselOpen(true); }} className="shrink-0 w-20 h-20 rounded-xl overflow-hidden border border-border hover:opacity-80 transition-opacity">
-                      <img src={url} alt={`Imagen ${i + 1}`} className="w-full h-full object-cover" />
-                    </button>
-                  ))}
+              {loadingFechas && <p className="text-xs text-text-muted text-center py-2">Cargando reservas...</p>}
+
+              {muebles.length > 0 && (
+                <div>
+                  <p className="text-text-muted text-xs font-semibold uppercase tracking-wide mb-2">Muebles ({muebles.length})</p>
+                  <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
+                    {muebles.map((m) => (
+                      <div key={m.id} className="flex items-center gap-3 bg-paper-medium/10 rounded-xl px-3 py-2.5">
+                        {m.url_imagen ? (
+                          <img src={m.url_imagen} alt={m.nombre} className="w-10 h-10 rounded-lg object-cover shrink-0 border border-border" />
+                        ) : (
+                          <div className="w-10 h-10 rounded-lg bg-bg-tertiary/50 flex items-center justify-center shrink-0 text-text-muted text-xs font-bold">
+                            {m.codigo.slice(0, 3)}
+                          </div>
+                        )}
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-text-primary truncate">{m.nombre}</p>
+                          <p className="text-xs text-text-muted">
+                            {m.categoria?.nombre ?? "—"} · {m.condicion}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
 
-            <div className="flex gap-3 pt-2">
-              <Button onClick={(e) => handleEdit(selectedHabitacion, e)} className="flex-1">Editar</Button>
-              <Button onClick={() => setDeleteOpen(true)} variant="danger" className="flex-1" disabled={deleting}>{deleting ? "Eliminando..." : "Eliminar"}</Button>
-              <Button onClick={() => setSelectedHabitacion(null)} variant="secondary" className="flex-1">Cerrar</Button>
+              {selectedHabitacion.descripcion && (
+                <div className="bg-paper-medium/10 rounded-xl p-3">
+                  <p className="text-text-muted text-xs">Descripción</p>
+                  <p className="text-sm mt-1">{selectedHabitacion.descripcion}</p>
+                </div>
+              )}
+
+              {selectedHabitacion.promociones && selectedHabitacion.promociones.length > 0 && (
+                <div className="bg-paper-medium/10 rounded-xl p-3">
+                  <p className="text-text-muted text-xs font-semibold uppercase tracking-wide mb-2">
+                    Promociones ({selectedHabitacion.promociones.length})
+                  </p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {selectedHabitacion.promociones.map((id) => {
+                      const promo = promociones.find((p) => p.id === id);
+                      return (
+                        <span key={id} className="text-xs font-mono px-2 py-0.5 rounded-full bg-accent/10 text-accent border border-accent/20">
+                          {promo ? promo.codigo : id.slice(0, 8) + "…"}
+                        </span>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              <div className="bg-paper-medium/10 rounded-xl overflow-hidden">
+                <button
+                  onClick={() => setCalendarOpen((o) => !o)}
+                  className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-paper-medium/20 transition-colors"
+                >
+                  <p className="text-text-muted text-xs font-semibold uppercase tracking-wide">Disponibilidad</p>
+                  <span className="text-text-muted text-xs">{calendarOpen ? "▲ Ocultar" : "▼ Ver calendario"}</span>
+                </button>
+                {calendarOpen && (
+                  <div className="px-4 pb-4">
+                    {loadingFechas ? (
+                      <p className="text-xs text-text-muted text-center py-4">Cargando fechas...</p>
+                    ) : (
+                      <RoomCalendar fechasReserva={fechasReserva} />
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {selectedHabitacion.url_imagen && selectedHabitacion.url_imagen.length > 0 && (
+                <div>
+                  <p className="text-text-muted text-xs mb-2">Imágenes ({selectedHabitacion.url_imagen.length})</p>
+                  <div className="flex gap-2 overflow-x-auto pb-1">
+                    {selectedHabitacion.url_imagen.map((url, i) => (
+                      <button
+                        key={i}
+                        onClick={() => {
+                          setCarouselIndex(i);
+                          setCarouselOpen(true);
+                        }}
+                        className="shrink-0 w-20 h-20 rounded-xl overflow-hidden border border-border hover:opacity-80 transition-opacity"
+                      >
+                        <img src={url} alt={`Imagen ${i + 1}`} className="w-full h-full object-cover" />
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              <div className="flex gap-3 pt-2">
+                <Button onClick={(e) => handleEdit(selectedHabitacion, e)} className="flex-1">
+                  Editar
+                </Button>
+                <Button onClick={() => setDeleteOpen(true)} variant="danger" className="flex-1" disabled={deleting}>
+                  {deleting ? "Eliminando..." : "Eliminar"}
+                </Button>
+                <Button onClick={() => setSelectedHabitacion(null)} variant="secondary" className="flex-1">
+                  Cerrar
+                </Button>
+              </div>
             </div>
-          </div>
           </div>
         </Modal>
       )}
 
       {selectedHabitacion && (
-        <ImageCarousel images={selectedHabitacion.url_imagen ?? []} isOpen={carouselOpen} onClose={() => setCarouselOpen(false)} initialIndex={carouselIndex} />
+        <ImageCarousel
+          images={selectedHabitacion.url_imagen ?? []}
+          isOpen={carouselOpen}
+          onClose={() => setCarouselOpen(false)}
+          initialIndex={carouselIndex}
+        />
       )}
 
       <ConfirmDialog
         isOpen={deleteOpen}
         onClose={() => setDeleteOpen(false)}
         title="Eliminar habitación"
-        description={
-          selectedHabitacion ? `¿Eliminar la habitación ${selectedHabitacion.nro_habitacion}?` : undefined
-        }
+        description={selectedHabitacion ? `¿Eliminar la habitación ${selectedHabitacion.nro_habitacion}?` : undefined}
         confirmText="Eliminar"
         cancelText="Cancelar"
         confirmVariant="danger"
@@ -307,6 +403,89 @@ export default function RoomsPage() {
           setDeleteOpen(false);
           await handleDelete();
         }}
+      />
+
+      <Modal
+        isOpen={isTipoModalOpen}
+        onClose={() => {
+          setIsTipoModalOpen(false);
+          setEditingTipo(null);
+          setTipoForm({ nombre: "" });
+        }}
+        title="Gestionar Tipos de Habitación"
+        size="md"
+      >
+        <div className="space-y-4">
+          <div className="p-4 bg-paper-medium/20 rounded-xl space-y-3">
+            <h4 className="text-sm font-medium text-text-primary">{editingTipo ? "Editar Tipo" : "Nuevo Tipo"}</h4>
+            <input
+              type="text"
+              value={tipoForm.nombre}
+              onChange={(e) => setTipoForm({ ...tipoForm, nombre: e.target.value })}
+              placeholder="Nombre del tipo"
+              className="field-input w-full rounded-xl py-2.5 text-sm px-3.5 focus:outline-none focus:ring-2 focus:ring-accent-primary/30 focus:border-accent-primary border border-border-light/50"
+            />
+            <div className="flex gap-2">
+              <Button
+                variant="secondary"
+                onClick={() => {
+                  setEditingTipo(null);
+                  setTipoForm({ nombre: "" });
+                }}
+                className="flex-1"
+              >
+                Cancelar
+              </Button>
+              <Button onClick={handleSaveTipo} isLoading={savingTipo} className="flex-1">
+                {editingTipo ? "Actualizar" : "Crear"}
+              </Button>
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <h4 className="text-sm font-medium text-text-muted uppercase tracking-wider">Tipos existentes</h4>
+            {tipos.length === 0 ? (
+              <p className="text-sm text-text-muted text-center py-4">No hay tipos creados</p>
+            ) : (
+              <div className="space-y-2 max-h-50 overflow-y-auto">
+                {tipos.map((tipo) => (
+                  <div key={tipo.id} className="flex items-center justify-between p-3 bg-bg-card rounded-xl border border-border">
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-text-primary truncate">{tipo.nombre}</p>
+                    </div>
+                    <div className="flex gap-1 ml-2">
+                      <button
+                        onClick={() => handleEditTipo(tipo)}
+                        className="p-2 rounded-lg hover:bg-accent-primary/10 text-accent-primary transition-colors"
+                        title="Editar"
+                      >
+                        <MdEdit className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => setDeleteTipoTarget(tipo)}
+                        className="p-2 rounded-lg hover:bg-danger/10 text-danger transition-colors"
+                        title="Eliminar"
+                      >
+                        <MdDelete className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      </Modal>
+
+      <ConfirmDialog
+        isOpen={!!deleteTipoTarget}
+        onClose={() => setDeleteTipoTarget(null)}
+        title="Eliminar tipo de habitación"
+        description={deleteTipoTarget ? `¿Estás seguro de que deseas eliminar "${deleteTipoTarget.nombre}"?` : undefined}
+        confirmText="Sí, eliminar"
+        cancelText="Cancelar"
+        confirmVariant="danger"
+        onConfirm={handleDeleteTipo}
       />
     </>
   );

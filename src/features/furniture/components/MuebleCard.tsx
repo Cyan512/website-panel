@@ -16,9 +16,9 @@ export function MuebleCard({ mueble, onEdit, onDelete, onViewImage, habitacionNr
   const hasImage = !!mueble.url_imagen || (mueble.imagenes && mueble.imagenes.length > 0);
 
   return (
-    <div className="rounded-2xl border border-border bg-bg-card overflow-hidden transition-all hover:shadow-md hover:-translate-y-0.5">
-      <div className="p-4">
-        <div className="flex items-start justify-between gap-2 mb-2">
+    <div className="rounded-2xl flex-col justify-between border border-border bg-bg-card overflow-hidden transition-all hover:shadow-md hover:-translate-y-0.5">
+      <div className="p-4 h-2/3">
+        <div className="flex items-start gap-2 mb-2">
           <div className="min-w-0 flex-1">
             <p className="font-semibold text-text-primary text-sm truncate">{mueble.nombre}</p>
             <p className="text-xs text-text-muted mt-0.5">{mueble.codigo}</p>
@@ -27,28 +27,30 @@ export function MuebleCard({ mueble, onEdit, onDelete, onViewImage, habitacionNr
             <span className={cn("text-xs font-medium px-2 py-0.5 rounded-full", muebleConditionColors[condicion])}>
               {muebleConditionLabels[condicion]}
             </span>
-            {hasImage && (
-              <button
-                onClick={onViewImage}
-                className="p-1.5 rounded-lg bg-info/10 text-info border border-info/20 hover:bg-info/20 transition-all"
-                title="Ver imagen"
-              >
-                <MdImage className="w-3.5 h-3.5" />
-              </button>
-            )}
           </div>
         </div>
 
-        <div className="space-y-0.5 text-xs text-text-muted">
-          {habitacionNro && (
-            <p>
-              Habitación: <span className="text-text-primary font-medium">Nro. {habitacionNro}</span>
-            </p>
-          )}
-          {mueble.categoria?.nombre && (
-            <p>
-              Categoría: <span className="text-text-primary font-medium">{mueble.categoria.nombre}</span>
-            </p>
+        <div className="flex justify-between space-y-0.5 text-xs text-text-muted">
+          <div>
+            {mueble.categoria?.nombre && (
+              <p>
+                Categoría: <span className="text-text-primary font-medium">{mueble.categoria.nombre}</span>
+              </p>
+            )}
+            {habitacionNro && (
+              <p>
+                Habitación: <span className="text-text-primary font-medium">Nro. {habitacionNro}</span>
+              </p>
+            )}
+          </div>
+          {hasImage && (
+            <button
+              onClick={onViewImage}
+              className="p-1.5 rounded-lg bg-info/10 text-info border border-info/20 hover:bg-info/20 transition-all"
+              title="Ver imagen"
+            >
+              <MdImage className="w-4 h-4" />
+            </button>
           )}
         </div>
       </div>

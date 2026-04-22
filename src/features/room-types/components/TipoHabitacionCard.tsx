@@ -8,7 +8,6 @@ type TipoHabitacionCardProps = {
 export function TipoHabitacionCard({ tipo, onClick }: TipoHabitacionCardProps) {
   return (
     <div
-      key={tipo.id}
       onClick={onClick}
       className="group relative overflow-hidden cursor-pointer transition-all duration-300 hover:-translate-y-1 hover:shadow-xl bg-paper-lightest rounded-2xl border border-border-light/50 hover:border-accent-primary/30"
     >
