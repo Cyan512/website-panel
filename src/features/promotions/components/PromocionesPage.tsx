@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { PanelHeader, Button, Modal, InputField, Checkbox, CrudToolbar, Pagination, ConfirmDialog } from "@/components";
+import { PanelHeader, Button, Modal, InputField, Checkbox, Pagination, ConfirmDialog, CrudToolbar } from "@/components";
 import { sileo } from "sileo";
 import { isHandledError } from "@/shared/utils/error";
 import { cn } from "@/shared/utils/cn";
@@ -162,15 +162,26 @@ export default function PromocionesPage() {
         subtitle="Gestión de descuentos y promociones"
         action={isAdmin ? <Button onClick={openCreate}><MdAdd className="w-4 h-4 mr-1" />Nueva Promoción</Button> : undefined}
       >
-        {/* Toolbar */}
-        <CrudToolbar
-          searchValue={search}
-          onSearchChange={(v) => { setSearch(v); setPage(1); }}
-          searchPlaceholder="Buscar por código..."
-          pageSizeValue={limit}
-          onPageSizeChange={(v) => { setLimit(v); setPage(1); }}
-          pageSizeOptions={[5, 10, 25, 50]}
-        />
+        {/* Search and Filter Row */}
+        <div className="flex gap-2 items-center">
+          <div className="relative flex-1 max-w-xs">
+            <MdSearch className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+              placeholder="Buscar..."
+              className="w-full pl-9 pr-4 py-2 text-sm rounded-lg border border-border bg-bg-card text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-primary/30"
+            />
+          </div>
+          {/* Toolbar */}
+          <CrudToolbar
+            className="ml-auto"         
+            pageSizeValue={limit}
+            onPageSizeChange={(v) => { setLimit(v); setPage(1); }}
+            pageSizeOptions={[5, 10, 25, 50]}
+          />
+        </div>
 
         {/* Table */}
         <div className="overflow-x-auto px-4 sm:px-6">

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { authClient } from "@/shared/lib/auth";
-import { PanelHeader, Button, EmptyState, Loading, Modal, CrudToolbar, Pagination, ConfirmDialog } from "@/components";
+import { PanelHeader, Button, EmptyState, Loading, Modal, Pagination, ConfirmDialog, CrudToolbar } from "@/components";
 import { PagoModal } from "./PagoModal";
 import { sileo } from "sileo";
 import { isHandledError } from "@/shared/utils/error";
@@ -102,7 +102,7 @@ export default function PagosPage() {
         ) : (
           <>
             {/* Stats */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 p-4 sm:p-6">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div className="bg-gradient-to-br from-accent-primary/10 to-accent-light/10 rounded-2xl p-5 border border-accent-primary/20">
                 <p className="text-text-muted text-sm">Total Registrado</p>
                 <p className="text-2xl font-bold font-display mt-1">{pagos[0]?.moneda || "USD"} {totalMonto.toFixed(2)}</p>
@@ -120,24 +120,34 @@ export default function PagosPage() {
               </div>
             </div>
 
-            {/* Toolbar */}
-            <CrudToolbar
-              searchValue={search}
-              onSearchChange={(v) => { setSearch(v); setPage(1); }}
-              searchPlaceholder="Buscar por concepto, método, monto..."
-              pageSizeValue={perPage}
-              onPageSizeChange={(v) => { setPerPage(v); setPage(1); }}
-              pageSizeOptions={[5, 10, 25, 50]}
-            />
+            {/* Search and Filter Row */}
+            <div className="flex gap-2 items-center">
+              <div className="relative flex-1 max-w-xs">
+                <MdSearch className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
+                <input
+                  type="text"
+                  value={search}
+                  onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+                  placeholder="Buscar..."
+                  className="w-full pl-9 pr-4 py-2 text-sm rounded-lg border border-border bg-bg-card text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-primary/30"
+                />
+              </div>
 
-            {/* Estado filters */}
-            <div className="px-4 sm:px-6 pb-3 flex gap-2 flex-wrap">
-              <button onClick={() => { setFilterEstado(""); setPage(1); }} className={cn("text-xs px-3 py-1.5 rounded-xl border transition-all", filterEstado === "" ? "bg-primary text-white border-primary" : "border-border text-text-muted hover:border-primary/50")}>Todos</button>
-              {(Object.keys(estadoPagoLabels) as EstadoPago[]).map((k) => (
-                <button key={k} onClick={() => { setFilterEstado(k); setPage(1); }} className={cn("text-xs px-3 py-1.5 rounded-xl border transition-all", filterEstado === k ? "bg-primary text-white border-primary" : "border-border text-text-muted hover:border-primary/50")}>
-                  {estadoPagoLabels[k]}
-                </button>
-              ))}
+              <div className="flex gap-1">
+                <button onClick={() => { setFilterEstado(""); setPage(1); }} className={cn("text-xs px-3 py-2 rounded-lg border transition-all", filterEstado === "" ? "bg-primary text-white border-primary" : "border-border text-text-muted hover:border-primary/50")}>Todos</button>
+                {(Object.keys(estadoPagoLabels) as EstadoPago[]).map((k) => (
+                  <button key={k} onClick={() => { setFilterEstado(k); setPage(1); }} className={cn("text-xs px-3 py-2 rounded-lg border transition-all", filterEstado === k ? "bg-primary text-white border-primary" : "border-border text-text-muted hover:border-primary/50")}>
+                    {estadoPagoLabels[k]}
+                  </button>
+                ))}
+              </div>
+              {/* Toolbar */}
+              <CrudToolbar
+                className="ml-auto"
+                pageSizeValue={perPage}
+                onPageSizeChange={(v) => { setPerPage(v); setPage(1); }}
+                pageSizeOptions={[5, 10, 25, 50]}
+              />
             </div>
 
             {/* Table */}

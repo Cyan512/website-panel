@@ -379,6 +379,12 @@ export function PagoModal({ isOpen, onClose, onSuccess, pago }: PagoModalProps) 
                         </div>
                       ))}
                     </div>
+                    {consumos.descuento != null && consumos.descuento > 0 && (
+                      <div className="flex items-center justify-between px-3 py-2 bg-success-bg border-t border-success/20">
+                        <span className="text-xs font-semibold text-success">Descuento</span>
+                        <span className="font-bold text-success">-S/ {Number(consumos.descuento).toFixed(2)}</span>
+                      </div>
+                    )}
                     {consumos.total != null && (
                       <div className="flex items-center justify-between px-3 py-2 bg-primary/5 border-t border-primary/20">
                         <span className="text-xs font-semibold text-text-primary">Total</span>

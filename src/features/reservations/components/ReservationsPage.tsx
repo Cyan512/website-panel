@@ -1,7 +1,7 @@
 import { useState } from "react";
-import { PanelHeader, Button, EmptyState, Modal, CrudToolbar, Pagination, ConfirmDialog } from "@/components";
+import { PanelHeader, Button, EmptyState, Modal, Pagination, ConfirmDialog, CrudToolbar } from "@/components";
 import { useHuespedes } from "@/features/clients/hooks/useHuespedes";
-import { useHabitaciones } from "@/features/rooms/hooks/useRooms";
+import { useHabitaciones, useTiposHabitacion } from "@/features/rooms/hooks/useRooms";
 import { useTarifas } from "@/features/rates/hooks/useTarifas";
 import { ReservaModal } from "./ReservaModal";
 import { CancelModal } from "./CancelModal";
@@ -24,6 +24,7 @@ export default function ReservationsPage() {
   const { huespedes } = useHuespedes();
   const { habitaciones } = useHabitaciones();
   const { tarifas } = useTarifas();
+  const { tipos } = useTiposHabitacion();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isCancelOpen, setIsCancelOpen] = useState(false);
@@ -85,7 +86,7 @@ export default function ReservationsPage() {
         ) : (
           <>
             {/* Stats */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 p-4 sm:p-6">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
               <div className="bg-gradient-to-br from-accent-primary/10 to-accent-light/10 rounded-2xl p-4 border border-accent-primary/20">
                 <p className="text-text-muted text-xs">Total</p>
                 <p className="text-2xl font-bold font-display mt-1">{counts.total}</p>
@@ -104,28 +105,46 @@ export default function ReservationsPage() {
               </div>
             </div>
 
-            {/* Toolbar */}
-            <CrudToolbar
-              searchValue={search}
-              onSearchChange={(v) => changeSearch(v)}
-              searchPlaceholder="Buscar por nombre de huésped..."
-              pageSizeValue={limit}
-              onPageSizeChange={(v) => changeLimit(v)}
-              pageSizeOptions={[5, 10, 25, 50]}
-            >
-              <div className="relative flex-1 min-w-[240px]">
+  
+
+            {/* Search and Filter Row */}
+            <div className="flex gap-2 items-center">
+              <div className="relative flex-1 max-w-xs">
                 <MdSearch className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
                 <input
                   type="text"
-                  value={tipoSearch}
-                  onChange={(e) => { setTipoSearch(e.target.value); changeTipo(e.target.value); }}
-                  placeholder="Filtrar por tipo habitación (ej: Suite, Doble...)"
-                  className="w-full pl-9 pr-4 py-2.5 text-base rounded-xl border border-border bg-bg-card text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-primary/30"
+                  value={search}
+                  onChange={(e) => changeSearch(e.target.value)}
+                  placeholder="Buscar..."
+                  className="w-full pl-9 pr-4 py-2 text-sm rounded-lg border border-border bg-bg-card text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-primary/30"
                 />
               </div>
-            </CrudToolbar>
+              
+
+              <select
+                value={tipoSearch}
+                onChange={(e) => { setTipoSearch(e.target.value); changeTipo(e.target.value); }}
+                className="text-sm rounded-lg border border-border bg-bg-card text-text-primary px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary/30"
+              >
+                <option value="">Todos los tipos</option>
+                {tipos.map((tipo) => (
+                  <option key={tipo.id} value={tipo.nombre}>
+                    {tipo.nombre}
+                  </option>
+                ))}
+              </select>
+
+              {/* Toolbar */}
+              <CrudToolbar
+                className="ml-auto"
+                pageSizeValue={limit}
+                onPageSizeChange={(v) => changeLimit(v)}
+                pageSizeOptions={[5, 10, 25, 50]}
+              ></CrudToolbar>
+            </div>
 
             {/* Filtro tipo de habitación */}
+
             
 
             {/* Table */}

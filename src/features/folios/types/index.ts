@@ -79,6 +79,7 @@ export interface FolioWithConsumos extends Folio {
   productos: FolioProducto[];
   servicios: FolioServicio[];
   total: number;
+  descuento?: number;
 }
 
 export interface FolioPaginated {

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { authClient } from "@/shared/lib/auth";
-import { PanelHeader, Button, EmptyState, Loading, Modal, InputField, CrudToolbar, Pagination, ConfirmDialog } from "@/components";
+import { PanelHeader, Button, EmptyState, Loading, Modal, InputField, Pagination, ConfirmDialog, CrudToolbar } from "@/components";
 import { sileo } from "sileo";
 import { isHandledError } from "@/shared/utils/error";
 import { cn } from "@/shared/utils/cn";
@@ -161,15 +161,26 @@ export default function ProductosPage() {
           />
         ) : (
           <>
-            {/* Toolbar */}
-            <CrudToolbar
-              searchValue={search}
-              onSearchChange={(v) => { setSearch(v); goToPage(1); }}
-              searchPlaceholder="Buscar por nombre, código..."
-              pageSizeValue={limit}
-              onPageSizeChange={(v) => changeLimit(v)}
-              pageSizeOptions={[5, 10, 25, 50, 100]}
-            />
+            {/* Search and Filter Row */}
+            <div className="flex gap-2 items-center">
+              <div className="relative flex-1 max-w-xs">
+                <MdSearch className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
+                <input
+                  type="text"
+                  value={search}
+                  onChange={(e) => { setSearch(e.target.value); goToPage(1); }}
+                  placeholder="Buscar..."
+                  className="w-full pl-9 pr-4 py-2 text-sm rounded-lg border border-border bg-bg-card text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-primary/30"
+                />
+              </div>
+              {/* Toolbar */}
+              <CrudToolbar
+                className="ml-auto"
+                pageSizeValue={limit}
+                onPageSizeChange={(v) => changeLimit(v)}
+                pageSizeOptions={[5, 10, 25, 50, 100]}
+              />
+            </div>
 
             {/* Table */}
             <div className="overflow-x-auto px-4 sm:px-6">
