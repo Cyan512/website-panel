@@ -1,7 +1,13 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { authClient } from "@/shared/lib/auth";
 import { roomsApi, tiposHabitacionApi } from "../api";
 import type { Habitacion, TipoHabitacion, CreateHabitacion, UpdateEstadoHabitacion, PaginatedHabitaciones } from "../types";
+
+interface RoomFilters {
+  tipo?: string;
+  nro_habitacion?: string;
+  estado?: boolean;
+}
 
 export function useHabitaciones(initialPage = 1, initialLimit = 12) {
   const { data: session } = authClient.useSession();
@@ -12,35 +18,95 @@ export function useHabitaciones(initialPage = 1, initialLimit = 12) {
   });
   const [page, setPage] = useState(initialPage);
   const [limit, setLimit] = useState(initialLimit);
-  const [tipo, setTipo] = useState("");
+  const [filters, setFilters] = useState<RoomFilters>({});
+  const [searchInput, setSearchInput] = useState("");
   const [loading, setLoading] = useState(true);
+  const [searching, setSearching] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchHabitaciones = useCallback(async (p = page, l = limit, t = tipo) => {
+  const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const abortControllerRef = useRef<AbortController | null>(null);
+
+  const fetchHabitaciones = useCallback(async (p = page, l = limit, f = filters, signal?: AbortSignal) => {
     try {
       setLoading(true);
       setError(null);
-      const data = await roomsApi.getAll(p, l, t || undefined);
+      const data = await roomsApi.getAll(p, l, f, signal);
       setHabitaciones(data.list);
       setPagination(data.pagination);
-    } catch {
-      setError("Error al cargar habitaciones");
+    } catch (err: any) {
+      if (err.name !== "AbortError" && err.name !== "CanceledError") {
+        setError("Error al cargar habitaciones");
+      }
     } finally {
       setLoading(false);
+      setSearching(false);
     }
-  }, [page, limit, tipo]);
+  }, [page, limit, filters]);
 
   useEffect(() => {
-    if (session) fetchHabitaciones(page, limit, tipo);
-  }, [session, page, limit, tipo]);
+    if (session) {
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+      abortControllerRef.current = new AbortController();
+      fetchHabitaciones(page, limit, filters, abortControllerRef.current.signal);
+    }
+    return () => {
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+    };
+  }, [session, page, limit, filters]);
 
   const goToPage = (p: number) => setPage(p);
   const changeLimit = (l: number) => { setLimit(l); setPage(1); };
-  const changeTipo = (t: string) => { setTipo(t); setPage(1); };
+
+  const changeTipo = (t: string | null) => {
+    setFilters(prev => ({ ...prev, tipo: t || undefined }));
+    setPage(1);
+  };
+
+  const changeEstado = (estado: boolean | null) => {
+    setFilters(prev => ({ ...prev, estado: estado !== null ? estado : undefined }));
+    setPage(1);
+  };
+
+  const changeSearch = (q: string) => {
+    setSearchInput(q);
+
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current);
+    }
+
+    if (!q || q.trim() === "") {
+      setSearching(false);
+      setFilters(prev => ({ ...prev, nro_habitacion: undefined }));
+      setPage(1);
+      return;
+    }
+
+    setSearching(true);
+    debounceTimerRef.current = setTimeout(() => {
+      if (q.trim().length >= 1) {
+        setFilters(prev => ({ ...prev, nro_habitacion: q.trim() }));
+        setPage(1);
+      } else {
+        setSearching(false);
+      }
+    }, 500);
+  };
+
+  const clearFilters = () => {
+    setSearchInput("");
+    setSearching(false);
+    setFilters({});
+    setPage(1);
+  };
 
   const createHabitacion = async (data: CreateHabitacion): Promise<Habitacion> => {
     const habitacion = await roomsApi.create(data);
-    await fetchHabitaciones(page, limit, tipo);
+    await fetchHabitaciones(page, limit, filters);
     return habitacion;
   };
 
@@ -61,14 +127,14 @@ export function useHabitaciones(initialPage = 1, initialLimit = 12) {
     const newTotal = pagination.total - 1;
     const newTotalPages = Math.max(1, Math.ceil(newTotal / limit));
     const targetPage = page > newTotalPages ? newTotalPages : page;
-    await fetchHabitaciones(targetPage, limit, tipo);
+    await fetchHabitaciones(targetPage, limit, filters);
     if (targetPage !== page) setPage(targetPage);
   };
 
   return {
-    habitaciones, pagination, page, limit, tipo, loading, error,
-    fetchHabitaciones: () => fetchHabitaciones(page, limit, tipo),
-    goToPage, changeLimit, changeTipo,
+    habitaciones, pagination, page, limit, filters, searchInput, loading, searching, error,
+    fetchHabitaciones: () => fetchHabitaciones(page, limit, filters),
+    goToPage, changeLimit, changeTipo, changeEstado, changeSearch, clearFilters,
     createHabitacion, updateHabitacion, updateEstadoHabitacion, deleteHabitacion,
   };
 }
