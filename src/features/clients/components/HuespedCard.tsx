@@ -1,40 +1,58 @@
 import type { Huesped } from "../types";
-import { cn } from "@/shared/utils/cn";
-import { MdEmail, MdPhone, MdPerson } from "react-icons/md";
+import { MdEdit, MdDelete, MdEmail, MdPhone } from "react-icons/md";
 
-interface HuespedCardProps {
+interface Props {
   huesped: Huesped;
-  onClick: () => void;
+  onEdit: (e: React.MouseEvent) => void;
+  onDelete: (e: React.MouseEvent) => void;
 }
 
-export function HuespedCard({ huesped, onClick }: HuespedCardProps) {
+export function HuespedCard({ huesped, onEdit, onDelete }: Props) {
   return (
-    <div onClick={onClick} className="bg-paper-lightest rounded-2xl p-5 cursor-pointer hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 border border-border-light/30">
-      <div className="flex items-start gap-4">
-        <div className={cn(
-          "w-12 h-12 rounded-full flex items-center justify-center text-lg font-bold",
-          "bg-accent-primary/10 text-accent-primary"
-        )}>
-          {huesped.nombres.charAt(0)}{huesped.apellidos.charAt(0)}
+    <div className="rounded-2xl flex-col justify-between border border-border bg-bg-card overflow-hidden transition-all hover:shadow-md hover:-translate-y-0.5">
+      <div className="p-4 h-2/3">
+        <div className="flex items-start gap-2 mb-2">
+          <div className="min-w-0 flex-1">
+            <p className="font-semibold text-text-primary text-sm truncate">
+              {huesped.nombres} {huesped.apellidos}
+            </p>
+            <p className="text-xs text-text-muted mt-0.5">{huesped.nacionalidad}</p>
+          </div>
         </div>
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 flex-wrap">
 
+        <div className="space-y-2 text-xs text-text-muted">
+          <div className="flex items-center gap-2">
+            <MdEmail className="w-3.5 h-3.5 flex-shrink-0" />
+            <p className="truncate">{huesped.email}</p>
           </div>
-          <div className="mt-2 space-y-1">
-            <div className="flex items-center gap-2 text-sm text-text-muted">
-              <MdEmail className="w-4 h-4 flex-shrink-0" />
-              <span className="truncate">{huesped.email}</span>
+          {huesped.telefono && (
+            <div className="flex items-center gap-2">
+              <MdPhone className="w-3.5 h-3.5 flex-shrink-0" />
+              <p className="truncate">{huesped.telefono}</p>
             </div>
-            <div className="flex items-center gap-2 text-sm text-text-muted">
-              <MdPhone className="w-4 h-4 flex-shrink-0" />
-              <span>{huesped.telefono}</span>
-            </div>
-            <div className="flex items-center gap-2 text-sm text-text-muted">
-              <MdPerson className="w-4 h-4 flex-shrink-0" />
-              <span>{huesped.nacionalidad}</span>
-            </div>
-          </div>
+          )}
+          {huesped.observacion && (
+            <p className="text-text-muted line-clamp-2 italic">{huesped.observacion}</p>
+          )}
+        </div>
+      </div>
+
+      <div className="border-t border-border-light/50 bg-paper-medium/10 px-4 py-2.5">
+        <div className="flex gap-2">
+          <button
+            onClick={onEdit}
+            className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-accent-primary/10 text-accent-primary border border-accent-primary/20 hover:bg-accent-primary/20 transition-all text-xs font-medium"
+          >
+            <MdEdit className="w-3.5 h-3.5" />
+            Editar
+          </button>
+          <button
+            onClick={onDelete}
+            className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-danger/10 text-danger border border-danger/20 hover:bg-danger/20 transition-all text-xs font-medium"
+          >
+            <MdDelete className="w-3.5 h-3.5" />
+            Eliminar
+          </button>
         </div>
       </div>
     </div>

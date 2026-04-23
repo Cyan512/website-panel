@@ -1,35 +1,16 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { authClient } from "@/shared/lib/auth";
-import { PanelHeader, Button, EmptyState, Loading, Modal, CrudToolbar, Pagination, ConfirmDialog } from "@/components";
+import { PanelHeader, Button, EmptyState, Loading, Modal, Pagination, ConfirmDialog } from "@/components";
 import { sileo } from "sileo";
 import { isHandledError } from "@/shared/utils/error";
 import { cn } from "@/shared/utils/cn";
-import { MdReceipt, MdEdit, MdDelete, MdSearch, MdAdd, MdClose, MdShoppingCart, MdRoomService } from "react-icons/md";
+import { MdReceipt, MdAdd, MdSearch } from "react-icons/md";
 import { useFolios } from "../hooks/useFolios";
+import { FolioModal } from "./FolioModal";
+import { FolioCard } from "./FolioCard";
 import type { Folio, CreateFolio, UpdateFolio } from "../types";
-import type { Estancia } from "@/features/stays/types";
-import { estadoEstadiaColors } from "@/features/stays/types";
 import type { Promocion } from "@/features/promotions/types";
 import type { Producto } from "@/features/products/types";
-import { formatUTCDate } from "@/shared/utils/format";
-
-type ModalMode = "create" | "edit";
-
-interface FolioFormState {
-  estancia_id: string;
-  observacion: string;
-  promocion_ids: string[];
-}
-
-const emptyForm: FolioFormState = { estancia_id: "", observacion: "", promocion_ids: [] };
-
-function folioToForm(f: Folio): FolioFormState {
-  return {
-    estancia_id: f.estanciaId,
-    observacion: f.observacion ?? "",
-    promocion_ids: f.promociones.map((p) => p.id),
-  };
-}
 
 export default function FoliosPage() {
   const { data: session } = authClient.useSession();
@@ -54,23 +35,13 @@ export default function FoliosPage() {
   } = useFolios();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [modalMode, setModalMode] = useState<ModalMode>("create");
+  const [modalMode, setModalMode] = useState<"create" | "edit">("create");
   const [editingFolio, setEditingFolio] = useState<Folio | null>(null);
-  const [form, setForm] = useState<FolioFormState>(emptyForm);
-  const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<Folio | null>(null);
 
-  // Estancia search
-  const [estanciaQuery, setEstanciaQuery] = useState("");
-  const [estanciaSuggestions, setEstanciaSuggestions] = useState<Estancia[]>([]);
-  const [estanciaSelected, setEstanciaSelected] = useState<Estancia | null>(null);
-  const [showSuggestions, setShowSuggestions] = useState(false);
-  const [searchingEstancia, setSearchingEstancia] = useState(false);
-  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  // Estancia name cache for table display
-  const [estanciaMap, setEstanciaMap] = useState<Map<string, string>>(new Map());
+  // Reserva name cache for table display
+  const [reservaMap, setReservaMap] = useState<Map<string, string>>(new Map());
 
   // Promociones list for picker
   const [promociones, setPromociones] = useState<Promocion[]>([]);
@@ -92,23 +63,28 @@ export default function FoliosPage() {
   const [servicioPrecio, setServicioPrecio] = useState("");
   const [addingService, setAddingService] = useState(false);
 
-  // Load estancias + promociones once
+  // Load promociones once
   useEffect(() => {
     if (!session) return;
-    import("@/features/stays/api").then(({ estanciasApi }) =>
-      estanciasApi
-        .getAll()
-        .then((data) => {
-          const map = new Map<string, string>();
-          data.forEach((e) => map.set(e.id, `${e.huesped.nombres} ${e.huesped.apellidos}`));
-          setEstanciaMap(map);
-        })
-        .catch(() => {}),
-    );
     import("@/features/promotions/api").then(({ promocionesApi }) =>
       promocionesApi
         .getAll()
         .then(setPromociones)
+        .catch(() => {}),
+    );
+  }, [session]);
+
+  // Load reservas to populate reserva names
+  useEffect(() => {
+    if (!session) return;
+    import("@/features/reservations/api").then(({ reservasApi }) =>
+      reservasApi
+        .getAll(1, 100)
+        .then((data) => {
+          const map = new Map<string, string>();
+          data.list.forEach((r) => map.set(r.id, r.nombre_huesped));
+          setReservaMap(map);
+        })
         .catch(() => {}),
     );
   }, [session]);
@@ -134,104 +110,32 @@ export default function FoliosPage() {
   const openCreate = () => {
     setModalMode("create");
     setEditingFolio(null);
-    setForm(emptyForm);
-    setEstanciaQuery("");
-    setEstanciaSuggestions([]);
-    setEstanciaSelected(null);
     setIsModalOpen(true);
   };
+
   const openEdit = (f: Folio) => {
     setModalMode("edit");
     setEditingFolio(f);
-    setForm(folioToForm(f));
     setIsModalOpen(true);
   };
+
   const closeModal = () => {
     setIsModalOpen(false);
     setEditingFolio(null);
-    setForm(emptyForm);
-    setEstanciaQuery("");
-    setEstanciaSuggestions([]);
-    setEstanciaSelected(null);
   };
 
-  const handleEstanciaQuery = (q: string) => {
-    setEstanciaQuery(q);
-    setEstanciaSelected(null);
-    setForm((f) => ({ ...f, estancia_id: "" }));
-    setShowSuggestions(true);
-    if (debounceRef.current) clearTimeout(debounceRef.current);
-    if (!q.trim()) {
-      setEstanciaSuggestions([]);
-      return;
-    }
-    debounceRef.current = setTimeout(async () => {
-      setSearchingEstancia(true);
-      try {
-        const { estanciasApi } = await import("@/features/stays/api");
-        const data = await estanciasApi.getAll();
-        const q2 = q.toLowerCase();
-        setEstanciaSuggestions(
-          data
-            .filter(
-              (e) =>
-                e.huesped.nombres.toLowerCase().includes(q2) ||
-                e.huesped.apellidos.toLowerCase().includes(q2) ||
-                e.habitacion.nro_habitacion.toLowerCase().includes(q2) ||
-                e.id.toLowerCase().includes(q2),
-            )
-            .slice(0, 8),
-        );
-      } catch {
-        setEstanciaSuggestions([]);
-      } finally {
-        setSearchingEstancia(false);
-      }
-    }, 300);
-  };
-
-  const handleSelectEstancia = (e: Estancia) => {
-    setEstanciaSelected(e);
-    setEstanciaQuery(`${e.huesped.nombres} ${e.huesped.apellidos} — Hab. ${e.habitacion.nro_habitacion}`);
-    setForm((f) => ({ ...f, estancia_id: e.id }));
-    setShowSuggestions(false);
-    setEstanciaSuggestions([]);
-  };
-
-  const togglePromocion = (id: string) => {
-    setForm((f) => ({
-      ...f,
-      promocion_ids: f.promocion_ids.includes(id) ? f.promocion_ids.filter((p) => p !== id) : [...f.promocion_ids, id],
-    }));
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!form.estancia_id.trim()) {
-      sileo.warning({ title: "Campo requerido", description: "El ID de estancia es obligatorio" });
-      return;
-    }
-    setSaving(true);
+  const handleSaveModal = async (data: CreateFolio | UpdateFolio, mode: "create" | "edit", folioId?: string) => {
     try {
-      if (modalMode === "create") {
-        const payload: CreateFolio = {
-          estancia_id: form.estancia_id.trim(),
-          observacion: form.observacion.trim() || undefined,
-          promocion_ids: form.promocion_ids.length > 0 ? form.promocion_ids : undefined,
-        };
-        await createFolio(payload);
-      } else if (editingFolio) {
-        const payload: UpdateFolio = {
-          observacion: form.observacion.trim() || undefined,
-          promocion_ids: form.promocion_ids,
-        };
-        await updateFolio(editingFolio.id, payload);
+      if (mode === "create") {
+        await createFolio(data as CreateFolio);
+        sileo.success({ title: "Folio creado", description: "El folio ha sido creado exitosamente" });
+      } else if (folioId) {
+        await updateFolio(folioId, data as UpdateFolio);
+        sileo.success({ title: "Folio actualizado", description: "El folio ha sido actualizado exitosamente" });
       }
-      closeModal();
     } catch (err) {
       if (!isHandledError(err)) sileo.error({ title: "Error", description: "No se pudo guardar el folio" });
-    } finally {
-      setSaving(false);
+      throw err;
     }
   };
 
@@ -344,125 +248,60 @@ export default function FoliosPage() {
           />
         ) : (
           <>
-            {/* Toolbar */}
-            <CrudToolbar
-              searchValue={search}
-              onSearchChange={(v) => setSearch(v)}
-              searchPlaceholder="Buscar por código u observación..."
-              pageSizeValue={limit}
-              onPageSizeChange={(v) => changeLimit(v)}
-              pageSizeOptions={[5, 10, 25, 50]}
-              filters={
-                <select
-                  value={estadoFilter === undefined ? "" : String(estadoFilter)}
-                  onChange={(e) => {
-                    const v = e.target.value;
-                    changeEstado(v === "" ? undefined : v === "true");
-                  }}
-                  className="text-base rounded-xl border border-border bg-bg-card text-text-primary px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary/30"
-                >
-                  <option value="">Todos los estados</option>
-                  <option value="true">Abiertos</option>
-                  <option value="false">Cerrados</option>
-                </select>
-              }
-            />
+            {/* Search and Filter Row */}
+            <div className="flex gap-2 items-center">
+              {/* Search */}
+              <div className="relative flex-1 max-w-xs">
+                <MdSearch className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
+                <input
+                  type="text"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  placeholder="Buscar..."
+                  className="w-full pl-9 pr-4 py-2 text-sm rounded-lg border border-border bg-bg-card text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-primary/30"
+                />
+              </div>
 
-            {/* Table */}
-            <div className="overflow-x-auto px-4 sm:px-6">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b border-border">
-                    <th className="text-left py-3 px-2 text-sm font-semibold text-text-muted uppercase tracking-wide">Código</th>
-                    <th className="text-left py-3 px-2 text-sm font-semibold text-text-muted uppercase tracking-wide">Huésped</th>
-                    <th className="text-left py-3 px-2 text-sm font-semibold text-text-muted uppercase tracking-wide">Estado</th>
-                    <th className="text-left py-3 px-2 text-sm font-semibold text-text-muted uppercase tracking-wide hidden md:table-cell">
-                      Observación
-                    </th>
-                    <th className="text-left py-3 px-2 text-sm font-semibold text-text-muted uppercase tracking-wide hidden lg:table-cell">
-                      Cerrado en
-                    </th>
-                    <th className="text-center py-3 px-2 text-sm font-semibold text-text-muted uppercase tracking-wide hidden sm:table-cell">
-                      Promociones
-                    </th>
-                    <th className="py-3 px-2 text-right text-sm font-semibold text-text-muted uppercase tracking-wide">Acciones</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filtered.length === 0 ? (
-                    <tr>
-                      <td colSpan={7} className="text-center py-10 text-text-muted">
-                        Sin resultados
-                      </td>
-                    </tr>
-                  ) : (
-                    filtered.map((f) => (
-                      <tr key={f.id} className="border-b border-border/50 last:border-0 hover:bg-accent-primary/5 transition-colors">
-                        <td className="py-3 px-2 text-sm font-mono text-text-primary font-medium">{f.codigo}</td>
-                        <td className="py-3 px-2 text-sm text-text-primary font-medium">
-                          {estanciaMap.get(f.estanciaId) ?? (
-                            <span className="text-text-muted font-mono" title={f.estanciaId}>
-                              {f.estanciaId.slice(0, 8)}…
-                            </span>
-                          )}
-                        </td>
-                        <td className="py-3 px-2">
-                          <span
-                            className={cn(
-                              "text-xs font-medium px-2 py-0.5 rounded-full",
-                              f.estado ? "bg-success-bg text-success" : "bg-bg-tertiary text-text-muted",
-                            )}
-                          >
-                            {f.estado ? "Abierto" : "Cerrado"}
-                          </span>
-                        </td>
-                        <td className="py-3 px-2 text-text-muted text-xs hidden md:table-cell max-w-xs truncate">{f.observacion ?? "—"}</td>
-                        <td className="py-3 px-2 text-text-muted text-xs hidden lg:table-cell">{f.cerradoEn ? formatUTCDate(f.cerradoEn) : "—"}</td>
-                        <td className="py-3 px-2 text-center hidden sm:table-cell">
-                          <span className="font-medium text-text-muted">{f.promociones.length}</span>
-                        </td>
-                        <td className="py-3 px-2">
-                          <div className="flex items-center justify-end gap-1">
-                            {f.estado && (
-                              <>
-                                <button
-                                  onClick={() => openAddProduct(f)}
-                                  title="Agregar producto"
-                                  className="p-1.5 rounded-lg text-text-muted hover:text-primary hover:bg-primary/10 transition-all"
-                                >
-                                  <MdShoppingCart className="w-4 h-4" />
-                                </button>
-                                <button
-                                  onClick={() => openAddService(f)}
-                                  title="Agregar servicio"
-                                  className="p-1.5 rounded-lg text-text-muted hover:text-primary hover:bg-primary/10 transition-all"
-                                >
-                                  <MdRoomService className="w-4 h-4" />
-                                </button>
-                              </>
-                            )}
-                            <button
-                              onClick={() => openEdit(f)}
-                              title="Editar"
-                              className="p-1.5 rounded-lg text-text-muted hover:text-primary hover:bg-primary/10 transition-all"
-                            >
-                              <MdEdit className="w-4 h-4" />
-                            </button>
-                            <button
-                              onClick={() => setDeleteTarget(f)}
-                              disabled={deleting}
-                              title="Eliminar"
-                              className="p-1.5 rounded-lg text-text-muted hover:text-danger hover:bg-danger/10 transition-all disabled:opacity-40"
-                            >
-                              <MdDelete className="w-4 h-4" />
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
+              {/* Filter */}
+              <select
+                value={estadoFilter === undefined ? "" : String(estadoFilter)}
+                onChange={(e) => {
+                  const v = e.target.value;
+                  changeEstado(v === "" ? undefined : v === "true");
+                }}
+                className="text-sm rounded-lg border border-border bg-bg-card text-text-primary px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary/30"
+              >
+                <option value="">Todos los estados</option>
+                <option value="true">Abiertos</option>
+                <option value="false">Cerrados</option>
+              </select>
+            </div>
+
+            {/* Card Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+              {filtered.map((f) => (
+                <FolioCard
+                  key={f.id}
+                  folio={f}
+                  reservaName={reservaMap.get(f.reservaId)}
+                  onEdit={(e) => {
+                    e.stopPropagation();
+                    openEdit(f);
+                  }}
+                  onDelete={(e) => {
+                    e.stopPropagation();
+                    setDeleteTarget(f);
+                  }}
+                  onAddProduct={(e) => {
+                    e.stopPropagation();
+                    openAddProduct(f);
+                  }}
+                  onAddService={(e) => {
+                    e.stopPropagation();
+                    openAddService(f);
+                  }}
+                />
+              ))}
             </div>
 
             {/* Pagination */}
@@ -472,171 +311,26 @@ export default function FoliosPage() {
               hasNextPage={hasNextPage}
               onPageChange={goToPage}
               label={total === 0 ? "Sin resultados" : `${from}–${to} de ${total} folio${total !== 1 ? "s" : ""}`}
+              pageSizeValue={limit}
+              onPageSizeChange={changeLimit}
+              pageSizeOptions={[5, 10, 25, 50]}
+              className="px-0"
             />
           </>
         )}
       </PanelHeader>
 
-      {/* Modal */}
-      <Modal isOpen={isModalOpen} onClose={closeModal} title={modalMode === "create" ? "Nuevo Folio" : "Editar Folio"} size="lg">
-        <div className="max-h-[70vh] overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-          <form onSubmit={handleSubmit} className="space-y-4">
-            {/* Estancia field */}
-            {modalMode === "create" ? (
-              <div className="relative">
-                <label className={labelClass}>Estancia *</label>
-                <div className="relative">
-                  <MdSearch className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
-                  <input
-                    type="text"
-                    value={estanciaQuery}
-                    onChange={(e) => handleEstanciaQuery(e.target.value)}
-                    onFocus={() => setShowSuggestions(true)}
-                    onBlur={() => setTimeout(() => setShowSuggestions(false), 150)}
-                    placeholder="Buscar por huésped o habitación..."
-                    className={cn(
-                      "w-full pl-9 pr-4 py-3 rounded-xl border bg-bg-card text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-primary/30",
-                      estanciaSelected ? "border-success/40 bg-success-bg/40" : "border-border",
-                    )}
-                    required
-                  />
-                </div>
-                {showSuggestions && (searchingEstancia || estanciaSuggestions.length > 0) && (
-                  <div className="absolute z-50 top-full left-0 right-0 mt-1 bg-bg-card border border-border rounded-xl shadow-xl overflow-hidden">
-                    {searchingEstancia ? (
-                      <div className="px-4 py-3 text-text-muted">Buscando...</div>
-                    ) : (
-                      estanciaSuggestions.map((e) => (
-                        <button
-                          key={e.id}
-                          type="button"
-                          onMouseDown={() => handleSelectEstancia(e)}
-                          className="w-full flex items-start gap-3 px-4 py-3 hover:bg-bg-hover transition-colors text-left border-b border-border/50 last:border-0"
-                        >
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-2">
-                              <span className="text-sm font-medium text-text-primary">
-                                {e.huesped.nombres} {e.huesped.apellidos}
-                              </span>
-                              <span className={cn("text-[10px] px-1.5 py-0.5 rounded-full font-medium", estadoEstadiaColors[e.estado])}>
-                                {e.estado}
-                              </span>
-                            </div>
-                            <p className="text-xs text-text-muted mt-0.5">
-                              Hab. {e.habitacion.nro_habitacion} · Piso {e.habitacion.piso}
-                              {e.fecha_entrada && ` · Entrada: ${formatUTCDate(e.fecha_entrada)}`}
-                            </p>
-                          </div>
-                        </button>
-                      ))
-                    )}
-                  </div>
-                )}
-                {estanciaSelected && (
-                  <div className="mt-2 bg-primary/5 border border-primary/20 rounded-xl px-4 py-2.5 text-xs grid grid-cols-2 gap-x-4 gap-y-1">
-                    <span className="text-text-muted">Huésped</span>
-                    <span className="text-text-primary font-medium">
-                      {estanciaSelected.huesped.nombres} {estanciaSelected.huesped.apellidos}
-                    </span>
-                    <span className="text-text-muted">Habitación</span>
-                    <span className="text-text-primary font-medium">Nro. {estanciaSelected.habitacion.nro_habitacion}</span>
-                  </div>
-                )}
-              </div>
-            ) : (
-              <div>
-                <label className={labelClass}>Huésped</label>
-                <input
-                  value={estanciaMap.get(editingFolio?.estanciaId ?? "") ?? editingFolio?.estanciaId ?? ""}
-                  disabled
-                  className="w-full px-3 py-2.5 rounded-xl border border-border bg-bg-card/50 text-text-muted cursor-not-allowed"
-                />
-              </div>
-            )}
-
-            {/* Observación */}
-            <div>
-              <label className={labelClass}>Observación</label>
-              <textarea
-                value={form.observacion}
-                onChange={(e) => setForm((f) => ({ ...f, observacion: e.target.value }))}
-                placeholder="Observación opcional..."
-                rows={2}
-                className="w-full px-3 py-2.5 text-sm rounded-xl border border-border bg-bg-card text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-primary/30 resize-none"
-              />
-            </div>
-
-            {/* Promociones picker */}
-            <div>
-              <label className={labelClass}>
-                Promociones
-                <span className="text-text-muted font-normal ml-1">(opcional)</span>
-              </label>
-
-              {/* Selected chips */}
-              {form.promocion_ids.length > 0 && (
-                <div className="flex flex-wrap gap-1.5 mb-2">
-                  {form.promocion_ids.map((id) => {
-                    const promo = promociones.find((p) => p.id === id);
-                    return (
-                      <span
-                        key={id}
-                        className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-primary/10 text-primary border border-primary/20"
-                      >
-                        {promo?.codigo ?? id.slice(0, 8)}
-                        <button type="button" onClick={() => togglePromocion(id)} className="hover:text-danger transition-colors">
-                          <MdClose className="w-3 h-3" />
-                        </button>
-                      </span>
-                    );
-                  })}
-                </div>
-              )}
-
-              {/* Promo grid */}
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5 max-h-36 overflow-y-auto p-1 rounded-xl border border-border bg-bg-card">
-                {promociones.length === 0 ? (
-                  <p className="text-text-muted text-center py-3">Sin promociones disponibles</p>
-                ) : (
-                  promociones.map((p) => {
-                    const selected = form.promocion_ids.includes(p.id);
-                    return (
-                      <button
-                        key={p.id}
-                        type="button"
-                        onClick={() => togglePromocion(p.id)}
-                        className={cn(
-                          "rounded-lg px-2 py-2 text-xs font-medium transition-all text-left",
-                          selected ? "bg-primary text-white" : "border border-border text-text-muted hover:border-primary/50 hover:text-primary",
-                        )}
-                      >
-                        <span className="block font-semibold truncate">{p.codigo}</span>
-                        <span className="block text-[10px] opacity-70">
-                          {p.tipo_descuento === "PORCENTAJE" ? `${p.valor_descuento}%` : `S/ ${p.valor_descuento}`}
-                        </span>
-                      </button>
-                    );
-                  })
-                )}
-              </div>
-              <p className="text-xs text-text-muted mt-1">
-                {form.promocion_ids.length === 0
-                  ? "Ninguna seleccionada"
-                  : `${form.promocion_ids.length} promoción${form.promocion_ids.length !== 1 ? "es" : ""} seleccionada${form.promocion_ids.length !== 1 ? "s" : ""}`}
-              </p>
-            </div>
-
-            <div className="flex gap-3 pt-2">
-              <Button type="button" variant="secondary" onClick={closeModal} className="flex-1">
-                Cancelar
-              </Button>
-              <Button type="submit" disabled={saving} className="flex-1">
-                {saving ? "Guardando..." : modalMode === "create" ? "Crear Folio" : "Guardar Cambios"}
-              </Button>
-            </div>
-          </form>
-        </div>
-      </Modal>
+      {/* Folio Modal */}
+      <FolioModal
+        isOpen={isModalOpen}
+        onClose={closeModal}
+        onSuccess={() => {}}
+        mode={modalMode}
+        folio={editingFolio}
+        reservaMap={reservaMap}
+        promociones={promociones}
+        onSave={handleSaveModal}
+      />
 
       {/* Add Product Modal */}
       <Modal isOpen={isProductModalOpen} onClose={() => setIsProductModalOpen(false)} title="Agregar Producto al Folio" size="md">
@@ -656,7 +350,6 @@ export default function FoliosPage() {
                 type="text"
                 value={productoQuery}
                 onChange={(e) => handleProductoQuery(e.target.value)}
-                onFocus={() => productoSuggestions.length > 0 && setShowSuggestions(true)}
                 placeholder="Buscar por nombre o código..."
                 className={cn(
                   "w-full pl-9 pr-4 py-3 rounded-xl border bg-bg-card text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-primary/30",

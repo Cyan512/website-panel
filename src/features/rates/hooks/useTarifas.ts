@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { authClient } from "@/shared/lib/auth";
 import { tarifasApi, canalesApi } from "../api";
 import type { Tarifa, CreateTarifa, UpdateTarifa } from "../types";
-import type { Canal } from "@/features/channels/types";
+import type { Canal, CreateCanal, UpdateCanal } from "@/features/channels/types";
 
 export function useTarifas() {
   const { data: session } = authClient.useSession();
@@ -49,5 +49,34 @@ export function useTarifas() {
     setTarifas((prev) => prev.filter((t) => t.id !== id));
   };
 
-  return { tarifas, canales, loading, error, fetchTarifas, createTarifa, updateTarifa, deleteTarifa };
+  const createCanal = async (data: CreateCanal): Promise<Canal> => {
+    const canal = await canalesApi.create(data);
+    setCanales((prev) => [canal, ...prev]);
+    return canal;
+  };
+
+  const updateCanal = async (id: string, data: UpdateCanal): Promise<Canal> => {
+    const canal = await canalesApi.update(id, data);
+    setCanales((prev) => prev.map((c) => (c.id === id ? canal : c)));
+    return canal;
+  };
+
+  const deleteCanal = async (id: string): Promise<void> => {
+    await canalesApi.delete(id);
+    setCanales((prev) => prev.filter((c) => c.id !== id));
+  };
+
+  return {
+    tarifas,
+    canales,
+    loading,
+    error,
+    fetchTarifas,
+    createTarifa,
+    updateTarifa,
+    deleteTarifa,
+    createCanal,
+    updateCanal,
+    deleteCanal,
+  };
 }

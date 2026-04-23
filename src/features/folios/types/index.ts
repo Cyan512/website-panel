@@ -1,5 +1,5 @@
 export interface CreateFolio {
-  estancia_id: string;
+  reserva_id: string;
   observacion?: string;
   promocion_ids?: string[];
 }
@@ -24,7 +24,7 @@ export interface UpdateFolio {
 export interface ListFolio {
   page?: number;
   limit?: number;
-  estanciaId?: string;
+  reservaId?: string;
   estado?: boolean;
 }
 
@@ -43,7 +43,7 @@ export interface FolioPromocion {
 export interface Folio {
   id: string;
   codigo: string;
-  estanciaId: string;
+  reservaId: string;
   pagoId: string | null;
   estado: boolean;
   observacion: string | null;

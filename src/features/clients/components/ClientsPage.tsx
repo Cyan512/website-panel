@@ -1,18 +1,18 @@
 import { useState } from "react";
 import { authClient } from "@/shared/lib/auth";
-import { PanelHeader, Button, EmptyState, Loading, Modal, ConfirmDialog } from "@/components";
+import { PanelHeader, Button, EmptyState, Loading, Modal, ConfirmDialog, Pagination } from "@/components";
 import { HuespedModal } from "./HuespedModal";
+import { HuespedCard } from "./HuespedCard";
 import { sileo } from "sileo";
 import { isHandledError } from "@/shared/utils/error";
 import type { Huesped } from "../types";
-import { MdPeople, MdEmail, MdPhone, MdPerson, MdNotes } from "react-icons/md";
-import { HuespedTable } from "./HuespedTable";
+import { MdPeople, MdEmail, MdPhone, MdPerson, MdNotes, MdSearch } from "react-icons/md";
 import { useHuespedes } from "../hooks/useHuespedes";
 
 export default function ClientsPage() {
   const { data: session } = authClient.useSession();
   const {
-    huespedes, pagination, limit, loading, error,
+    huespedes, pagination, limit, error,
     fetchHuespedes, goToPage, changeLimit, changeSearch, deleteHuesped,
   } = useHuespedes();
 
@@ -80,20 +80,45 @@ export default function ClientsPage() {
             action={<Button onClick={() => setIsModalOpen(true) }>Agregar Huésped</Button>}
           />
         ) : (
-          <div className="p-4 sm:p-6">
-            <HuespedTable
-              huespedes={huespedes}
-              pagination={pagination}
-              limit={limit}
-              search={search}
-              loading={loading}
+          <div className="space-y-4">
+            <div className="relative max-w-xs">
+              <MdSearch className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
+              <input
+                type="text"
+                value={search}
+                onChange={(e) => handleSearchChange(e.target.value)}
+                placeholder="Buscar..."
+                className="w-full pl-9 pr-4 py-2 text-sm rounded-lg border border-border bg-bg-card text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-primary/30"
+              />
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+              {huespedes.map((huesped) => (
+                <HuespedCard
+                  key={huesped.id}
+                  huesped={huesped}
+                  onEdit={(e) => {
+                    e.stopPropagation();
+                    handleEdit(huesped);
+                  }}
+                  onDelete={(e) => {
+                    e.stopPropagation();
+                    setDeleteTarget(huesped);
+                  }}
+                />
+              ))}
+            </div>
+
+            <Pagination
+              page={pagination.page}
+              totalPages={pagination.totalPages}
+              hasNextPage={pagination.hasNextPage}
               onPageChange={goToPage}
-              onLimitChange={changeLimit}
-              onSearch={handleSearchChange}
-              onRowClick={setSelectedHuesped}
-              onEdit={handleEdit}
-              onDelete={(h) => setDeleteTarget(h)}
-              onDeleteMany={(ids) => setDeleteManyIds(ids)}
+              label={pagination.total === 0 ? "Sin resultados" : `${(pagination.page - 1) * limit + 1}–${Math.min(pagination.page * limit, pagination.total)} de ${pagination.total} huésped${pagination.total !== 1 ? "es" : ""}`}
+              pageSizeValue={limit}
+              onPageSizeChange={changeLimit}
+              pageSizeOptions={[5, 10, 25, 50]}
+              className="px-0"
             />
           </div>
         )}

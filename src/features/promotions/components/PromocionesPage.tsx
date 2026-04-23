@@ -70,8 +70,8 @@ export default function PromocionesPage() {
     createPromocion, updatePromocion, deletePromocion,
   } = usePromociones();
 
-  // Load all rooms for the picker (high limit to get all)
-  const { habitaciones } = useHabitaciones(1, 100);
+  // Load rooms with pagination for the picker
+  const { habitaciones, pagination: habPagination, page: habPage, goToPage: goToHabPage } = useHabitaciones(1, 8);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingPromo, setEditingPromo] = useState<Promocion | null>(null);
@@ -334,7 +334,7 @@ export default function PromocionesPage() {
             )}
 
             {/* Room grid */}
-            <div className="grid grid-cols-3 sm:grid-cols-4 gap-1.5 max-h-40 overflow-y-auto p-1 rounded-xl border border-border bg-bg-card">
+            <div className="grid grid-cols-3 sm:grid-cols-4 gap-1.5 p-1 rounded-xl border border-border bg-bg-card">
               {habitaciones.length === 0 ? (
                 <p className="col-span-4 text-xs text-text-muted text-center py-4">Cargando habitaciones...</p>
               ) : habitaciones.map((h) => {
@@ -357,7 +357,33 @@ export default function PromocionesPage() {
                 );
               })}
             </div>
-            <p className="text-xs text-text-muted mt-1">
+
+            {/* Mini pagination */}
+            {habPagination.totalPages > 1 && (
+              <div className="flex items-center justify-between gap-2 mt-2 text-xs">
+                <button
+                  type="button"
+                  onClick={() => goToHabPage(Math.max(1, habPage - 1))}
+                  disabled={!habPagination.hasPreviousPage}
+                  className="px-2 py-1 rounded border border-border text-text-muted hover:text-primary hover:border-primary disabled:opacity-40 transition-all"
+                >
+                  ← Anterior
+                </button>
+                <span className="text-text-muted">
+                  Pág {habPage} de {habPagination.totalPages}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => goToHabPage(Math.min(habPagination.totalPages, habPage + 1))}
+                  disabled={!habPagination.hasNextPage}
+                  className="px-2 py-1 rounded border border-border text-text-muted hover:text-primary hover:border-primary disabled:opacity-40 transition-all"
+                >
+                  Siguiente →
+                </button>
+              </div>
+            )}
+
+            <p className="text-xs text-text-muted mt-2">
               {form.habitaciones.length === 0
                 ? "Ninguna seleccionada — aplica a todas"
                 : `${form.habitaciones.length} habitación${form.habitaciones.length !== 1 ? "es" : ""} seleccionada${form.habitaciones.length !== 1 ? "s" : ""}`}

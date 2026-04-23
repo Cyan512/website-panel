@@ -84,7 +84,7 @@ export function useFolios(initialPage = 1, initialLimit = 10) {
         const q = search.toLowerCase();
         return (
           f.codigo.toLowerCase().includes(q) ||
-          f.estanciaId.toLowerCase().includes(q) ||
+          f.reservaId.toLowerCase().includes(q) ||
           (f.observacion ?? "").toLowerCase().includes(q)
         );
       })
