@@ -83,7 +83,7 @@ export const mueblesApi = {
   },
 
   update: async (id: string, data: UpdateMueble): Promise<Mueble> => {
-    if (data.imagen && data.imagen.length > 0) {
+    if (data.imagen !== undefined || data.remove_imagen) {
       const form = new FormData();
       if (data.codigo) form.append("codigo", data.codigo);
       if (data.nombre) form.append("nombre", data.nombre);
@@ -93,7 +93,11 @@ export const mueblesApi = {
       if (data.descripcion) form.append("descripcion", data.descripcion);
       if (data.fecha_adquisicion) form.append("fecha_adquisicion", data.fecha_adquisicion);
       if (data.ultima_revision) form.append("ultima_revision", data.ultima_revision);
-      data.imagen.forEach((f) => form.append("imagen", f));
+      if (data.imagen && data.imagen.length > 0) {
+        data.imagen.forEach((f) => form.append("imagen", f));
+      } else if (data.remove_imagen) {
+        form.append("imagen", "");
+      }
       const response = await axiosInstance.put<{ success: boolean; data: Mueble }>(`/api/private/muebles/${id}`, form);
       return response.data.data;
     }

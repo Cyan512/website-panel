@@ -75,4 +75,5 @@ export interface UpdateMueble {
   fecha_adquisicion?: string;
   ultima_revision?: string;
   habitacion_id?: string;
+  remove_imagen?: boolean;
 }

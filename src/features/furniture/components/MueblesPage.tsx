@@ -107,7 +107,7 @@ export default function MueblesPage() {
 
   const handleEditCategoria = (categoria: CategoriaMueble) => {
     setEditingCategoria(categoria);
-    setCategoriaForm({ nombre: categoria.nombre });
+    setCategoriaForm({ nombre: categoria.nombre.toUpperCase() });
   };
 
   const handleDeleteCategoria = async () => {
@@ -221,7 +221,7 @@ export default function MueblesPage() {
             <input
               type="text"
               value={categoriaForm.nombre}
-              onChange={(e) => setCategoriaForm({ nombre: e.target.value })}
+              onChange={(e) => setCategoriaForm({ nombre: e.target.value.toUpperCase() })}
               placeholder="Nombre de la categoría"
               className="field-input w-full rounded-xl py-2.5 text-sm px-3.5 focus:outline-none focus:ring-2 focus:ring-accent-primary/30 focus:border-accent-primary border border-border-light/50"
             />
@@ -286,6 +286,8 @@ export default function MueblesPage() {
         cancelText="Cancelar"
         confirmVariant="danger"
         isConfirmLoading={deleting}
+        confirmationText="eliminar"
+        confirmationLabel="Para confirmar, escribe 'eliminar'"
         onConfirm={async () => {
           if (!deleteTarget) return;
           const target = deleteTarget;
