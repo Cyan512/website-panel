@@ -8,8 +8,6 @@ import {
   MdClose,
   MdPayment,
   MdLocalOffer,
-  MdHub,
-  MdBedroomParent,
   MdChair,
   MdHotel,
   MdExpandMore,

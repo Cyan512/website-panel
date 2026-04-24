@@ -12,7 +12,6 @@ import { inventoryRoutes } from "@/features/inventory";
 import { paymentsRoutes } from "@/features/payments";
 import { ratesRoutes } from "@/features/rates";
 import { channelsRoutes } from "@/features/channels";
-import { staysRoutes } from "@/features/stays";
 import { profileRoutes } from "@/features/profile";
 import { settingsRoutes } from "@/features/settings";
 import { productsRoutes } from "@/features/products";
@@ -33,7 +32,6 @@ const protectedRoutes: RouteConfig[] = [
   ...paymentsRoutes,
   ...ratesRoutes,
   ...channelsRoutes,
-  ...staysRoutes,
   ...profileRoutes,
   ...settingsRoutes,
   ...productsRoutes,

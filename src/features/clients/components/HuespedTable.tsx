@@ -1,5 +1,5 @@
 import type { Huesped, PaginationMeta } from "../types";
-import { MdSearch, MdEmail, MdPhone, MdEdit, MdDelete } from "react-icons/md";
+import { MdEmail, MdPhone, MdEdit, MdDelete } from "react-icons/md";
 import { cn } from "@/shared/utils/cn";
 import { useState } from "react";
 import { Checkbox, CrudToolbar, Pagination } from "@/components";
