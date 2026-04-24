@@ -8,7 +8,6 @@ import { dashboardRoutes } from "@/features/dashboard";
 import { reservationsRoutes } from "@/features/reservations";
 import { roomsRoutes } from "@/features/rooms";
 import { clientsRoutes } from "@/features/clients";
-import { inventoryRoutes } from "@/features/inventory";
 import { paymentsRoutes } from "@/features/payments";
 import { ratesRoutes } from "@/features/rates";
 import { channelsRoutes } from "@/features/channels";
@@ -28,7 +27,6 @@ const protectedRoutes: RouteConfig[] = [
   ...reservationsRoutes,
   ...roomsRoutes,
   ...clientsRoutes,
-  ...inventoryRoutes,
   ...paymentsRoutes,
   ...ratesRoutes,
   ...channelsRoutes,
