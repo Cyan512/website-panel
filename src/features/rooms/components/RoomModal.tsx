@@ -2,11 +2,13 @@ import { useState, useEffect, useRef } from "react";
 import { Modal, Button, InputField } from "@/components";
 import { sileo } from "sileo";
 import { isHandledError } from "@/shared/utils/error";
-import { MdUpload, MdClose } from "react-icons/md";
+import { MdUpload, MdClose, MdImage, MdArrowDropDown } from "react-icons/md";
 import { roomsApi } from "../api";
 import type { CreateHabitacion, Habitacion, UpdateHabitacion, TipoHabitacion } from "../types";
 
-const selectClass = "field-input w-full rounded-xl py-3.5 text-sm px-3.5 focus:outline-none focus:ring-2 focus:ring-accent-primary/30 focus:border-accent-primary border border-border-light/50";
+const selectClass =
+  "w-full appearance-none cursor-pointer bg-bg-card rounded-xl py-3.5 text-sm px-3.5 pr-10 focus:outline-none focus:ring-2 focus:ring-accent-primary/30 focus:border-accent-primary border border-border-light/50 hover:border-border transition-colors text-text-primary";
+const labelClass = "field-label block mb-2 text-text-secondary font-medium";
 
 interface RoomModalProps {
   isOpen: boolean;
@@ -31,18 +33,33 @@ export function RoomModal({ isOpen, onClose, onSuccess, habitacion, tipos }: Roo
   const [loading, setLoading] = useState(false);
   const [files, setFiles] = useState<File[]>([]);
   const [existingImages, setExistingImages] = useState<string[]>([]);
+  const [tipoOpen, setTipoOpen] = useState(false);
+  const [estadoOpen, setEstadoOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const tipoRef = useRef<HTMLDivElement>(null);
+  const estadoRef = useRef<HTMLDivElement>(null);
 
   const [formData, setFormData] = useState<CreateHabitacion>({ ...defaultForm });
 
   useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (tipoRef.current && !tipoRef.current.contains(e.target as Node)) setTipoOpen(false);
+      if (estadoRef.current && !estadoRef.current.contains(e.target as Node)) setEstadoOpen(false);
+    }
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, []);
+
+  useEffect(() => {
     if (!isOpen) return;
     setFiles([]);
+    setTipoOpen(false);
+    setEstadoOpen(false);
     if (habitacion) {
       setExistingImages(habitacion.url_imagen ?? []);
       setFormData({
         nro_habitacion: habitacion.nro_habitacion,
-        tipo_habitacion_id: habitacion.tipo_habitacion_id,
+        tipo_habitacion_id: habitacion.tipo_habitacion_id ?? habitacion.tipo_habitacion?.id ?? "",
         piso: habitacion.piso,
         tiene_banio: habitacion.tiene_banio,
         tiene_ducha: habitacion.tiene_ducha,
@@ -121,153 +138,204 @@ export function RoomModal({ isOpen, onClose, onSuccess, habitacion, tipos }: Roo
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title={isEditing ? "Editar Habitación" : "Nueva Habitación"}>
-      <div className="max-h-[70vh] overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <InputField
-              label="Número de Habitación"
-              type="text"
-              value={formData.nro_habitacion}
-              onChange={(e) => setFormData({ ...formData, nro_habitacion: e.target.value })}
-              placeholder="Ej: 101"
-              required
-            />
-            <InputField
-              label="Piso"
-              type="number"
-              value={formData.piso}
-              onChange={(e) => setFormData({ ...formData, piso: Number(e.target.value) })}
-              required
-            />
-          </div>
+    <Modal isOpen={isOpen} onClose={onClose} title={isEditing ? "Editar Habitación" : "Nueva Habitación"} size="2xl">
+      <div className="max-h-[80vh] overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+        <form onSubmit={handleSubmit}>
+          <div className="grid grid-cols-1 md:grid-cols-[280px_1fr] gap-6">
+            {/* Columna izquierda — Imagen */}
+            <div className="space-y-4">
+              <div>
+                <label className={labelClass}>Imágenes</label>
+                <input ref={fileInputRef} type="file" accept="image/*" multiple className="hidden" onChange={handleFileChange} />
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label className="field-label block mb-2 text-text-secondary font-medium">Tipo de Habitación</label>
-              {tipos.length === 0 ? (
-                <div className={selectClass + " text-text-muted"}>No hay tipos disponibles</div>
-              ) : (
-                <select
-                  value={formData.tipo_habitacion_id}
-                  onChange={(e) => setFormData({ ...formData, tipo_habitacion_id: e.target.value })}
-                  className={selectClass}
-                  required
+                {isEditing && existingImages.length > 0 && (
+                  <div className="grid grid-cols-2 gap-2 mb-3">
+                    {existingImages.map((url, idx) => (
+                      <div key={idx} className="relative rounded-xl overflow-hidden border border-border aspect-square">
+                        <img src={url} alt="" className="w-full h-full object-cover" />
+                        <button
+                          type="button"
+                          onClick={() => setExistingImages((prev) => prev.filter((_, i) => i !== idx))}
+                          className="absolute top-2 right-2 p-1.5 rounded-full bg-black/70 text-white hover:bg-danger transition-colors"
+                        >
+                          <MdClose className="w-4 h-4" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {files.length > 0 && (
+                  <div className="grid grid-cols-2 gap-2 mb-3">
+                    {files.map((file, idx) => (
+                      <div key={idx} className="relative rounded-xl overflow-hidden border border-border aspect-square">
+                        <img src={URL.createObjectURL(file)} alt={file.name} className="w-full h-full object-cover" />
+                        <button
+                          type="button"
+                          onClick={() => removeFile(idx)}
+                          className="absolute top-2 right-2 p-1.5 rounded-full bg-black/70 text-white hover:bg-danger transition-colors"
+                        >
+                          <MdClose className="w-4 h-4" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {existingImages.length === 0 && files.length === 0 && (
+                  <div className="aspect-square rounded-xl border-2 border-dashed border-border bg-bg-card flex flex-col items-center justify-center gap-2 mb-3 text-text-muted">
+                    <MdImage className="w-10 h-10" />
+                    <span className="text-xs">Sin imágenes</span>
+                  </div>
+                )}
+
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="w-full flex items-center justify-center gap-2 py-3 rounded-xl border-2 border-dashed border-border hover:border-primary/50 hover:bg-primary/5 transition-all text-text-muted hover:text-primary text-sm"
                 >
-                  {tipos.map((t) => (
-                    <option key={t.id} value={t.id}>
-                      {t.nombre}
-                    </option>
-                  ))}
-                </select>
-              )}
+                  <MdUpload className="w-5 h-5" />
+                  {files.length > 0 ? `${files.length} archivo(s) seleccionado(s)` : "Seleccionar imágenes nuevas"}
+                </button>
+              </div>
             </div>
-            <div>
-              <label className="field-label block mb-2 text-text-secondary font-medium">Estado</label>
-              <select
-                value={formData.estado ? "true" : "false"}
-                onChange={(e) => setFormData({ ...formData, estado: e.target.value === "true" })}
-                className={selectClass}
-              >
-                <option value="true">Disponible</option>
-                <option value="false">No Disponible</option>
-              </select>
-            </div>
-          </div>
 
-          <div className="flex gap-4">
-            <label className="flex items-center gap-2 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={formData.tiene_ducha}
-                onChange={(e) => setFormData({ ...formData, tiene_ducha: e.target.checked })}
-                className="w-4 h-4 accent-primary rounded"
-              />
-              <span className="text-sm text-text-muted">Tiene ducha</span>
-            </label>
-            <label className="flex items-center gap-2 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={formData.tiene_banio}
-                onChange={(e) => setFormData({ ...formData, tiene_banio: e.target.checked })}
-                className="w-4 h-4 accent-primary rounded"
-              />
-              <span className="text-sm text-text-muted">Tiene baño completo</span>
-            </label>
-          </div>
+            {/* Columna derecha — Formulario */}
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <InputField
+                  label="Número de Habitación"
+                  type="text"
+                  value={formData.nro_habitacion}
+                  onChange={(e) => setFormData({ ...formData, nro_habitacion: e.target.value })}
+                  placeholder="Ej: 101"
+                  required
+                />
+                <InputField
+                  label="Piso"
+                  type="number"
+                  value={formData.piso}
+                  onChange={(e) => setFormData({ ...formData, piso: Number(e.target.value) })}
+                  required
+                />
+              </div>
 
-          {/* Imágenes */}
-          <div>
-            <label className="field-label block mb-2 text-text-secondary font-medium">
-              Imágenes {isEditing ? "(agregar nuevas)" : "(opcional)"}
-            </label>
-
-            {isEditing && existingImages.length > 0 && (
-              <div className="mb-3">
-                <p className="text-xs text-text-muted mb-2">Imágenes actuales:</p>
-                <div className="grid grid-cols-3 gap-2">
-                  {existingImages.map((url, idx) => (
-                    <div key={idx} className="relative group rounded-xl overflow-hidden border border-border aspect-square">
-                      <img src={url} alt="" className="w-full h-full object-cover" />
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="relative" ref={tipoRef}>
+                  <label className={labelClass}>Tipo de Habitación</label>
+                  {tipos.length === 0 ? (
+                    <div className={selectClass + " text-text-muted"}>No hay tipos disponibles</div>
+                  ) : (
+                    <>
                       <button
                         type="button"
-                        onClick={() => setExistingImages((prev) => prev.filter((_, i) => i !== idx))}
-                        className="absolute top-1 right-1 p-1 rounded-full bg-black/70 text-white hover:bg-danger transition-colors"
+                        onClick={() => setTipoOpen(!tipoOpen)}
+                        className={selectClass + " flex items-center justify-between text-left"}
                       >
-                        <MdClose className="w-3 h-3" />
+                        <span>{tipos.find((t) => t.id === formData.tipo_habitacion_id)?.nombre || "Seleccionar"}</span>
+                        <MdArrowDropDown className={`w-5 h-5 text-text-muted transition-transform ${tipoOpen ? "rotate-180" : ""}`} />
                       </button>
+                      {tipoOpen && (
+                        <div className="absolute z-50 w-full mt-1 bg-bg-card border border-border rounded-xl shadow-lg overflow-hidden">
+                          <div className="max-h-[240px] overflow-y-auto py-1">
+                            {tipos.map((t) => (
+                              <div
+                                key={t.id}
+                                className={`px-3.5 py-2.5 text-sm cursor-pointer hover:bg-primary/5 ${
+                                  formData.tipo_habitacion_id === t.id ? "bg-primary/10 text-primary font-medium" : "text-text-primary"
+                                }`}
+                                onClick={() => {
+                                  setFormData({ ...formData, tipo_habitacion_id: t.id });
+                                  setTipoOpen(false);
+                                }}
+                              >
+                                {t.nombre}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </>
+                  )}
+                </div>
+                <div className="relative" ref={estadoRef}>
+                  <label className={labelClass}>Estado</label>
+                  <button
+                    type="button"
+                    onClick={() => setEstadoOpen(!estadoOpen)}
+                    className={selectClass + " flex items-center justify-between text-left"}
+                  >
+                    <span>{formData.estado ? "Disponible" : "No Disponible"}</span>
+                    <MdArrowDropDown className={`w-5 h-5 text-text-muted transition-transform ${estadoOpen ? "rotate-180" : ""}`} />
+                  </button>
+                  {estadoOpen && (
+                    <div className="absolute z-50 w-full mt-1 bg-bg-card border border-border rounded-xl shadow-lg overflow-hidden">
+                      <div className="py-1">
+                        <div
+                          className={`px-3.5 py-2.5 text-sm cursor-pointer hover:bg-primary/5 ${formData.estado === true ? "bg-primary/10 text-primary font-medium" : "text-text-primary"}`}
+                          onClick={() => {
+                            setFormData({ ...formData, estado: true });
+                            setEstadoOpen(false);
+                          }}
+                        >
+                          Disponible
+                        </div>
+                        <div
+                          className={`px-3.5 py-2.5 text-sm cursor-pointer hover:bg-primary/5 ${formData.estado === false ? "bg-primary/10 text-primary font-medium" : "text-text-primary"}`}
+                          onClick={() => {
+                            setFormData({ ...formData, estado: false });
+                            setEstadoOpen(false);
+                          }}
+                        >
+                          No Disponible
+                        </div>
+                      </div>
                     </div>
-                  ))}
+                  )}
                 </div>
               </div>
-            )}
 
-            <input ref={fileInputRef} type="file" accept="image/*" multiple className="hidden" onChange={handleFileChange} />
-            <button
-              type="button"
-              onClick={() => fileInputRef.current?.click()}
-              className="w-full flex items-center justify-center gap-2 py-3 rounded-xl border-2 border-dashed border-border hover:border-primary/50 hover:bg-primary/5 transition-all text-text-muted hover:text-primary text-sm"
-            >
-              <MdUpload className="w-5 h-5" />
-              {files.length > 0 ? `${files.length} archivo(s) seleccionado(s)` : "Seleccionar imágenes nuevas"}
-            </button>
-
-            {files.length > 0 && (
-              <div className="mt-3 grid grid-cols-3 gap-2">
-                {files.map((file, idx) => (
-                  <div key={idx} className="relative group rounded-xl overflow-hidden border border-border aspect-square bg-bg-tertiary/30">
-                    <img src={URL.createObjectURL(file)} alt={file.name} className="w-full h-full object-cover" />
-                    <button
-                      type="button"
-                      onClick={() => removeFile(idx)}
-                      className="absolute top-1 right-1 p-1 rounded-full bg-black/70 text-white hover:bg-danger transition-colors"
-                    >
-                      <MdClose className="w-3 h-3" />
-                    </button>
-                  </div>
-                ))}
+              <div className="flex gap-4">
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={formData.tiene_ducha}
+                    onChange={(e) => setFormData({ ...formData, tiene_ducha: e.target.checked })}
+                    className="w-4 h-4 accent-primary rounded"
+                  />
+                  <span className="text-sm text-text-muted">Tiene ducha</span>
+                </label>
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={formData.tiene_banio}
+                    onChange={(e) => setFormData({ ...formData, tiene_banio: e.target.checked })}
+                    className="w-4 h-4 accent-primary rounded"
+                  />
+                  <span className="text-sm text-text-muted">Tiene baño completo</span>
+                </label>
               </div>
-            )}
-          </div>
 
-          <div>
-            <label className="field-label block mb-2 text-text-secondary font-medium">Descripción (opcional)</label>
-            <textarea
-              value={formData.descripcion || ""}
-              onChange={(e) => setFormData({ ...formData, descripcion: e.target.value })}
-              placeholder="Descripción de la habitación..."
-              className={selectClass + " resize-none"}
-              rows={3}
-            />
-          </div>
+              <div>
+                <label className={labelClass}>Descripción (opcional)</label>
+                <textarea
+                  value={formData.descripcion || ""}
+                  onChange={(e) => setFormData({ ...formData, descripcion: e.target.value })}
+                  placeholder="Descripción de la habitación..."
+                  className={selectClass + " resize-none"}
+                  rows={3}
+                />
+              </div>
 
-          <div className="flex gap-3 pt-4">
-            <Button type="button" variant="secondary" onClick={onClose} className="flex-1">
-              Cancelar
-            </Button>
-            <Button type="submit" isLoading={loading} className="flex-1">
-              {loading ? "Guardando..." : isEditing ? "Guardar Cambios" : "Crear Habitación"}
-            </Button>
+              <div className="flex gap-3 pt-4">
+                <Button type="button" variant="secondary" onClick={onClose} className="flex-1">
+                  Cancelar
+                </Button>
+                <Button type="submit" isLoading={loading} className="flex-1">
+                  {loading ? "Guardando..." : isEditing ? "Guardar Cambios" : "Crear Habitación"}
+                </Button>
+              </div>
+            </div>
           </div>
         </form>
       </div>

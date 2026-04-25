@@ -22,6 +22,8 @@ interface Props {
   onClearFilters: () => void;
   onEdit: (hab: Habitacion) => void;
   onDelete: (hab: Habitacion) => void;
+  onViewCalendar: (hab: Habitacion) => void;
+  onViewImages: (hab: Habitacion) => void;
 }
 
 export function RoomsGrid({
@@ -41,6 +43,8 @@ export function RoomsGrid({
   onClearFilters,
   onEdit,
   onDelete,
+  onViewCalendar,
+  onViewImages,
 }: Props) {
   const { page, totalPages, total, hasNextPage } = pagination;
 
@@ -135,6 +139,8 @@ export function RoomsGrid({
               room={habitacion}
               onEdit={() => onEdit(habitacion)}
               onDelete={() => onDelete(habitacion)}
+              onViewCalendar={() => onViewCalendar(habitacion)}
+              onViewImages={() => onViewImages(habitacion)}
             />
           ))}
         </div>

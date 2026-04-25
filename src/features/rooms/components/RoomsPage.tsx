@@ -2,6 +2,8 @@ import { useState } from "react";
 import { useHabitaciones } from "../hooks/useRooms";
 import { RoomModal } from "./RoomModal";
 import { RoomsGrid } from "./RoomsGrid";
+import { RoomCalendarModal } from "./RoomCalendarModal";
+import { ImageCarousel } from "./ImageCarousel";
 import { PanelHeader, Button, Modal, ConfirmDialog } from "@/components";
 import { sileo } from "sileo";
 import { isHandledError } from "@/shared/utils/error";
@@ -30,6 +32,12 @@ export default function RoomsPage() {
   const [savingTipo, setSavingTipo] = useState(false);
   const [deleteTipoTarget, setDeleteTipoTarget] = useState<TipoHabitacion | null>(null);
 
+  const [calendarModalOpen, setCalendarModalOpen] = useState(false);
+  const [calendarTarget, setCalendarTarget] = useState<Habitacion | null>(null);
+  const [imagesModalOpen, setImagesModalOpen] = useState(false);
+  const [imagesTarget, setImagesTarget] = useState<Habitacion | null>(null);
+  const [carouselIndex, setCarouselIndex] = useState(0);
+
   const handleDelete = async () => {
     if (!deleteTarget) return;
     setDeleting(true);
@@ -51,6 +59,17 @@ export default function RoomsPage() {
   const handleDeleteCard = (habitacion: Habitacion) => {
     setDeleteTarget(habitacion);
     setDeleteOpen(true);
+  };
+
+  const handleViewCalendar = (habitacion: Habitacion) => {
+    setCalendarTarget(habitacion);
+    setCalendarModalOpen(true);
+  };
+
+  const handleViewImages = (habitacion: Habitacion) => {
+    setImagesTarget(habitacion);
+    setCarouselIndex(0);
+    setImagesModalOpen(true);
   };
 
   const handleSaveTipo = async () => {
@@ -134,6 +153,8 @@ export default function RoomsPage() {
           onClearFilters={clearFilters}
           onEdit={handleEdit}
           onDelete={handleDeleteCard}
+          onViewCalendar={handleViewCalendar}
+          onViewImages={handleViewImages}
         />
       </PanelHeader>
 
@@ -167,11 +188,34 @@ export default function RoomsPage() {
         cancelText="Cancelar"
         confirmVariant="danger"
         isConfirmLoading={deleting}
+        confirmationText="eliminar"
         onConfirm={async () => {
           setDeleteOpen(false);
           await handleDelete();
         }}
       />
+
+      <RoomCalendarModal
+        isOpen={calendarModalOpen}
+        onClose={() => {
+          setCalendarModalOpen(false);
+          setCalendarTarget(null);
+        }}
+        habitacion={calendarTarget}
+      />
+
+      {imagesTarget?.url_imagen && imagesTarget.url_imagen.length > 0 && (
+        <ImageCarousel
+          images={imagesTarget.url_imagen}
+          isOpen={imagesModalOpen}
+          onClose={() => {
+            setImagesModalOpen(false);
+            setImagesTarget(null);
+          }}
+          title={`Habitación ${imagesTarget.nro_habitacion}`}
+          initialIndex={carouselIndex}
+        />
+      )}
 
       <Modal
         isOpen={isTipoModalOpen}
@@ -189,7 +233,7 @@ export default function RoomsPage() {
             <input
               type="text"
               value={tipoForm.nombre}
-              onChange={(e) => setTipoForm({ ...tipoForm, nombre: e.target.value })}
+              onChange={(e) => setTipoForm({ ...tipoForm, nombre: e.target.value.toUpperCase() })}
               placeholder="Nombre del tipo"
               className="field-input w-full rounded-xl py-2.5 text-sm px-3.5 focus:outline-none focus:ring-2 focus:ring-accent-primary/30 focus:border-accent-primary border border-border-light/50"
             />
