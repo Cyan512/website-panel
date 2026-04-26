@@ -4,6 +4,7 @@ import type { CreateHuesped, UpdateHuesped, Huesped, TipoDocumento } from "../ty
 import { Modal, Button } from "@/components";
 import { InputField } from "@/components";
 import { sileo } from "sileo";
+import { isHandledError } from "@/shared/utils/error";
 
 const TIPO_DOC: { value: TipoDocumento; label: string }[] = [
   { value: "DNI", label: "DNI" },
@@ -87,10 +88,12 @@ export function HuespedModal({ isOpen, onClose, onSuccess, huesped }: HuespedMod
       onSuccess();
       onClose();
     } catch (error: unknown) {
-      const message = error && typeof error === 'object' && 'response' in error 
-        ? (error as { response?: { data?: { message?: string } } }).response?.data?.message || "No se pudo guardar el huésped"
-        : "No se pudo guardar el huésped";
-      sileo.error({ title: "Error", description: message });
+      if (!isHandledError(error)) {
+        const message = error && typeof error === 'object' && 'response' in error 
+          ? (error as { response?: { data?: { message?: string } } }).response?.data?.message || "No se pudo guardar el huésped"
+          : "No se pudo guardar el huésped";
+        sileo.error({ title: "Error", description: message });
+      }
     } finally {
       setLoading(false);
     }

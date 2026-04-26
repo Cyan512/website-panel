@@ -4,6 +4,9 @@ import environment from "@/environments/environment";
 
 export const authClient = createAuthClient({
   baseURL: environment.app.apiEndpoint,
+  sessionOptions: {
+    refetchOnWindowFocus: false,
+  },
   plugins: [
     inferAdditionalFields({
       user: {

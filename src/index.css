@@ -362,6 +362,12 @@ a[class*="bg-primary"] {
   z-index: 9999 !important;
 }
 
+@media (min-width: 1024px) {
+  [data-sileo-viewport][data-position$="center"] {
+    left: calc(50% + 8rem);
+  }
+}
+
 /* ── ANIMACIONES ───────────────────────────────────────── */
 @keyframes fade-in {
   from { opacity: 0; }

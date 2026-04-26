@@ -1,7 +1,6 @@
 import axios from "axios";
 import type { AxiosInstance } from "axios";
 import environment from "@/environments/environment";
-import { authClient } from "./auth";
 import { sileo } from "sileo";
 
 const MUTATING_METHODS = new Set(["post", "put", "patch", "delete"]);
@@ -11,15 +10,6 @@ export const axiosInstance: AxiosInstance = axios.create({
   headers: { "Content-Type": undefined },
   withCredentials: true,
 });
-
-axiosInstance.interceptors.request.use(
-  async (config) => {
-    const { data: session } = await authClient.getSession();
-    if (!session) throw new Error("No session");
-    return config;
-  },
-  (error) => Promise.reject(error),
-);
 
 axiosInstance.interceptors.response.use(
   (response) => {
@@ -40,6 +30,9 @@ axiosInstance.interceptors.response.use(
     return response;
   },
   (error) => {
+    if (axios.isCancel(error)) {
+      return Promise.reject(error);
+    }
     const isHandled = (error as { handled?: boolean })?.handled;
     if (!isHandled) {
       const message =
