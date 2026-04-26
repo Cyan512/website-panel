@@ -54,7 +54,7 @@ export function RoomsGrid({
   const hasActiveFilters =
     searchInput.trim() !== "" || filters.tipo !== undefined || filters.estado !== undefined;
 
-  const tipoOptions = tipos.map((t) => ({ value: t.id, label: t.nombre }));
+  const tipoOptions = tipos.map((t) => ({ value: t.nombre, label: t.nombre }));
   const estadoOptions = [
     { value: "true", label: "Disponible" },
     { value: "false", label: "No disponible" },

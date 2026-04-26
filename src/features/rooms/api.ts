@@ -8,13 +8,13 @@ import type {
 export const roomsApi = {
   getAll: async (
     page = 1,
-    limit = 12,
-    filters: { tipo?: string; nro_habitacion?: string; estado?: boolean } = {},
-    signal?: AbortSignal,
-  ): Promise<PaginatedHabitaciones> => {
-    const params = new URLSearchParams({ page: String(page), limit: String(limit) });
-    if (filters.tipo) params.set("tipo", filters.tipo);
-    if (filters.nro_habitacion) params.set("nro_habitacion", filters.nro_habitacion);
+    limit = 10,
+filters: { tipo?: string; numero?: string; estado?: boolean } = {},
+  signal?: AbortSignal,
+ ): Promise<PaginatedHabitaciones> => {
+  const params = new URLSearchParams({ page: String(page), limit: String(limit) });
+  if (filters.tipo) params.set("tipo", filters.tipo);
+  if (filters.numero) params.set("numero", filters.numero);
     if (filters.estado !== undefined) params.set("estado", String(filters.estado));
     const response = await axiosInstance.get<{ success: boolean; data: PaginatedHabitaciones }>(
       `/api/private/habitaciones?${params.toString()}`,

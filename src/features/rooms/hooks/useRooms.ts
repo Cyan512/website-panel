@@ -5,11 +5,11 @@ import type { Habitacion, TipoHabitacion, CreateHabitacion, UpdateEstadoHabitaci
 
 interface RoomFilters {
   tipo?: string;
-  nro_habitacion?: string;
+  numero?: string;
   estado?: boolean;
 }
 
-export function useHabitaciones(initialPage = 1, initialLimit = 12) {
+export function useHabitaciones(initialPage = 1, initialLimit = 10) {
   const { data: session } = authClient.useSession();
   const [habitaciones, setHabitaciones] = useState<Habitacion[]>([]);
   const [pagination, setPagination] = useState<PaginatedHabitaciones["pagination"]>({
@@ -81,7 +81,7 @@ export function useHabitaciones(initialPage = 1, initialLimit = 12) {
 
     if (!q || q.trim() === "") {
       setSearching(false);
-      setFilters(prev => ({ ...prev, nro_habitacion: undefined }));
+      setFilters(prev => ({ ...prev, numero: undefined }));
       setPage(1);
       return;
     }
@@ -89,7 +89,7 @@ export function useHabitaciones(initialPage = 1, initialLimit = 12) {
     setSearching(true);
     debounceTimerRef.current = setTimeout(() => {
       if (q.trim().length >= 1) {
-        setFilters(prev => ({ ...prev, nro_habitacion: q.trim() }));
+        setFilters(prev => ({ ...prev, numero: q.trim() }));
         setPage(1);
       } else {
         setSearching(false);
