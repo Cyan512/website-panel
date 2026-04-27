@@ -7,7 +7,8 @@ import { ImageCarousel } from "./ImageCarousel";
 import { PanelHeader, Button, Modal, ConfirmDialog } from "@/components";
 import { sileo } from "sileo";
 import { isHandledError } from "@/shared/utils/error";
-import { MdCategory, MdEdit, MdDelete } from "react-icons/md";
+import { MdCategory, MdEdit, MdDelete, MdLanguage } from "react-icons/md";
+import { I18nModal } from "./I18nModal";
 import type { Habitacion, TipoHabitacion } from "../types";
 import { useTiposHabitacion } from "@/features/room-types/hooks/useTiposHabitacion";
 
@@ -31,6 +32,7 @@ export default function RoomsPage() {
   const [tipoForm, setTipoForm] = useState({ nombre: "" });
   const [savingTipo, setSavingTipo] = useState(false);
   const [deleteTipoTarget, setDeleteTipoTarget] = useState<TipoHabitacion | null>(null);
+  const [isI18nModalOpen, setIsI18nModalOpen] = useState(false);
 
   const [calendarModalOpen, setCalendarModalOpen] = useState(false);
   const [calendarTarget, setCalendarTarget] = useState<Habitacion | null>(null);
@@ -125,6 +127,10 @@ export default function RoomsPage() {
               <MdCategory className="w-4 h-4 mr-1" />
               Tipos
             </Button>
+            <Button variant="secondary" onClick={() => setIsI18nModalOpen(true)}>
+              <MdLanguage className="w-4 h-4 mr-1" />
+              Internacionalización
+            </Button>
             <Button
               onClick={() => {
                 setEditingHabitacion(null);
@@ -177,6 +183,12 @@ export default function RoomsPage() {
         onSuccess={fetchHabitaciones}
         habitacion={editingHabitacion}
         tipos={tipos}
+      />
+
+      <I18nModal
+        isOpen={isI18nModalOpen}
+        onClose={() => setIsI18nModalOpen(false)}
+        habitaciones={habitaciones}
       />
 
       <ConfirmDialog

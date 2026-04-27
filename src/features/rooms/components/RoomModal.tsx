@@ -22,8 +22,8 @@ const defaultForm: CreateHabitacion = {
   nro_habitacion: "",
   tipo_habitacion_id: "",
   piso: 1,
-  tiene_banio: true,
-  tiene_ducha: true,
+  feature: "",
+  amenities: "",
   estado: true,
   descripcion: "",
 };
@@ -61,8 +61,8 @@ export function RoomModal({ isOpen, onClose, onSuccess, habitacion, tipos }: Roo
         nro_habitacion: habitacion.nro_habitacion,
         tipo_habitacion_id: habitacion.tipo_habitacion_id ?? habitacion.tipo_habitacion?.id ?? "",
         piso: habitacion.piso,
-        tiene_banio: habitacion.tiene_banio,
-        tiene_ducha: habitacion.tiene_ducha,
+        feature: habitacion.feature ?? "",
+        amenities: habitacion.amenities ?? "",
         estado: habitacion.estado,
         descripcion: habitacion.descripcion ?? "",
       });
@@ -73,7 +73,7 @@ export function RoomModal({ isOpen, onClose, onSuccess, habitacion, tipos }: Roo
         tipo_habitacion_id: tipos[0]?.id || "",
       });
     }
-  }, [isOpen, habitacion]);
+  }, [isOpen, habitacion, tipos]);
 
   useEffect(() => {
     if (tipos.length > 0 && !formData.tipo_habitacion_id) {
@@ -105,8 +105,8 @@ export function RoomModal({ isOpen, onClose, onSuccess, habitacion, tipos }: Roo
           nro_habitacion: nro,
           tipo_habitacion_id: formData.tipo_habitacion_id,
           piso: formData.piso,
-          tiene_banio: formData.tiene_banio,
-          tiene_ducha: formData.tiene_ducha,
+          feature: formData.feature?.trim() || undefined,
+          amenities: formData.amenities?.trim() || undefined,
           estado: formData.estado,
           descripcion: formData.descripcion?.trim() || undefined,
           imagenes_existentes: existingImages,
@@ -118,6 +118,8 @@ export function RoomModal({ isOpen, onClose, onSuccess, habitacion, tipos }: Roo
         await roomsApi.create({
           ...formData,
           nro_habitacion: nro,
+          feature: formData.feature?.trim() || undefined,
+          amenities: formData.amenities?.trim() || undefined,
           descripcion: formData.descripcion?.trim() || undefined,
           imagenes: files.length > 0 ? files : undefined,
         });
@@ -259,11 +261,10 @@ export function RoomModal({ isOpen, onClose, onSuccess, habitacion, tipos }: Roo
                   )}
                 </div>
                 <div className="relative" ref={estadoRef}>
-                  <label className={labelClass}>Estado</label>
                   <button
                     type="button"
                     onClick={() => setEstadoOpen(!estadoOpen)}
-                    className={selectClass + " flex items-center justify-between text-left"}
+                    className={selectClass + " flex items-center justify-between text-left w-full"}
                   >
                     <span>{formData.estado ? "Disponible" : "No Disponible"}</span>
                     <MdArrowDropDown className={`w-5 h-5 text-text-muted transition-transform ${estadoOpen ? "rotate-180" : ""}`} />
@@ -295,25 +296,27 @@ export function RoomModal({ isOpen, onClose, onSuccess, habitacion, tipos }: Roo
                 </div>
               </div>
 
-              <div className="flex gap-4">
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={formData.tiene_ducha}
-                    onChange={(e) => setFormData({ ...formData, tiene_ducha: e.target.checked })}
-                    className="w-4 h-4 accent-primary rounded"
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className={labelClass}>Características (opcional)</label>
+                  <textarea
+                    value={formData.feature || ""}
+                    onChange={(e) => setFormData({ ...formData, feature: e.target.value })}
+                    placeholder="WiFi, aire acondicionado..."
+                    className={selectClass + " resize-none"}
+                    rows={2}
                   />
-                  <span className="text-sm text-text-muted">Tiene ducha</span>
-                </label>
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={formData.tiene_banio}
-                    onChange={(e) => setFormData({ ...formData, tiene_banio: e.target.checked })}
-                    className="w-4 h-4 accent-primary rounded"
+                </div>
+                <div>
+                  <label className={labelClass}>Amenities (opcional)</label>
+                  <textarea
+                    value={formData.amenities || ""}
+                    onChange={(e) => setFormData({ ...formData, amenities: e.target.value })}
+                    placeholder="TV, minibar, cafetera..."
+                    className={selectClass + " resize-none"}
+                    rows={2}
                   />
-                  <span className="text-sm text-text-muted">Tiene baño completo</span>
-                </label>
+                </div>
               </div>
 
               <div>

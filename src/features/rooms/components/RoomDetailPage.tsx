@@ -12,8 +12,6 @@ import {
   MdArrowBack,
   MdCalendarMonth,
   MdBed,
-  MdShower,
-  MdBathtub,
   MdImage,
   MdChair,
   MdOpenInFull,
@@ -397,12 +395,12 @@ export default function RoomDetailPage() {
                 >
                   {habitacion.estado ? "Disponible" : "No disponible"}
                 </span>
-                <span className={cn("text-[10px] font-semibold px-2 py-1 rounded-full border flex items-center gap-1", habitacion.tiene_ducha ? "bg-success-bg text-success border-success/20" : "bg-bg-tertiary text-text-muted border-border/50")}>
-                  <MdShower className="w-3 h-3" /> {habitacion.tiene_ducha ? "Ducha" : "Sin ducha"}
-                </span>
-                <span className={cn("text-[10px] font-semibold px-2 py-1 rounded-full border flex items-center gap-1", habitacion.tiene_banio ? "bg-success-bg text-success border-success/20" : "bg-bg-tertiary text-text-muted border-border/50")}>
-                  <MdBathtub className="w-3 h-3" /> {habitacion.tiene_banio ? "Baño" : "Sin baño"}
-                </span>
+                {habitacion.feature && habitacion.feature.split(",").map((f, i) => (
+                  <span key={i} className="text-[10px] font-semibold px-2 py-1 rounded-full border bg-info-bg text-info border-info/20">{f.trim()}</span>
+                ))}
+                {habitacion.amenities && habitacion.amenities.split(",").map((a, i) => (
+                  <span key={i} className="text-[10px] font-semibold px-2 py-1 rounded-full border bg-accent-primary/10 text-accent-primary border-accent-primary/20">{a.trim()}</span>
+                ))}
               </div>
 
               {habitacion.descripcion && (

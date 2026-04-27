@@ -67,9 +67,13 @@ export function RoomCard({ room, onEdit, onDelete, onViewCalendar, onViewImages 
         {room.descripcion && <p className="text-xs text-text-muted mb-2 line-clamp-1">{room.descripcion}</p>}
 
         <div className="flex items-center justify-between pt-2 border-t border-border/50">
-          <div className="flex gap-2">
-            {room.tiene_ducha && <span className="px-2 py-0.5 text-[10px] font-semibold rounded-full text-text-primary border border-border">Ducha</span>}
-            {room.tiene_banio && <span className="px-2 py-0.5 text-[10px] font-semibold rounded-full text-text-primary border border-border">Baño</span>}
+          <div className="flex gap-1 flex-wrap">
+            {room.feature && room.feature.split(",").map((f, i) => (
+              <span key={i} className="px-2 py-0.5 text-[10px] font-semibold rounded-full text-text-primary border border-border">{f.trim()}</span>
+            ))}
+            {room.amenities && room.amenities.split(",").map((a, i) => (
+              <span key={i} className="px-2 py-0.5 text-[10px] font-semibold rounded-full text-text-primary border border-border">{a.trim()}</span>
+            ))}
           </div>
         </div>
       </div>

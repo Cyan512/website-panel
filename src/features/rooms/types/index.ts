@@ -30,8 +30,8 @@ export interface Habitacion {
   tipo_habitacion_id: string;
   tipo_habitacion: TipoHabitacion;
   piso: number;
-  tiene_ducha: boolean;
-  tiene_banio: boolean;
+  feature: string | null;
+  amenities: string | null;
   url_imagen: string[] | null;
   estado: boolean;
   descripcion: string | null;
@@ -63,8 +63,8 @@ export interface CreateHabitacion {
   nro_habitacion: string;
   tipo_habitacion_id: string;
   piso: number;
-  tiene_ducha: boolean;
-  tiene_banio: boolean;
+  feature?: string;
+  amenities?: string;
   imagenes?: File[];
   estado?: boolean;
   descripcion?: string;
@@ -74,8 +74,8 @@ export interface UpdateHabitacion {
   nro_habitacion?: string;
   tipo_habitacion_id?: string;
   piso?: number;
-  tiene_ducha?: boolean;
-  tiene_banio?: boolean;
+  feature?: string;
+  amenities?: string;
   imagenes_existentes?: string[];
   imagenes?: File[];
   estado?: boolean;
@@ -101,4 +101,38 @@ export interface CreateTipoHabitacion {
 export interface UpdateTipoHabitacion {
   nombre?: string;
   muebles?: string[];
+}
+
+export interface Internacionalizacion {
+  id: string;
+  habitacion: {
+    id: string;
+    nro_habitacion: string;
+  };
+  descripcion_en: string | null;
+  descripcion_fr: string | null;
+  feature_en: string | null;
+  feature_fr: string | null;
+  amenities_en: string | null;
+  amenities_fr: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CreateInternacionalizacion {
+  descripcion_en?: string | null;
+  descripcion_fr?: string | null;
+  feature_en?: string | null;
+  feature_fr?: string | null;
+  amenities_en?: string | null;
+  amenities_fr?: string | null;
+}
+
+export interface UpdateInternacionalizacion {
+  descripcion_en?: string | null;
+  descripcion_fr?: string | null;
+  feature_en?: string | null;
+  feature_fr?: string | null;
+  amenities_en?: string | null;
+  amenities_fr?: string | null;
 }

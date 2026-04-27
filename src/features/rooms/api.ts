@@ -2,7 +2,7 @@ import axiosInstance from "@/shared/lib/axios";
 import type {
   Habitacion, PaginatedHabitaciones, CreateHabitacion, UpdateHabitacion,
   UpdateEstadoHabitacion, TipoHabitacion, CreateTipoHabitacion, UpdateTipoHabitacion,
-  EstadoReservaHab,
+  EstadoReservaHab, Internacionalizacion, UpdateInternacionalizacion,
 } from "./types";
 
 export const roomsApi = {
@@ -50,8 +50,8 @@ filters: { tipo?: string; numero?: string; estado?: boolean } = {},
       form.append("nro_habitacion", data.nro_habitacion);
       form.append("tipo_habitacion_id", data.tipo_habitacion_id);
       form.append("piso", String(data.piso));
-      form.append("tiene_ducha", String(data.tiene_ducha));
-      form.append("tiene_banio", String(data.tiene_banio));
+      if (data.feature) form.append("feature", data.feature);
+      if (data.amenities) form.append("amenities", data.amenities);
       if (data.estado !== undefined) form.append("estado", String(data.estado));
       if (data.descripcion) form.append("descripcion", data.descripcion);
       data.imagenes.forEach((f) => form.append("imagenes", f));
@@ -63,8 +63,8 @@ filters: { tipo?: string; numero?: string; estado?: boolean } = {},
       nro_habitacion: data.nro_habitacion,
       tipo_habitacion_id: data.tipo_habitacion_id,
       piso: data.piso,
-      tiene_ducha: data.tiene_ducha,
-      tiene_banio: data.tiene_banio,
+      ...(data.feature && { feature: data.feature }),
+      ...(data.amenities && { amenities: data.amenities }),
       ...(data.estado !== undefined && { estado: data.estado }),
       ...(data.descripcion && { descripcion: data.descripcion }),
     });
@@ -77,8 +77,8 @@ filters: { tipo?: string; numero?: string; estado?: boolean } = {},
       if (data.nro_habitacion) form.append("nro_habitacion", data.nro_habitacion);
       if (data.tipo_habitacion_id) form.append("tipo_habitacion_id", data.tipo_habitacion_id);
       if (data.piso !== undefined) form.append("piso", String(data.piso));
-      if (data.tiene_ducha !== undefined) form.append("tiene_ducha", String(data.tiene_ducha));
-      if (data.tiene_banio !== undefined) form.append("tiene_banio", String(data.tiene_banio));
+      if (data.feature !== undefined) form.append("feature", data.feature);
+      if (data.amenities !== undefined) form.append("amenities", data.amenities);
       if (data.estado !== undefined) form.append("estado", String(data.estado));
       if (data.descripcion) form.append("descripcion", data.descripcion);
       if (data.imagenes_existentes) {
@@ -93,8 +93,8 @@ filters: { tipo?: string; numero?: string; estado?: boolean } = {},
       ...(data.nro_habitacion && { nro_habitacion: data.nro_habitacion }),
       ...(data.tipo_habitacion_id && { tipo_habitacion_id: data.tipo_habitacion_id }),
       ...(data.piso !== undefined && { piso: data.piso }),
-      ...(data.tiene_ducha !== undefined && { tiene_ducha: data.tiene_ducha }),
-      ...(data.tiene_banio !== undefined && { tiene_banio: data.tiene_banio }),
+      ...(data.feature !== undefined && { feature: data.feature }),
+      ...(data.amenities !== undefined && { amenities: data.amenities }),
       ...(data.estado !== undefined && { estado: data.estado }),
       ...(data.descripcion !== undefined && { descripcion: data.descripcion }),
       ...(data.imagenes_existentes && { imagenes_existentes: data.imagenes_existentes }),
@@ -109,6 +109,27 @@ filters: { tipo?: string; numero?: string; estado?: boolean } = {},
 
   delete: async (id: string): Promise<void> => {
     await axiosInstance.delete(`/api/private/habitaciones/${id}`);
+  },
+};
+
+export const internacionalizacionApi = {
+  getById: async (habitacionId: string): Promise<Internacionalizacion> => {
+    const response = await axiosInstance.get<{ data: Internacionalizacion }>(`/api/private/internacionalizaciones/${habitacionId}`);
+    return response.data.data;
+  },
+
+  create: async (habitacionId: string, data: UpdateInternacionalizacion): Promise<Internacionalizacion> => {
+    const response = await axiosInstance.post<{ data: Internacionalizacion }>(`/api/private/internacionalizaciones/${habitacionId}`, data);
+    return response.data.data;
+  },
+
+  update: async (habitacionId: string, data: UpdateInternacionalizacion): Promise<Internacionalizacion> => {
+    const response = await axiosInstance.put<{ data: Internacionalizacion }>(`/api/private/internacionalizaciones/${habitacionId}`, data);
+    return response.data.data;
+  },
+
+  delete: async (habitacionId: string): Promise<void> => {
+    await axiosInstance.delete(`/api/private/internacionalizaciones/${habitacionId}`);
   },
 };
 
