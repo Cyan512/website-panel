@@ -8,10 +8,21 @@ import type { Habitacion } from "@/features/rooms/types";
 import type { Tarifa } from "@/features/rates/types";
 import { authClient } from "@/shared/lib/auth";
 import { cn } from "@/shared/utils/cn";
-import { 
-  MdPerson, MdHotel, MdAttachMoney, MdCalendarToday, MdGroup, 
-  MdChildCare, MdInfo, MdCalculate, MdEventNote, MdLocationOn,
-  MdAccessTime, MdAccountBalance, MdTrendingUp, MdSearch
+import {
+  MdPerson,
+  MdHotel,
+  MdAttachMoney,
+  MdCalendarToday,
+  MdGroup,
+  MdChildCare,
+  MdInfo,
+  MdCalculate,
+  MdEventNote,
+  MdLocationOn,
+  MdAccessTime,
+  MdAccountBalance,
+  MdTrendingUp,
+  MdSearch,
 } from "react-icons/md";
 
 interface Props {
@@ -31,16 +42,22 @@ const ESTADO_OPTIONS = [
   { value: "CANCELADA", label: "Cancelada", color: "text-danger", bgColor: "bg-danger-bg", icon: MdEventNote },
 ];
 
-const selectClass = "field-input w-full rounded-xl py-3.5 px-3.5 focus:outline-none focus:ring-2 focus:ring-accent-primary/30 focus:border-accent-primary border border-border-light/50";
+const selectClass =
+  "field-input w-full rounded-xl py-3.5 px-3.5 focus:outline-none focus:ring-2 focus:ring-accent-primary/30 focus:border-accent-primary border border-border-light/50";
 const labelClass = "field-label block mb-2 text-text-secondary font-medium";
-const toDateInput = (d?: string | Date | null) => d ? new Date(d).toISOString().slice(0, 10) : "";
+const toDateInput = (d?: string | Date | null) => (d ? new Date(d).toISOString().slice(0, 10) : "");
 
 export function ReservaModal({ isOpen, onClose, onSuccess, reserva, tarifas, onCreate, onUpdate }: Props) {
   const { data: session } = authClient.useSession();
   const isAdmin = session?.user?.role === "ADMIN";
   const [form, setForm] = useState({
-    huespedId: "", habitacionId: "", tarifaId: "",
-    fecha_inicio: "", fecha_fin: "", adultos: "1", ninos: "0",
+    huespedId: "",
+    habitacionId: "",
+    tarifaId: "",
+    fecha_inicio: "",
+    fecha_fin: "",
+    adultos: "1",
+    ninos: "0",
     estado: "TENTATIVA" as EstadoReserva,
   });
   const [saving, setSaving] = useState(false);
@@ -71,15 +88,15 @@ export function ReservaModal({ isOpen, onClose, onSuccess, reserva, tarifas, onC
       setShowHuespedSuggestions(false);
       return;
     }
-    
+
     // Cancel previous request
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
     }
-    
+
     // Create new abort controller
     abortControllerRef.current = new AbortController();
-    
+
     setSearchingHuesped(true);
     try {
       const { huespedesApi } = await import("@/features/clients/api");
@@ -87,8 +104,8 @@ export function ReservaModal({ isOpen, onClose, onSuccess, reserva, tarifas, onC
       setHuespedSuggestions(data);
       setShowHuespedSuggestions(true);
     } catch (error) {
-      if (error instanceof Error && error.name !== 'AbortError') {
-        console.error('Error searching huespedes:', error);
+      if (error instanceof Error && error.name !== "AbortError") {
+        console.error("Error searching huespedes:", error);
         setHuespedSuggestions([]);
         setShowHuespedSuggestions(false);
       }
@@ -103,15 +120,15 @@ export function ReservaModal({ isOpen, onClose, onSuccess, reserva, tarifas, onC
       setShowHabitacionSuggestions(false);
       return;
     }
-    
+
     // Cancel previous request
     if (habitacionAbortControllerRef.current) {
       habitacionAbortControllerRef.current.abort();
     }
-    
+
     // Create new abort controller
     habitacionAbortControllerRef.current = new AbortController();
-    
+
     setSearchingHabitacion(true);
     try {
       const { roomsApi } = await import("@/features/rooms/api");
@@ -119,8 +136,8 @@ export function ReservaModal({ isOpen, onClose, onSuccess, reserva, tarifas, onC
       setHabitacionSuggestions(data);
       setShowHabitacionSuggestions(true);
     } catch (error) {
-      if (error instanceof Error && error.name !== 'AbortError') {
-        console.error('Error searching habitaciones:', error);
+      if (error instanceof Error && error.name !== "AbortError") {
+        console.error("Error searching habitaciones:", error);
         setHabitacionSuggestions([]);
         setShowHabitacionSuggestions(false);
       }
@@ -132,9 +149,9 @@ export function ReservaModal({ isOpen, onClose, onSuccess, reserva, tarifas, onC
   const handleHuespedQueryChange = (q: string) => {
     setHuespedQuery(q);
     setHuespedSeleccionado(null);
-    setForm(prev => ({ ...prev, huespedId: "" }));
+    setForm((prev) => ({ ...prev, huespedId: "" }));
     setShowHuespedSuggestions(true);
-    
+
     if (debounceRef.current) clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(() => searchHuespedes(q), 300);
   };
@@ -142,16 +159,16 @@ export function ReservaModal({ isOpen, onClose, onSuccess, reserva, tarifas, onC
   const handleSelectHuesped = (huesped: Huesped) => {
     setHuespedSeleccionado(huesped);
     setHuespedQuery(`${huesped.nombres} ${huesped.apellidos}`);
-    setForm(prev => ({ ...prev, huespedId: huesped.id }));
+    setForm((prev) => ({ ...prev, huespedId: huesped.id }));
     setShowHuespedSuggestions(false);
   };
 
   const handleHabitacionQueryChange = (q: string) => {
     setHabitacionQuery(q);
     setHabitacionSeleccionada(null);
-    setForm(prev => ({ ...prev, habitacionId: "" }));
+    setForm((prev) => ({ ...prev, habitacionId: "" }));
     setShowHabitacionSuggestions(true);
-    
+
     if (habitacionDebounceRef.current) clearTimeout(habitacionDebounceRef.current);
     habitacionDebounceRef.current = setTimeout(() => searchHabitaciones(q), 300);
   };
@@ -159,7 +176,7 @@ export function ReservaModal({ isOpen, onClose, onSuccess, reserva, tarifas, onC
   const handleSelectHabitacion = (habitacion: Habitacion) => {
     setHabitacionSeleccionada(habitacion);
     setHabitacionQuery(`Hab. ${habitacion.nro_habitacion}`);
-    setForm(prev => ({ ...prev, habitacionId: habitacion.id }));
+    setForm((prev) => ({ ...prev, habitacionId: habitacion.id }));
     setShowHabitacionSuggestions(false);
   };
 
@@ -181,16 +198,16 @@ export function ReservaModal({ isOpen, onClose, onSuccess, reserva, tarifas, onC
         // We'll create a minimal huesped object for display
         setHuespedSeleccionado({
           id: reserva.huespedId,
-          nombres: reserva.nombre_huesped.split(' ')[0] || '',
-          apellidos: reserva.nombre_huesped.split(' ').slice(1).join(' ') || '',
-          tipo_doc: 'DNI',
-          nro_doc: '',
-          email: '',
-          telefono: '',
-          nacionalidad: '',
-          observacion: '',
+          nombres: reserva.nombre_huesped.split(" ")[0] || "",
+          apellidos: reserva.nombre_huesped.split(" ").slice(1).join(" ") || "",
+          tipo_doc: "DNI",
+          nro_doc: "",
+          email: "",
+          telefono: "",
+          nacionalidad: "",
+          observacion: "",
           created_at: new Date(),
-          updated_at: new Date()
+          updated_at: new Date(),
         });
       }
 
@@ -199,30 +216,35 @@ export function ReservaModal({ isOpen, onClose, onSuccess, reserva, tarifas, onC
         setHabitacionSeleccionada({
           id: reserva.habitacionId,
           nro_habitacion: reserva.nro_habitacion,
-          piso: 0, 
-          tipo_habitacion_id: '',
-          tiene_ducha: false,
-          tiene_banio: false,
+          piso: 0,
+          tipo_habitacion_id: "",
+          feature: null,
+          amenities: null,
           estado: true,
           descripcion: null,
           url_imagen: null,
           promociones: [],
           tipo_habitacion: {
-            id: '',
-            nombre: reserva.nombre_tipo_hab || '',
+            id: "",
+            nombre: reserva.nombre_tipo_hab || "",
             created_at: new Date(),
-            updated_at: new Date()
+            updated_at: new Date(),
           },
           fechas_reserva: [],
           created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
+          updated_at: new Date().toISOString(),
         });
       }
     } else {
       setForm({
-        huespedId: "", habitacionId: "",
-        tarifaId: tarifas[0]?.id ?? "", fecha_inicio: "", fecha_fin: "",
-        adultos: "1", ninos: "0", estado: "TENTATIVA",
+        huespedId: "",
+        habitacionId: "",
+        tarifaId: tarifas[0]?.id ?? "",
+        fecha_inicio: "",
+        fecha_fin: "",
+        adultos: "1",
+        ninos: "0",
+        estado: "TENTATIVA",
       });
       setHuespedSeleccionado(null);
       setHuespedQuery("");
@@ -252,7 +274,8 @@ export function ReservaModal({ isOpen, onClose, onSuccess, reserva, tarifas, onC
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.fecha_inicio || !form.fecha_fin) return sileo.error({ title: "Error", description: "Las fechas son requeridas" });
-    if (new Date(form.fecha_fin) <= new Date(form.fecha_inicio)) return sileo.error({ title: "Error", description: "La fecha de salida debe ser posterior a la entrada" });
+    if (new Date(form.fecha_fin) <= new Date(form.fecha_inicio))
+      return sileo.error({ title: "Error", description: "La fecha de salida debe ser posterior a la entrada" });
 
     setSaving(true);
     try {
@@ -261,8 +284,8 @@ export function ReservaModal({ isOpen, onClose, onSuccess, reserva, tarifas, onC
           huespedId: form.huespedId,
           habitacionId: form.habitacionId,
           tarifaId: form.tarifaId,
-          fechaInicio: new Date(form.fecha_inicio).toISOString().split('T')[0],
-          fechaFin: new Date(form.fecha_fin).toISOString().split('T')[0],
+          fechaInicio: new Date(form.fecha_inicio).toISOString().split("T")[0],
+          fechaFin: new Date(form.fecha_fin).toISOString().split("T")[0],
           adultos: parseInt(form.adultos) || 1,
           ninos: parseInt(form.ninos) || 0,
           ...(isAdmin && { estado: form.estado }),
@@ -273,8 +296,8 @@ export function ReservaModal({ isOpen, onClose, onSuccess, reserva, tarifas, onC
           huespedId: form.huespedId,
           habitacionId: form.habitacionId,
           tarifaId: form.tarifaId,
-          fechaInicio: new Date(form.fecha_inicio).toISOString().split('T')[0],
-          fechaFin: new Date(form.fecha_fin).toISOString().split('T')[0],
+          fechaInicio: new Date(form.fecha_inicio).toISOString().split("T")[0],
+          fechaFin: new Date(form.fecha_fin).toISOString().split("T")[0],
           adultos: parseInt(form.adultos) || 1,
           ninos: parseInt(form.ninos) || 0,
         };
@@ -284,15 +307,18 @@ export function ReservaModal({ isOpen, onClose, onSuccess, reserva, tarifas, onC
       onSuccess();
       onClose();
     } catch (err) {
-      if (!isHandledError(err)) { sileo.error({ title: "Error", description: "No se pudo guardar la reserva" }); }
+      if (!isHandledError(err)) {
+        sileo.error({ title: "Error", description: "No se pudo guardar la reserva" });
+      }
     } finally {
       setSaving(false);
     }
   };
 
-  const noches = form.fecha_inicio && form.fecha_fin
-    ? Math.max(0, Math.ceil((new Date(form.fecha_fin).getTime() - new Date(form.fecha_inicio).getTime()) / 86400000))
-    : 0;
+  const noches =
+    form.fecha_inicio && form.fecha_fin
+      ? Math.max(0, Math.ceil((new Date(form.fecha_fin).getTime() - new Date(form.fecha_inicio).getTime()) / 86400000))
+      : 0;
 
   const tarifaSeleccionada = tarifas.find((t) => t.id === form.tarifaId);
   const habitacionEncontrada = habitacionSeleccionada;
@@ -307,20 +333,17 @@ export function ReservaModal({ isOpen, onClose, onSuccess, reserva, tarifas, onC
     <Modal isOpen={isOpen} onClose={onClose} title={reserva ? "Editar Reserva" : "Nueva Reserva"} size="2xl">
       <div className="max-h-[calc(100vh-200px)] overflow-y-auto scrollbar-custom">
         <form onSubmit={handleSubmit} className="space-y-8">
-          
           {/* ── Header con resumen visual ── */}
           {(huespedSeleccionado || habitacionEncontrada || noches > 0) && (
-            <div className="bg-gradient-to-r from-accent-primary/5 via-primary/5 to-accent-light/5 border border-accent-primary/20 rounded-2xl p-6">
+            <div className="bg-linear-to-r from-accent-primary/5 via-primary/5 to-accent-light/5 border border-accent-primary/20 rounded-2xl p-6">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4">
-                  <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary/20 to-accent-primary/20 flex items-center justify-center">
+                  <div className="w-16 h-16 rounded-2xl bg-linear-to-br from-primary/20 to-accent-primary/20 flex items-center justify-center">
                     <MdHotel className="w-8 h-8 text-primary" />
                   </div>
                   <div>
                     <h3 className="text-lg font-semibold text-text-primary">
-                      {huespedSeleccionado 
-                        ? `${huespedSeleccionado.nombres} ${huespedSeleccionado.apellidos}` 
-                        : "Nueva Reserva"}
+                      {huespedSeleccionado ? `${huespedSeleccionado.nombres} ${huespedSeleccionado.apellidos}` : "Nueva Reserva"}
                     </h3>
                     <div className="flex items-center gap-4 mt-1 text-sm text-text-muted">
                       {habitacionEncontrada && (
@@ -332,13 +355,17 @@ export function ReservaModal({ isOpen, onClose, onSuccess, reserva, tarifas, onC
                       {noches > 0 && (
                         <div className="flex items-center gap-1">
                           <MdCalendarToday className="w-4 h-4" />
-                          <span>{noches} noche{noches !== 1 ? "s" : ""}</span>
+                          <span>
+                            {noches} noche{noches !== 1 ? "s" : ""}
+                          </span>
                         </div>
                       )}
                       {totalHuespedes > 0 && (
                         <div className="flex items-center gap-1">
                           <MdGroup className="w-4 h-4" />
-                          <span>{totalHuespedes} huésped{totalHuespedes !== 1 ? "es" : ""}</span>
+                          <span>
+                            {totalHuespedes} huésped{totalHuespedes !== 1 ? "es" : ""}
+                          </span>
                         </div>
                       )}
                     </div>
@@ -346,10 +373,13 @@ export function ReservaModal({ isOpen, onClose, onSuccess, reserva, tarifas, onC
                 </div>
                 <div className="text-right">
                   {estadoSeleccionado && (
-                    <div className={cn(
-                      "inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium mb-2",
-                      estadoSeleccionado.bgColor, estadoSeleccionado.color
-                    )}>
+                    <div
+                      className={cn(
+                        "inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium mb-2",
+                        estadoSeleccionado.bgColor,
+                        estadoSeleccionado.color,
+                      )}
+                    >
                       <estadoSeleccionado.icon className="w-3 h-3" />
                       {estadoSeleccionado.label}
                     </div>
@@ -369,10 +399,8 @@ export function ReservaModal({ isOpen, onClose, onSuccess, reserva, tarifas, onC
 
           {/* ── Layout en tres columnas ── */}
           <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
-            
             {/* Columna 1: Información básica */}
             <div className="space-y-6">
-              
               {/* ── Huésped y habitación ── */}
               <div className="space-y-4">
                 <div className="flex items-center gap-2 text-text-muted pb-3 border-b border-border/50">
@@ -396,11 +424,7 @@ export function ReservaModal({ isOpen, onClose, onSuccess, reserva, tarifas, onC
                         onFocus={() => setShowHuespedSuggestions(true)}
                         onBlur={() => setTimeout(() => setShowHuespedSuggestions(false), 150)}
                         placeholder="Buscar huésped por nombre..."
-                        className={cn(
-                          selectClass, 
-                          "pl-9", 
-                          huespedSeleccionado ? "border-success/40 bg-success-bg/40" : ""
-                        )}
+                        className={cn(selectClass, "pl-9", huespedSeleccionado ? "border-success/40 bg-success-bg/40" : "")}
                         required
                       />
                     </div>
@@ -421,13 +445,13 @@ export function ReservaModal({ isOpen, onClose, onSuccess, reserva, tarifas, onC
                               className="w-full flex items-start gap-3 px-4 py-3 hover:bg-bg-hover transition-colors text-left border-b border-border/50 last:border-0"
                             >
                               <div className="flex-1 min-w-0">
-                                <p className="text-text-primary font-medium">{h.nombres} {h.apellidos}</p>
+                                <p className="text-text-primary font-medium">
+                                  {h.nombres} {h.apellidos}
+                                </p>
                                 <p className="text-xs text-text-muted">
                                   {h.tipo_doc}: {h.nro_doc} • {h.email}
                                 </p>
-                                {h.telefono && (
-                                  <p className="text-xs text-text-muted">Tel: {h.telefono}</p>
-                                )}
+                                {h.telefono && <p className="text-xs text-text-muted">Tel: {h.telefono}</p>}
                               </div>
                             </button>
                           ))
@@ -435,9 +459,7 @@ export function ReservaModal({ isOpen, onClose, onSuccess, reserva, tarifas, onC
                           <div className="px-4 py-6 text-center">
                             <MdPerson className="w-8 h-8 text-text-muted mx-auto mb-2" />
                             <p className="text-sm text-text-muted">No se encontraron huéspedes</p>
-                            <p className="text-xs text-text-muted mt-1">
-                              Intenta con otro nombre o crea un nuevo huésped
-                            </p>
+                            <p className="text-xs text-text-muted mt-1">Intenta con otro nombre o crea un nuevo huésped</p>
                           </div>
                         )}
                       </div>
@@ -459,52 +481,45 @@ export function ReservaModal({ isOpen, onClose, onSuccess, reserva, tarifas, onC
                         onFocus={() => setShowHabitacionSuggestions(true)}
                         onBlur={() => setTimeout(() => setShowHabitacionSuggestions(false), 150)}
                         placeholder="Buscar habitación por número..."
-                        className={cn(
-                          selectClass, 
-                          "pl-9", 
-                          habitacionSeleccionada ? "border-success/40 bg-success-bg/40" : ""
-                        )}
+                        className={cn(selectClass, "pl-9", habitacionSeleccionada ? "border-success/40 bg-success-bg/40" : "")}
                         required
                       />
                     </div>
 
-                    {showHabitacionSuggestions && (searchingHabitacion || habitacionSuggestions.length > 0 || (habitacionQuery.trim() && !searchingHabitacion)) && (
-                      <div className="absolute z-50 top-full left-0 right-0 mt-1 bg-bg-card border border-border rounded-xl shadow-xl overflow-hidden max-h-64 overflow-y-auto scrollbar-custom">
-                        {searchingHabitacion ? (
-                          <div className="px-4 py-6 text-center">
-                            <div className="inline-block w-5 h-5 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
-                            <p className="text-xs text-text-muted mt-2">Buscando habitaciones...</p>
-                          </div>
-                        ) : habitacionSuggestions.length > 0 ? (
-                          habitacionSuggestions.map((h) => (
-                            <button
-                              key={h.id}
-                              type="button"
-                              onMouseDown={() => handleSelectHabitacion(h)}
-                              className="w-full flex items-start gap-3 px-4 py-3 hover:bg-bg-hover transition-colors text-left border-b border-border/50 last:border-0"
-                            >
-                              <div className="flex-1 min-w-0">
-                                <p className="text-text-primary font-medium">Hab. {h.nro_habitacion}</p>
-                                <p className="text-xs text-text-muted">
-                                  Piso {h.piso} • {h.tipo_habitacion?.nombre || "Sin tipo"}
-                                </p>
-                                {h.descripcion && (
-                                  <p className="text-xs text-text-muted">{h.descripcion}</p>
-                                )}
-                              </div>
-                            </button>
-                          ))
-                        ) : (
-                          <div className="px-4 py-6 text-center">
-                            <MdHotel className="w-8 h-8 text-text-muted mx-auto mb-2" />
-                            <p className="text-sm text-text-muted">No se encontraron habitaciones</p>
-                            <p className="text-xs text-text-muted mt-1">
-                              Intenta con otro número de habitación
-                            </p>
-                          </div>
-                        )}
-                      </div>
-                    )}
+                    {showHabitacionSuggestions &&
+                      (searchingHabitacion || habitacionSuggestions.length > 0 || (habitacionQuery.trim() && !searchingHabitacion)) && (
+                        <div className="absolute z-50 top-full left-0 right-0 mt-1 bg-bg-card border border-border rounded-xl shadow-xl overflow-hidden max-h-64 overflow-y-auto scrollbar-custom">
+                          {searchingHabitacion ? (
+                            <div className="px-4 py-6 text-center">
+                              <div className="inline-block w-5 h-5 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
+                              <p className="text-xs text-text-muted mt-2">Buscando habitaciones...</p>
+                            </div>
+                          ) : habitacionSuggestions.length > 0 ? (
+                            habitacionSuggestions.map((h) => (
+                              <button
+                                key={h.id}
+                                type="button"
+                                onMouseDown={() => handleSelectHabitacion(h)}
+                                className="w-full flex items-start gap-3 px-4 py-3 hover:bg-bg-hover transition-colors text-left border-b border-border/50 last:border-0"
+                              >
+                                <div className="flex-1 min-w-0">
+                                  <p className="text-text-primary font-medium">Hab. {h.nro_habitacion}</p>
+                                  <p className="text-xs text-text-muted">
+                                    Piso {h.piso} • {h.tipo_habitacion?.nombre || "Sin tipo"}
+                                  </p>
+                                  {h.descripcion && <p className="text-xs text-text-muted">{h.descripcion}</p>}
+                                </div>
+                              </button>
+                            ))
+                          ) : (
+                            <div className="px-4 py-6 text-center">
+                              <MdHotel className="w-8 h-8 text-text-muted mx-auto mb-2" />
+                              <p className="text-sm text-text-muted">No se encontraron habitaciones</p>
+                              <p className="text-xs text-text-muted mt-1">Intenta con otro número de habitación</p>
+                            </div>
+                          )}
+                        </div>
+                      )}
                   </div>
                 </div>
 
@@ -523,7 +538,9 @@ export function ReservaModal({ isOpen, onClose, onSuccess, reserva, tarifas, onC
                             {huespedSeleccionado.nombres} {huespedSeleccionado.apellidos}
                           </span>
                           <span className="text-text-muted">Documento</span>
-                          <span className="text-text-primary">{huespedSeleccionado.tipo_doc}: {huespedSeleccionado.nro_doc}</span>
+                          <span className="text-text-primary">
+                            {huespedSeleccionado.tipo_doc}: {huespedSeleccionado.nro_doc}
+                          </span>
                         </div>
                       )}
                       {habitacionEncontrada && (
@@ -550,13 +567,15 @@ export function ReservaModal({ isOpen, onClose, onSuccess, reserva, tarifas, onC
                   <div>
                     <label className={labelClass}>Estado *</label>
                     <div className="relative">
-                      <select 
-                        value={form.estado} 
-                        onChange={(e) => setForm((f) => ({ ...f, estado: e.target.value as EstadoReserva }))} 
+                      <select
+                        value={form.estado}
+                        onChange={(e) => setForm((f) => ({ ...f, estado: e.target.value as EstadoReserva }))}
                         className={selectClass}
                       >
                         {ESTADO_OPTIONS.map((opt) => (
-                          <option key={opt.value} value={opt.value}>{opt.label}</option>
+                          <option key={opt.value} value={opt.value}>
+                            {opt.label}
+                          </option>
                         ))}
                       </select>
                       {estadoSeleccionado && (
@@ -572,7 +591,6 @@ export function ReservaModal({ isOpen, onClose, onSuccess, reserva, tarifas, onC
 
             {/* Columna 2: Fechas y ocupación */}
             <div className="space-y-6">
-              
               {/* ── Fechas de estadía ── */}
               <div className="space-y-4">
                 <div className="flex items-center gap-2 text-text-muted pb-3 border-b border-border/50">
@@ -581,20 +599,20 @@ export function ReservaModal({ isOpen, onClose, onSuccess, reserva, tarifas, onC
                 </div>
 
                 <div className="space-y-4">
-                  <InputField 
-                    label="Fecha de entrada *" 
-                    type="date" 
-                    value={form.fecha_inicio} 
-                    onChange={(e) => setForm((f) => ({ ...f, fecha_inicio: e.target.value }))} 
-                    required 
+                  <InputField
+                    label="Fecha de entrada *"
+                    type="date"
+                    value={form.fecha_inicio}
+                    onChange={(e) => setForm((f) => ({ ...f, fecha_inicio: e.target.value }))}
+                    required
                   />
-                  
-                  <InputField 
-                    label="Fecha de salida *" 
-                    type="date" 
-                    value={form.fecha_fin} 
-                    onChange={(e) => setForm((f) => ({ ...f, fecha_fin: e.target.value }))} 
-                    required 
+
+                  <InputField
+                    label="Fecha de salida *"
+                    type="date"
+                    value={form.fecha_fin}
+                    onChange={(e) => setForm((f) => ({ ...f, fecha_fin: e.target.value }))}
+                    required
                   />
                 </div>
 
@@ -609,8 +627,8 @@ export function ReservaModal({ isOpen, onClose, onSuccess, reserva, tarifas, onC
                       <p className="text-2xl font-bold text-primary">{noches}</p>
                       <p className="text-xs text-text-muted">noche{noches !== 1 ? "s" : ""}</p>
                       <div className="text-xs text-text-muted mt-2 space-y-1">
-                        <p>Entrada: {new Date(form.fecha_inicio).toLocaleDateString('es-PE')}</p>
-                        <p>Salida: {new Date(form.fecha_fin).toLocaleDateString('es-PE')}</p>
+                        <p>Entrada: {new Date(form.fecha_inicio).toLocaleDateString("es-PE")}</p>
+                        <p>Salida: {new Date(form.fecha_fin).toLocaleDateString("es-PE")}</p>
                       </div>
                     </div>
                   </div>
@@ -626,24 +644,24 @@ export function ReservaModal({ isOpen, onClose, onSuccess, reserva, tarifas, onC
 
                 <div className="grid grid-cols-2 gap-4">
                   <div className="relative">
-                    <InputField 
-                      label="Adultos *" 
-                      type="number" 
-                      min={1} 
-                      value={form.adultos} 
-                      onChange={(e) => setForm((f) => ({ ...f, adultos: e.target.value }))} 
-                      required 
+                    <InputField
+                      label="Adultos *"
+                      type="number"
+                      min={1}
+                      value={form.adultos}
+                      onChange={(e) => setForm((f) => ({ ...f, adultos: e.target.value }))}
+                      required
                     />
                     <MdGroup className="absolute right-3 top-9 w-4 h-4 text-text-muted pointer-events-none" />
                   </div>
-                  
+
                   <div className="relative">
-                    <InputField 
-                      label="Niños" 
-                      type="number" 
-                      min={0} 
-                      value={form.ninos} 
-                      onChange={(e) => setForm((f) => ({ ...f, ninos: e.target.value }))} 
+                    <InputField
+                      label="Niños"
+                      type="number"
+                      min={0}
+                      value={form.ninos}
+                      onChange={(e) => setForm((f) => ({ ...f, ninos: e.target.value }))}
                     />
                     <MdChildCare className="absolute right-3 top-9 w-4 h-4 text-text-muted pointer-events-none" />
                   </div>
@@ -652,7 +670,9 @@ export function ReservaModal({ isOpen, onClose, onSuccess, reserva, tarifas, onC
                 {totalHuespedes > 0 && (
                   <div className="bg-info-bg/20 border border-info/20 rounded-xl px-4 py-3 text-center">
                     <p className="text-lg font-semibold text-info">{totalHuespedes}</p>
-                    <p className="text-xs text-text-muted">huésped{totalHuespedes !== 1 ? "es" : ""} total{totalHuespedes !== 1 ? "es" : ""}</p>
+                    <p className="text-xs text-text-muted">
+                      huésped{totalHuespedes !== 1 ? "es" : ""} total{totalHuespedes !== 1 ? "es" : ""}
+                    </p>
                   </div>
                 )}
               </div>
@@ -660,7 +680,6 @@ export function ReservaModal({ isOpen, onClose, onSuccess, reserva, tarifas, onC
 
             {/* Columna 3: Tarifa y cálculos */}
             <div className="space-y-6">
-              
               {/* ── Tarifa ── */}
               <div className="space-y-4">
                 <div className="flex items-center gap-2 text-text-muted pb-3 border-b border-border/50">
@@ -670,9 +689,9 @@ export function ReservaModal({ isOpen, onClose, onSuccess, reserva, tarifas, onC
 
                 <div>
                   <label className={labelClass}>Tarifa *</label>
-                  <select 
-                    value={form.tarifaId} 
-                    onChange={(e) => setForm((f) => ({ ...f, tarifaId: e.target.value }))} 
+                  <select
+                    value={form.tarifaId}
+                    onChange={(e) => setForm((f) => ({ ...f, tarifaId: e.target.value }))}
                     className={cn(selectClass, tarifaSeleccionada ? "border-success/40 bg-success-bg/40" : "")}
                     required
                   >
@@ -697,7 +716,9 @@ export function ReservaModal({ isOpen, onClose, onSuccess, reserva, tarifas, onC
                       <span className="text-text-muted">Canal</span>
                       <span className="text-text-primary">{tarifaSeleccionada.canal?.nombre}</span>
                       <span className="text-text-muted">Precio por {tarifaSeleccionada.unidad}</span>
-                      <span className="text-text-primary font-medium">{tarifaSeleccionada.moneda} {tarifaSeleccionada.precio}</span>
+                      <span className="text-text-primary font-medium">
+                        {tarifaSeleccionada.moneda} {tarifaSeleccionada.precio}
+                      </span>
                     </div>
                   </div>
                 )}
@@ -711,7 +732,7 @@ export function ReservaModal({ isOpen, onClose, onSuccess, reserva, tarifas, onC
                     <span className="text-sm font-semibold uppercase tracking-wide">Cálculo de Costos</span>
                   </div>
 
-                  <div className="bg-gradient-to-br from-accent-primary/10 to-accent-light/10 border border-accent-primary/20 rounded-xl overflow-hidden">
+                  <div className="bg-linear-to-br from-accent-primary/10 to-accent-light/10 border border-accent-primary/20 rounded-xl overflow-hidden">
                     <div className="px-4 py-3 space-y-3">
                       <div className="flex justify-between items-center text-sm">
                         <span className="text-text-muted">
@@ -722,7 +743,7 @@ export function ReservaModal({ isOpen, onClose, onSuccess, reserva, tarifas, onC
                         </span>
                       </div>
                     </div>
-                    
+
                     <div className="bg-accent-primary/20 border-t border-accent-primary/30 px-4 py-4">
                       <div className="flex justify-between items-center">
                         <div className="flex items-center gap-2">
@@ -733,9 +754,7 @@ export function ReservaModal({ isOpen, onClose, onSuccess, reserva, tarifas, onC
                           {tarifaSeleccionada.moneda} {total.toFixed(2)}
                         </span>
                       </div>
-                      <p className="text-xs text-text-muted mt-1">
-                        * Los precios pueden variar según promociones y servicios adicionales
-                      </p>
+                      <p className="text-xs text-text-muted mt-1">* Los precios pueden variar según promociones y servicios adicionales</p>
                     </div>
                   </div>
                 </div>
@@ -747,8 +766,7 @@ export function ReservaModal({ isOpen, onClose, onSuccess, reserva, tarifas, onC
                   <MdInfo className="w-12 h-12 text-warning mx-auto mb-3" />
                   <h3 className="text-sm font-semibold text-text-primary mb-2">Selecciona una tarifa</h3>
                   <p className="text-xs text-text-muted leading-relaxed">
-                    Para ver el cálculo de costos y completar la reserva, 
-                    selecciona una tarifa que corresponda al tipo de habitación.
+                    Para ver el cálculo de costos y completar la reserva, selecciona una tarifa que corresponda al tipo de habitación.
                   </p>
                 </div>
               )}
