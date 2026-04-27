@@ -223,7 +223,7 @@ export default function Sidebar() {
           </div>
         </div>
 
-        <nav className="flex-1 py-4 overflow-y-auto">
+        <nav className="flex-1 py-4 overflow-y-auto scrollbar-custom">
           {navItems.map((navItem, idx) => {
             if (navItem.kind === "separator") {
               return (

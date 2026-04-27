@@ -7,6 +7,15 @@ export const promocionesApi = {
     return response.data.data;
   },
 
+  getByCodigo: async (codigo: string, signal?: AbortSignal): Promise<Promocion[]> => {
+    const params = new URLSearchParams({ codigo });
+    const response = await axiosInstance.get<{ success: boolean; data: Promocion[] }>(
+      `/api/private/promociones?${params.toString()}`,
+      { signal },
+    );
+    return response.data.data;
+  },
+
   getById: async (id: string): Promise<Promocion> => {
     const response = await axiosInstance.get<{ success: boolean; data: Promocion }>(`/api/private/promociones/${id}`);
     return response.data.data;

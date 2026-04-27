@@ -1,13 +1,14 @@
 import { useState } from "react";
 import { authClient } from "@/shared/lib/auth";
-import { PanelHeader, Button, EmptyState, Loading, Modal, Pagination, ConfirmDialog, CrudToolbar } from "@/components";
+import { PanelHeader, Button, EmptyState, Loading, Modal, ConfirmDialog } from "@/components";
 import { PagoModal } from "./PagoModal";
+import { PagosTable } from "./PagosTable";
 import { sileo } from "sileo";
 import { isHandledError } from "@/shared/utils/error";
 import { cn } from "@/shared/utils/cn";
 import { estadoPagoLabels, metodoPagoLabels } from "../types";
 import type { Pago, EstadoPago } from "../types";
-import { MdPayment, MdEdit, MdDelete, MdSearch } from "react-icons/md";
+import { MdPayment } from "react-icons/md";
 import { utils, writeFile } from "xlsx";
 import { usePagos } from "../hooks/usePagos";
 import { formatUTCDate, formatUTCDateLong } from "@/shared/utils/format";
@@ -69,19 +70,6 @@ export default function PagosPage() {
 
   const handleEdit = (pago: Pago) => { setEditingPago(pago); setSelectedPago(null); setIsEditModalOpen(true); };
 
-  // Filtrado local
-  const filtered = pagos.filter((p) => {
-    const q = search.toLowerCase();
-    const matchSearch = !q || p.concepto.toLowerCase().includes(q) || p.metodo.toLowerCase().includes(q) || p.monto.includes(q);
-    const matchEstado = !filterEstado || p.estado === filterEstado;
-    return matchSearch && matchEstado;
-  });
-
-  const totalPages = Math.max(1, Math.ceil(filtered.length / perPage));
-  const paginated = filtered.slice((page - 1) * perPage, page * perPage);
-  const from = filtered.length === 0 ? 0 : (page - 1) * perPage + 1;
-  const to = Math.min(page * perPage, filtered.length);
-
   const totalMonto = pagos.reduce((acc, p) => acc + parseFloat(p.monto), 0);
   const montoConfirmado = pagos.filter(p => p.estado === "CONFIRMADO").reduce((acc, p) => acc + parseFloat(p.monto), 0);
 
@@ -102,7 +90,7 @@ export default function PagosPage() {
         ) : (
           <>
             {/* Stats */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
               <div className="bg-gradient-to-br from-accent-primary/10 to-accent-light/10 rounded-2xl p-5 border border-accent-primary/20">
                 <p className="text-text-muted text-sm">Total Registrado</p>
                 <p className="text-2xl font-bold font-display mt-1">{pagos[0]?.moneda || "USD"} {totalMonto.toFixed(2)}</p>
@@ -120,90 +108,25 @@ export default function PagosPage() {
               </div>
             </div>
 
-            {/* Search and Filter Row */}
-            <div className="flex gap-2 items-center">
-              <div className="relative flex-1 max-w-xs">
-                <MdSearch className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
-                <input
-                  type="text"
-                  value={search}
-                  onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-                  placeholder="Buscar..."
-                  className="w-full pl-9 pr-4 py-2 text-sm rounded-lg border border-border bg-bg-card text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-primary/30"
-                />
-              </div>
-
-              <div className="flex gap-1">
-                <button onClick={() => { setFilterEstado(""); setPage(1); }} className={cn("text-xs px-3 py-2 rounded-lg border transition-all", filterEstado === "" ? "bg-primary text-white border-primary" : "border-border text-text-muted hover:border-primary/50")}>Todos</button>
-                {(Object.keys(estadoPagoLabels) as EstadoPago[]).map((k) => (
-                  <button key={k} onClick={() => { setFilterEstado(k); setPage(1); }} className={cn("text-xs px-3 py-2 rounded-lg border transition-all", filterEstado === k ? "bg-primary text-white border-primary" : "border-border text-text-muted hover:border-primary/50")}>
-                    {estadoPagoLabels[k]}
-                  </button>
-                ))}
-              </div>
-              {/* Toolbar */}
-              <CrudToolbar
-                className="ml-auto"
-                pageSizeValue={perPage}
-                onPageSizeChange={(v) => { setPerPage(v); setPage(1); }}
-                pageSizeOptions={[5, 10, 25, 50]}
+            {/* Table container with flex-1 to fill available space */}
+            <div className="flex flex-col flex-1 min-h-0">
+              <PagosTable
+                pagos={pagos}
+                isAdmin={isAdmin}
+                search={search}
+                onSearchChange={setSearch}
+                filterEstado={filterEstado}
+                onFilterEstadoChange={setFilterEstado}
+                page={page}
+                onPageChange={setPage}
+                perPage={perPage}
+                onPerPageChange={setPerPage}
+                onRowClick={setSelectedPago}
+                onEdit={handleEdit}
+                onDelete={setDeleteTarget}
+                deleting={deleting}
               />
             </div>
-
-            {/* Table */}
-            <div className="overflow-x-auto px-4 sm:px-6">
-              <table className="w-full text-base">
-                <thead>
-                  <tr className="border-b border-border">
-                    <th className="text-left py-3 px-2 text-sm font-semibold text-text-muted uppercase tracking-wide">Fecha</th>
-                    <th className="text-left py-3 px-2 text-sm font-semibold text-text-muted uppercase tracking-wide">Concepto</th>
-                    <th className="text-left py-3 px-2 text-sm font-semibold text-text-muted uppercase tracking-wide hidden sm:table-cell">Método</th>
-                    <th className="text-left py-3 px-2 text-sm font-semibold text-text-muted uppercase tracking-wide hidden md:table-cell">Recibido por</th>
-                    <th className="text-right py-3 px-2 text-sm font-semibold text-text-muted uppercase tracking-wide">Monto</th>
-                    <th className="text-left py-3 px-2 text-sm font-semibold text-text-muted uppercase tracking-wide">Estado</th>
-                    <th className="py-3 px-2 text-right text-sm font-semibold text-text-muted uppercase tracking-wide">Acciones</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {paginated.length === 0 ? (
-                    <tr><td colSpan={7} className="text-center py-10 text-text-muted">Sin resultados</td></tr>
-                  ) : paginated.map((p) => (
-                    <tr key={p.id} onClick={() => setSelectedPago(p)} className="border-b border-border/50 last:border-0 hover:bg-accent-primary/5 cursor-pointer transition-colors">
-                      <td className="py-3 px-2 text-text-muted text-sm">{formatUTCDate(p.fecha_pago)}</td>
-                      <td className="py-3 px-2">
-                        <p className="font-medium text-text-primary text-sm">{p.concepto}</p>
-                      </td>
-                      <td className="py-3 px-2 text-text-muted hidden sm:table-cell text-sm">{metodoPagoLabels[p.metodo] ?? p.metodo}</td>
-                      <td className="py-3 px-2 text-text-muted hidden md:table-cell text-sm">{p.recibido_por?.name ?? "—"}</td>
-                      <td className="py-3 px-2 text-right font-semibold text-text-primary">{p.moneda} {parseFloat(p.monto).toFixed(2)}</td>
-                      <td className="py-3 px-2">
-                        <span className={cn("text-sm font-medium px-2 py-0.5 rounded-full", estadoColors[p.estado] ?? "bg-bg-tertiary text-text-muted")}>
-                          {estadoPagoLabels[p.estado]}
-                        </span>
-                      </td>
-                      <td className="py-3 px-2" onClick={(e) => e.stopPropagation()}>
-                        <div className="flex items-center justify-end gap-1">
-                          {isAdmin && (
-                            <>
-                              <button onClick={() => handleEdit(p)} title="Editar" className="p-1.5 rounded-lg text-text-muted hover:text-primary hover:bg-primary/10 transition-all"><MdEdit className="w-4 h-4" /></button>
-                              <button onClick={() => setDeleteTarget(p)} disabled={deleting} title="Eliminar" className="p-1.5 rounded-lg text-text-muted hover:text-danger hover:bg-danger/10 transition-all disabled:opacity-40"><MdDelete className="w-4 h-4" /></button>
-                            </>
-                          )}
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-
-            {/* Pagination */}
-            <Pagination
-              page={page}
-              totalPages={totalPages}
-              onPageChange={setPage}
-              label={filtered.length === 0 ? "Sin resultados" : `${from}–${to} de ${filtered.length} pago${filtered.length !== 1 ? "s" : ""}`}
-            />
           </>
         )}
       </PanelHeader>

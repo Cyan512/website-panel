@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { PanelHeader, Button, EmptyState, Loading, Modal, ConfirmDialog } from "@/components";
+import { PanelHeader, Button, EmptyState, Loading, Modal, ConfirmDialog, Pagination } from "@/components";
 import { useTarifas } from "../hooks/useTarifas";
 import { useTiposHabitacion } from "@/features/rooms/hooks/useRooms";
 import { TarifaCard } from "./TarifaCard";
@@ -39,6 +39,14 @@ export default function TarifasPage() {
   const [editingCanal, setEditingCanal] = useState<Canal | null>(null);
   const [savingCanal, setSavingCanal] = useState(false);
   const [deleteCanalTarget, setDeleteCanalTarget] = useState<Canal | null>(null);
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(10);
+
+  // Paginación local
+  const totalPages = Math.max(1, Math.ceil(tarifas.length / limit));
+  const paginatedTarifas = tarifas.slice((page - 1) * limit, page * limit);
+  const from = tarifas.length === 0 ? 0 : (page - 1) * limit + 1;
+  const to = Math.min(page * limit, tarifas.length);
 
   if (loading)
     return (
@@ -156,23 +164,44 @@ export default function TarifasPage() {
           />
         ) : (
           <>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-              {tarifas.map((tarifa) => (
-                <TarifaCard
-                  key={tarifa.id}
-                  tarifa={tarifa}
-                  onEdit={(e) => {
-                    e.stopPropagation();
-                    openEdit(tarifa);
-                  }}
-                  onDelete={(e) => {
-                    e.stopPropagation();
-                    setDeletingTarifa(tarifa);
-                    setDeleteOpen(true);
-                  }}
-                />
-              ))}
+            <div className="max-h-[calc(120dvh-420px)] overflow-y-auto scrollbar-custom">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                {paginatedTarifas.map((tarifa) => (
+                  <TarifaCard
+                    key={tarifa.id}
+                    tarifa={tarifa}
+                    onEdit={(e) => {
+                      e.stopPropagation();
+                      openEdit(tarifa);
+                    }}
+                    onDelete={(e) => {
+                      e.stopPropagation();
+                      setDeletingTarifa(tarifa);
+                      setDeleteOpen(true);
+                    }}
+                  />
+                ))}
+              </div>
             </div>
+
+            <Pagination
+              page={page}
+              totalPages={totalPages}
+              hasNextPage={page < totalPages}
+              onPageChange={setPage}
+              label={
+                tarifas.length === 0
+                  ? "Sin resultados"
+                  : `${from}–${to} de ${tarifas.length} tarifa${tarifas.length !== 1 ? "s" : ""}`
+              }
+              pageSizeValue={limit}
+              onPageSizeChange={(v) => {
+                setLimit(v);
+                setPage(1);
+              }}
+              pageSizeOptions={[5, 10, 25, 50]}
+              className="px-0"
+            />
           </>
         )}
       </PanelHeader>

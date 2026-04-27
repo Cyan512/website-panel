@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useRef } from "react";
 import { authClient } from "@/shared/lib/auth";
 import { PanelHeader, Button, EmptyState, Loading, Modal, Pagination, ConfirmDialog } from "@/components";
 import { sileo } from "sileo";
@@ -9,7 +9,6 @@ import { useFolios } from "../hooks/useFolios";
 import { FolioModal } from "./FolioModal";
 import { FolioCard } from "./FolioCard";
 import type { Folio, CreateFolio, UpdateFolio } from "../types";
-import type { Promocion } from "@/features/promotions/types";
 import type { Producto } from "@/features/products/types";
 
 export default function FoliosPage() {
@@ -41,10 +40,11 @@ export default function FoliosPage() {
   const [deleteTarget, setDeleteTarget] = useState<Folio | null>(null);
 
   // Reserva name cache for table display
-  const [reservaMap, setReservaMap] = useState<Map<string, string>>(new Map());
-
-  // Promociones list for picker
-  const [promociones, setPromociones] = useState<Promocion[]>([]);
+  const [reservaMap] = useState<Map<string, string>>(new Map());
+  
+  // Debounce refs for product search
+  const productoDebounceRef = useRef<number | null>(null);
+  const productoAbortRef = useRef<AbortController | null>(null);
 
   // Add product modal
   const [isProductModalOpen, setIsProductModalOpen] = useState(false);
@@ -62,32 +62,6 @@ export default function FoliosPage() {
   const [servicioCantidad, setServicioCantidad] = useState(1);
   const [servicioPrecio, setServicioPrecio] = useState("");
   const [addingService, setAddingService] = useState(false);
-
-  // Load promociones once
-  useEffect(() => {
-    if (!session) return;
-    import("@/features/promotions/api").then(({ promocionesApi }) =>
-      promocionesApi
-        .getAll()
-        .then(setPromociones)
-        .catch(() => {}),
-    );
-  }, [session]);
-
-  // Load reservas to populate reserva names
-  useEffect(() => {
-    if (!session) return;
-    import("@/features/reservations/api").then(({ reservasApi }) =>
-      reservasApi
-        .getAll(1, 100)
-        .then((data) => {
-          const map = new Map<string, string>();
-          data.list.forEach((r) => map.set(r.id, r.nombre_huesped));
-          setReservaMap(map);
-        })
-        .catch(() => {}),
-    );
-  }, [session]);
 
   if (!session) return <Loading text="Verificando sesión..." />;
   if (loading)
@@ -175,21 +149,56 @@ export default function FoliosPage() {
     setIsServiceModalOpen(true);
   };
 
-  const handleProductoQuery = async (q: string) => {
+  const handleProductoQuery = (q: string) => {
     setProductoQuery(q);
     setProductoSelected(null);
+    
+    // Cancel previous debounce
+    if (productoDebounceRef.current) {
+      clearTimeout(productoDebounceRef.current);
+    }
+    
+    // Cancel previous request
+    if (productoAbortRef.current) {
+      productoAbortRef.current.abort();
+    }
+    
     if (!q.trim()) {
       setProductoSuggestions([]);
       return;
     }
-    try {
-      const { productosApi } = await import("@/features/products/api");
-      const data = await productosApi.getAll(1, 20);
-      const q2 = q.toLowerCase();
-      setProductoSuggestions(data.list.filter((p) => p.nombre.toLowerCase().includes(q2) || p.codigo.toLowerCase().includes(q2)));
-    } catch {
-      setProductoSuggestions([]);
-    }
+    
+    // Debounce search
+    productoDebounceRef.current = setTimeout(async () => {
+      try {
+        const { productosApi } = await import("@/features/products/api");
+        const controller = new AbortController();
+        productoAbortRef.current = controller;
+        
+        // Try searching by nombre first, then by codigo if no results
+        let data: Producto[] = [];
+        try {
+          data = await productosApi.getByNombre(q.trim(), controller.signal);
+        } catch (err) {
+          // If nombre search fails or returns empty, try codigo
+          if (!controller.signal.aborted) {
+            try {
+              data = await productosApi.getByCodigo(q.trim(), controller.signal);
+            } catch {
+              data = [];
+            }
+          }
+        }
+        
+        if (!controller.signal.aborted) {
+          setProductoSuggestions(data);
+        }
+      } catch (err) {
+        if (!productoAbortRef.current?.signal.aborted) {
+          setProductoSuggestions([]);
+        }
+      }
+    }, 300);
   };
 
   const handleAddProducto = async () => {
@@ -278,30 +287,32 @@ export default function FoliosPage() {
             </div>
 
             {/* Card Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-              {filtered.map((f) => (
-                <FolioCard
-                  key={f.id}
-                  folio={f}
-                  reservaName={reservaMap.get(f.reservaId)}
-                  onEdit={(e) => {
-                    e.stopPropagation();
-                    openEdit(f);
-                  }}
-                  onDelete={(e) => {
-                    e.stopPropagation();
-                    setDeleteTarget(f);
-                  }}
-                  onAddProduct={(e) => {
-                    e.stopPropagation();
-                    openAddProduct(f);
-                  }}
-                  onAddService={(e) => {
-                    e.stopPropagation();
-                    openAddService(f);
-                  }}
-                />
-              ))}
+            <div className="max-h-[calc(120dvh-420px)] overflow-y-auto scrollbar-custom">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                {filtered.map((f) => (
+                  <FolioCard
+                    key={f.id}
+                    folio={f}
+                    reservaName={reservaMap.get(f.reservaId)}
+                    onEdit={(e) => {
+                      e.stopPropagation();
+                      openEdit(f);
+                    }}
+                    onDelete={(e) => {
+                      e.stopPropagation();
+                      setDeleteTarget(f);
+                    }}
+                    onAddProduct={(e) => {
+                      e.stopPropagation();
+                      openAddProduct(f);
+                    }}
+                    onAddService={(e) => {
+                      e.stopPropagation();
+                      openAddService(f);
+                    }}
+                  />
+                ))}
+              </div>
             </div>
 
             {/* Pagination */}
@@ -328,7 +339,6 @@ export default function FoliosPage() {
         mode={modalMode}
         folio={editingFolio}
         reservaMap={reservaMap}
-        promociones={promociones}
         onSave={handleSaveModal}
       />
 

@@ -23,6 +23,15 @@ filters: { tipo?: string; numero?: string; estado?: boolean } = {},
     return response.data.data;
   },
 
+  getByNumero: async (numero: string, signal?: AbortSignal): Promise<Habitacion[]> => {
+    const params = new URLSearchParams({ numero });
+    const response = await axiosInstance.get<{ success: boolean; data: PaginatedHabitaciones }>(
+      `/api/private/habitaciones?${params.toString()}`,
+      { signal },
+    );
+    return response.data.data.list;
+  },
+
   getById: async (id: string, tipoReserva?: EstadoReservaHab[], signal?: AbortSignal): Promise<Habitacion> => {
     const params = new URLSearchParams();
     if (tipoReserva?.length) params.set("tipo_reserva", tipoReserva.join(","));

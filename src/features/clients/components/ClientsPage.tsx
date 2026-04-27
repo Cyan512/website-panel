@@ -92,21 +92,23 @@ export default function ClientsPage() {
               />
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-              {huespedes.map((huesped) => (
-                <HuespedCard
-                  key={huesped.id}
-                  huesped={huesped}
-                  onEdit={(e) => {
-                    e.stopPropagation();
-                    handleEdit(huesped);
-                  }}
-                  onDelete={(e) => {
-                    e.stopPropagation();
-                    setDeleteTarget(huesped);
-                  }}
-                />
-              ))}
+            <div className="max-h-[calc(120dvh-420px)] overflow-y-auto scrollbar-custom">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                {huespedes.map((huesped) => (
+                  <HuespedCard
+                    key={huesped.id}
+                    huesped={huesped}
+                    onEdit={(e) => {
+                      e.stopPropagation();
+                      handleEdit(huesped);
+                    }}
+                    onDelete={(e) => {
+                      e.stopPropagation();
+                      setDeleteTarget(huesped);
+                    }}
+                  />
+                ))}
+              </div>
             </div>
 
             <Pagination

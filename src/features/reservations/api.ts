@@ -12,6 +12,15 @@ export const reservasApi = {
     return response.data.data;
   },
 
+  getByNombre: async (nombre: string, signal?: AbortSignal): Promise<Reserva[]> => {
+    const params = new URLSearchParams({ nombre });
+    const response = await axiosInstance.get<{ success: boolean; data: PaginatedReservas }>(
+      `/api/private/reservas?${params.toString()}`,
+      { signal }
+    );
+    return response.data.data.list;
+  },
+
   getById: async (id: string): Promise<Reserva> => {
     const response = await axiosInstance.get<{ success: boolean; data: Reserva }>(`/api/private/reservas/${id}`);
     return response.data.data;

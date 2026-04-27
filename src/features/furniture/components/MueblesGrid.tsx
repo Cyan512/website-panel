@@ -130,23 +130,25 @@ export function MueblesGrid({
           }
         />
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-          {muebles.map((mueble) => (
-            <MuebleCard
-              key={mueble.id}
-              mueble={mueble}
-              onEdit={(e) => {
-                e.stopPropagation();
-                onEdit(mueble);
-              }}
-              onDelete={(e) => {
-                e.stopPropagation();
-                onDelete(mueble);
-              }}
-              onViewImage={() => onViewImage(mueble)}
-              habitacionNro={getRoomNro(mueble.habitacion_id)}
-            />
-          ))}
+        <div className="max-h-[calc(120dvh-420px)] overflow-y-auto scrollbar-custom">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            {muebles.map((mueble) => (
+              <MuebleCard
+                key={mueble.id}
+                mueble={mueble}
+                onEdit={(e) => {
+                  e.stopPropagation();
+                  onEdit(mueble);
+                }}
+                onDelete={(e) => {
+                  e.stopPropagation();
+                  onDelete(mueble);
+                }}
+                onViewImage={() => onViewImage(mueble)}
+                habitacionNro={getRoomNro(mueble.habitacion_id)}
+              />
+            ))}
+          </div>
         </div>
       )}
 

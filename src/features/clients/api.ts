@@ -11,6 +11,16 @@ export const huespedesApi = {
     return response.data.data;
   },
 
+  getByNombre: async (name: string, signal?: AbortSignal): Promise<Huesped[]> => {
+    if (!name.trim()) return [];
+    const params = new URLSearchParams({ name: name.trim() });
+    const response = await axiosInstance.get<{ success: boolean; data: PaginatedHuespedes }>(
+      `/api/private/huespedes?${params.toString()}`,
+      { signal }
+    );
+    return response.data.data.list;
+  },
+
   getById: async (id: string): Promise<Huesped> => {
     const response = await axiosInstance.get<{ success: boolean; data: Huesped }>(`/api/private/huespedes/${id}`);
     return response.data.data;

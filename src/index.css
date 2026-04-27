@@ -386,3 +386,29 @@ a[class*="bg-primary"] {
 .animate-slide-up {
   animation: slide-up 0.5s ease-out both;
 }
+
+/* ── SCROLLBAR CUSTOM ──────────────────────────────────── */
+.scrollbar-custom {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(184, 137, 42, 0.3) rgba(237, 224, 184, 0.3);
+}
+
+.scrollbar-custom::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.scrollbar-custom::-webkit-scrollbar-track {
+  background: rgba(237, 224, 184, 0.3);
+  border-radius: 4px;
+}
+
+.scrollbar-custom::-webkit-scrollbar-thumb {
+  background: rgba(184, 137, 42, 0.3);
+  border-radius: 4px;
+  transition: background 0.2s ease;
+}
+
+.scrollbar-custom::-webkit-scrollbar-thumb:hover {
+  background: rgba(184, 137, 42, 0.5);
+}

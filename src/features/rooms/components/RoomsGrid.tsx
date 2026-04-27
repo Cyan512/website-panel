@@ -132,17 +132,19 @@ export function RoomsGrid({
           }
         />
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-          {habitaciones.map((habitacion) => (
-            <RoomCard
-              key={habitacion.id}
-              room={habitacion}
-              onEdit={() => onEdit(habitacion)}
-              onDelete={() => onDelete(habitacion)}
-              onViewCalendar={() => onViewCalendar(habitacion)}
-              onViewImages={() => onViewImages(habitacion)}
-            />
-          ))}
+        <div className="max-h-[calc(120dvh-420px)] overflow-y-auto scrollbar-custom">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            {habitaciones.map((habitacion) => (
+              <RoomCard
+                key={habitacion.id}
+                room={habitacion}
+                onEdit={() => onEdit(habitacion)}
+                onDelete={() => onDelete(habitacion)}
+                onViewCalendar={() => onViewCalendar(habitacion)}
+                onViewImages={() => onViewImages(habitacion)}
+              />
+            ))}
+          </div>
         </div>
       )}
 

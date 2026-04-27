@@ -10,6 +10,24 @@ export const productosApi = {
     return response.data.data;
   },
 
+  getByNombre: async (nombre: string, signal?: AbortSignal): Promise<Producto[]> => {
+    const params = new URLSearchParams({ nombre });
+    const response = await axiosInstance.get<{ success: boolean; data: PaginatedProductos }>(
+      `/api/private/productos?${params.toString()}`,
+      { signal }
+    );
+    return response.data.data.list;
+  },
+
+  getByCodigo: async (codigo: string, signal?: AbortSignal): Promise<Producto[]> => {
+    const params = new URLSearchParams({ codigo });
+    const response = await axiosInstance.get<{ success: boolean; data: PaginatedProductos }>(
+      `/api/private/productos?${params.toString()}`,
+      { signal }
+    );
+    return response.data.data.list;
+  },
+
   getById: async (id: string): Promise<Producto> => {
     const response = await axiosInstance.get<{ success: boolean; data: Producto }>(`/api/private/productos/${id}`);
     return response.data.data;

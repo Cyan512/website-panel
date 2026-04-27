@@ -1,18 +1,18 @@
 import { useState } from "react";
-import { PanelHeader, Button, EmptyState, Modal, Pagination, ConfirmDialog, CrudToolbar } from "@/components";
-import { useHuespedes } from "@/features/clients/hooks/useHuespedes";
-import { useHabitaciones, useTiposHabitacion } from "@/features/rooms/hooks/useRooms";
+import { PanelHeader, Button, EmptyState, Modal, Pagination, ConfirmDialog } from "@/components";
+import { useTiposHabitacion } from "@/features/rooms/hooks/useRooms";
 import { useTarifas } from "@/features/rates/hooks/useTarifas";
 import { ReservaModal } from "./ReservaModal";
 import { CancelModal } from "./CancelModal";
+import { ReservaTable } from "./ReservaTable";
 import { estadoReservaLabels, estadoReservaColors } from "../types";
 import type { Reserva, CreateReserva, UpdateReserva } from "../types";
 import { sileo } from "sileo";
 import { isHandledError } from "@/shared/utils/error";
-import { MdEventNote, MdEdit, MdDelete, MdCancel, MdSearch } from "react-icons/md";
+import { MdEventNote, MdSearch } from "react-icons/md";
 import { cn } from "@/shared/utils/cn";
 import { useReservas } from "../hooks/useReservas";
-import { formatUTCDate, formatUTCDateLong } from "@/shared/utils/format";
+import { formatUTCDateLong } from "@/shared/utils/format";
 
 export default function ReservationsPage() {
   const {
@@ -21,8 +21,6 @@ export default function ReservationsPage() {
     createReserva, updateReserva, cancelReserva, deleteReserva,
   } = useReservas();
 
-  const { huespedes } = useHuespedes();
-  const { habitaciones } = useHabitaciones();
   const { tarifas } = useTarifas();
   const { tipos } = useTiposHabitacion();
 
@@ -65,7 +63,6 @@ export default function ReservationsPage() {
 
   const openEdit = (r: Reserva) => { setEditingReserva(r); setSelectedReserva(null); setIsModalOpen(true); };
   const openCancel = (r: Reserva) => { setCancelingReserva(r); setSelectedReserva(null); setIsCancelOpen(true); };
-  const noches = (r: Reserva) => Math.ceil((new Date(r.fecha_fin).getTime() - new Date(r.fecha_inicio).getTime()) / 86400000);
 
   const counts = {
     total: pagination.total,
@@ -133,14 +130,6 @@ export default function ReservationsPage() {
                   </option>
                 ))}
               </select>
-
-              {/* Toolbar */}
-              <CrudToolbar
-                className="ml-auto"
-                pageSizeValue={limit}
-                onPageSizeChange={(v) => changeLimit(v)}
-                pageSizeOptions={[5, 10, 25, 50]}
-              ></CrudToolbar>
             </div>
 
             {/* Filtro tipo de habitación */}
@@ -148,58 +137,26 @@ export default function ReservationsPage() {
             
 
             {/* Table */}
-            <div className="overflow-x-auto px-4 sm:px-6 pb-2">
-              <table className="w-full text-base">
-                <thead>
-                  <tr className="border-b border-border">
-                    <th className="text-left py-3 px-2 text-sm font-semibold text-text-muted uppercase tracking-wide">Código</th>
-                    <th className="text-left py-3 px-2 text-sm font-semibold text-text-muted uppercase tracking-wide">Huésped</th>
-                    <th className="text-left py-3 px-2 text-sm font-semibold text-text-muted uppercase tracking-wide hidden sm:table-cell">Habitación</th>
-                    <th className="text-left py-3 px-2 text-sm font-semibold text-text-muted uppercase tracking-wide hidden md:table-cell">Fechas</th>
-                    <th className="text-left py-3 px-2 text-sm font-semibold text-text-muted uppercase tracking-wide hidden lg:table-cell">Pax</th>
-                    <th className="text-left py-3 px-2 text-sm font-semibold text-text-muted uppercase tracking-wide">Estado</th>
-                    <th className="py-3 px-2 text-right text-sm font-semibold text-text-muted uppercase tracking-wide">Acciones</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {loading ? (
-                    <tr><td colSpan={7} className="text-center py-10 text-text-muted text-sm">Buscando...</td></tr>
-                  ) : filtered.length === 0 ? (
-                    <tr><td colSpan={7} className="text-center py-10 text-text-muted">Sin resultados</td></tr>
-                  ) : filtered.map((r) => (
-                    <tr key={r.id} onClick={() => setSelectedReserva(r)} className="border-b border-border/50 last:border-0 hover:bg-accent-primary/5 cursor-pointer transition-colors">
-                      <td className="py-3 px-2 font-mono text-sm font-medium text-accent-primary">{r.codigo}</td>
-                      <td className="py-3 px-2 font-medium text-text-primary">{r.nombre_huesped}</td>
-                      <td className="py-3 px-2 text-text-muted hidden sm:table-cell">Hab. {r.nro_habitacion}</td>
-                      <td className="py-3 px-2 hidden md:table-cell">
-                        <p className="text-text-primary text-sm">{formatUTCDate(r.fecha_inicio)}</p>
-                        <p className="text-text-muted text-sm">{formatUTCDate(r.fecha_fin)} · {noches(r)}n</p>
-                      </td>
-                      <td className="py-3 px-2 text-text-muted hidden lg:table-cell">{r.adultos}A{r.ninos > 0 ? ` ${r.ninos}N` : ""}</td>
-                      <td className="py-3 px-2">
-                        <span className={cn("text-sm font-medium px-2 py-0.5 rounded-full", estadoReservaColors[r.estado])}>
-                          {estadoReservaLabels[r.estado]}
-                        </span>
-                      </td>
-                      <td className="py-3 px-2" onClick={(e) => e.stopPropagation()}>
-                        <div className="flex items-center justify-end gap-1">
-                          <button onClick={() => openEdit(r)} title="Editar" className="p-1.5 rounded-lg text-text-muted hover:text-primary hover:bg-primary/10 transition-all"><MdEdit className="w-4 h-4" /></button>
-                          {r.estado !== "CANCELADA" && r.estado !== "COMPLETADA" && r.estado !== "NO_LLEGO" && (
-                            <button onClick={() => openCancel(r)} title="Cancelar" className="p-1.5 rounded-lg text-text-muted hover:text-warning hover:bg-warning-bg transition-all"><MdCancel className="w-4 h-4" /></button>
-                          )}
-                          <button onClick={() => requestDelete(r)} disabled={deleting} title="Eliminar" className="p-1.5 rounded-lg text-text-muted hover:text-danger hover:bg-danger/10 transition-all disabled:opacity-40"><MdDelete className="w-4 h-4" /></button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+            <div className="overflow-hidden px-4 sm:px-6">
+              <ReservaTable
+                reservas={filtered}
+                loading={loading}
+                selectedReserva={selectedReserva}
+                onSelect={setSelectedReserva}
+                onEdit={openEdit}
+                onCancel={openCancel}
+                onDelete={requestDelete}
+                deleting={deleting}
+              />
             </div>
 
             {/* Pagination */}
             <Pagination
               page={page}
               totalPages={totalPages}
+              pageSizeValue={limit}
+              onPageSizeChange={(v) => changeLimit(v)}
+              pageSizeOptions={[5, 10, 25, 50]}
               hasNextPage={hasNextPage}
               onPageChange={goToPage}
               label={total === 0 ? "Sin resultados" : `${from}–${to} de ${total} reserva${total !== 1 ? "s" : ""}`}
@@ -213,8 +170,6 @@ export default function ReservationsPage() {
         onClose={() => { setIsModalOpen(false); setEditingReserva(null); }}
         onSuccess={fetchReservas}
         reserva={editingReserva}
-        huespedes={huespedes}
-        habitaciones={habitaciones}
         tarifas={tarifas}
         onCreate={handleCreate}
         onUpdate={handleUpdate}
